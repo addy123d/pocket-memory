@@ -1,4 +1,4 @@
-# 1 "main.c"
+# 1 "i2c.c"
 # 1 "<built-in>" 1
 # 1 "<built-in>" 3
 # 288 "<built-in>" 3
@@ -6,7 +6,9 @@
 # 1 "<built-in>" 2
 # 1 "C:\\Program Files\\Microchip\\xc8\\v2.46\\pic\\include\\language_support.h" 1 3
 # 2 "<built-in>" 2
-# 1 "main.c" 2
+# 1 "i2c.c" 2
+
+
 
 
 
@@ -9219,70 +9221,7 @@ __attribute__((__unsupported__("The " "Write_b_eep" " routine is no longer suppo
 unsigned char __t1rd16on(void);
 unsigned char __t3rd16on(void);
 # 33 "C:\\Program Files\\Microchip\\xc8\\v2.46\\pic\\include\\xc.h" 2 3
-# 7 "main.c" 2
-
-
-# 1 "./config.h" 1
-# 11 "./config.h"
-#pragma config FOSC = INTIO67
-#pragma config PLLCFG = ON
-#pragma config PRICLKEN = ON
-#pragma config FCMEN = OFF
-#pragma config IESO = OFF
-
-
-#pragma config PWRTEN = OFF
-#pragma config BOREN = SBORDIS
-#pragma config BORV = 250
-
-
-#pragma config WDTEN = OFF
-#pragma config WDTPS = 32768
-
-
-#pragma config CCP2MX = PORTC1
-#pragma config PBADEN = ON
-#pragma config CCP3MX = PORTB5
-#pragma config HFOFST = ON
-#pragma config T3CMX = PORTC0
-#pragma config P2BMX = PORTB5
-#pragma config MCLRE = EXTMCLR
-
-
-#pragma config STVREN = ON
-#pragma config LVP = ON
-#pragma config XINST = OFF
-
-
-#pragma config CP0 = OFF
-#pragma config CP1 = OFF
-#pragma config CP2 = OFF
-#pragma config CP3 = OFF
-
-
-#pragma config CPB = OFF
-#pragma config CPD = OFF
-
-
-#pragma config WRT0 = OFF
-#pragma config WRT1 = OFF
-#pragma config WRT2 = OFF
-#pragma config WRT3 = OFF
-
-
-#pragma config WRTC = OFF
-#pragma config WRTB = OFF
-#pragma config WRTD = OFF
-
-
-#pragma config EBTR0 = OFF
-#pragma config EBTR1 = OFF
-#pragma config EBTR2 = OFF
-#pragma config EBTR3 = OFF
-
-
-#pragma config EBTRB = OFF
-# 9 "main.c" 2
+# 9 "i2c.c" 2
 
 # 1 "./i2c.h" 1
 # 17 "./i2c.h"
@@ -9881,117 +9820,64 @@ void I2C2_Send_ACK(void);
 void I2C2_Send_NACK(void);
 unsigned char I2C2_Send(unsigned char BYTE);
 unsigned char I2C2_Read(void);
-# 10 "main.c" 2
+# 10 "i2c.c" 2
+# 20 "i2c.c"
+void I2C2_Init(void){
+    TRISCbits.RC4 = 1;
+    TRISCbits.RC3 = 1;
 
 
+    ANSELCbits.ANSC3 = 0;
+    ANSELCbits.ANSC4 = 0;
 
-
-
-
-
-unsigned char check_ack = 0x01;
-unsigned char eeprom_data = 0x00;
-unsigned char eeprom_query_flag = 0x00;
-
-
-
-
-
-
-void UART_Init()
-{
-    float temp;
-
-    TRISC6 = 0;
-    TRISC7 = 1;
-    ANSELCbits.ANSC7 = 0;
-
-
-    temp = (((float)(64000000 / 64) / (float)9600) - 1);
-    SPBRG1 = (int)temp;
-
-    INTCONbits.GIE = 1;
-    INTCONbits.PEIE = 1;
-    PIE1bits.RC1IE = 1;
-
-
-    TXSTA1 = 0x20;
-    RCSTA1 = 0x90;
+    SSP1STAT = 0b10000000;
+# 37 "i2c.c"
+ SSP1CON1 = 0b00101000;
+    SSP1ADD = 159u;
 }
-
-
-
-
-
-
-
-void UART_TransmitChar(uint8_t data)
-{
-    while (!PIR1bits.TX1IF);
-    TXREG = data;
+# 51 "i2c.c"
+void I2C2_Start(void){
+ SSP1CON2bits.SEN = 1;
+ while(!PIR1bits.SSP1IF);
+ PIR1bits.SSP1IF = 0;
 }
-# 66 "main.c"
-void __attribute__((picinterrupt(("")))) isr(void)
-{
-    unsigned char receive_data = 0x00;
-
-
-    if (PIR1bits.RC1IF)
-    {
-      receive_data = RCREG1;
-
-        PIR1bits.RC1IF = 0;
-    }
-
-
-    if(check_ack == 0x00)
-    {
-        if(receive_data == 0x01){
-            eeprom_query_flag = 0x01;
-        }else{
-            UART_TransmitChar(receive_data+1);
-        }
-
-    }
+# 67 "i2c.c"
+void I2C2_ReStart(void){
+ SSP1CON2bits.RSEN = 1;
+ while(!PIR1bits.SSP1IF);
+ PIR1bits.SSP1IF = 0;
 }
-
-
-
-
-void main(){
-
-    OSCCON = 0x70;
-    OSCTUNE = 0xC0;
-
-    UART_Init();
-
-
-    I2C2_Init();
-
-    I2C2_Start();
-    check_ack = I2C2_Send(0x50 << 1);
-    I2C2_Send(0x00);
-    I2C2_Send(0x01);
-    I2C2_Send(0x0A);
-    I2C2_Stop();
-
-    while(1){
-     if(eeprom_query_flag){
-
-
-
-    I2C2_Start();
-    I2C2_Send(0x50 << 1);
-    I2C2_Send(0x00);
-    I2C2_Send(0x01);
-
-    I2C2_Start();
-    I2C2_Send((0x50 << 1) | 0x01);
-    eeprom_data = I2C2_Read();
-    I2C2_Stop();
-
-    UART_TransmitChar(eeprom_data);
-    eeprom_query_flag = 0x00;
- }
-    }
+# 82 "i2c.c"
+void I2C2_Stop(void){
+ SSP1CON2bits.PEN = 1;
+ while(!PIR1bits.SSP1IF);
+ PIR1bits.SSP1IF = 0;
+}
+# 98 "i2c.c"
+void I2C2_Send_ACK(void){
+ SSP1CON2bits.ACKDT = 0;
+ SSP1CON2bits.ACKEN = 1;
+ while(!PIR1bits.SSP1IF);
+ PIR1bits.SSP1IF = 0;
+}
+# 114 "i2c.c"
+void I2C2_Send_NACK(void){
+ SSP1CON2bits.ACKDT = 1;
+ SSP1CON2bits.ACKEN = 1;
+ while(!PIR1bits.SSP1IF);
+ PIR1bits.SSP1IF = 0;
+}
+# 131 "i2c.c"
+unsigned char I2C2_Send(unsigned char BYTE){
+ SSP1BUF = BYTE;
+ while(!PIR1bits.SSP1IF);
+ PIR1bits.SSP1IF = 0;
+ return SSP1CON2bits.ACKSTAT;
+}
+# 147 "i2c.c"
+unsigned char I2C2_Read(void){
+ SSP1CON2bits.RCEN = 1;
+ while(!PIR1bits.SSP1IF);
+ PIR1bits.SSP1IF = 0;
+    return SSP1BUF;
 }
