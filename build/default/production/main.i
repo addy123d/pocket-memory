@@ -9882,16 +9882,16 @@ void I2C2_Send_NACK(void);
 unsigned char I2C2_Send(unsigned char BYTE);
 unsigned char I2C2_Read(void);
 # 10 "main.c" 2
+# 19 "main.c"
+unsigned int timeout = 1000;
 
+typedef struct{
+    unsigned char device_code;
+    unsigned char function_code;
+    unsigned char credential_data[50];
+} command;
 
-
-
-
-
-
-unsigned char check_ack = 0x01;
-unsigned char eeprom_data = 0x00;
-unsigned char eeprom_query_flag = 0x00;
+command user_command = {0x00, 0x00, 0x00};
 
 
 
@@ -9930,7 +9930,7 @@ void UART_TransmitChar(uint8_t data)
     while (!PIR1bits.TX1IF);
     TXREG = data;
 }
-# 66 "main.c"
+# 74 "main.c"
 void __attribute__((picinterrupt(("")))) isr(void)
 {
     unsigned char receive_data = 0x00;
@@ -9944,54 +9944,20 @@ void __attribute__((picinterrupt(("")))) isr(void)
     }
 
 
-    if(check_ack == 0x00)
-    {
-        if(receive_data == 0x01){
-            eeprom_query_flag = 0x01;
-        }else{
-            UART_TransmitChar(receive_data+1);
-        }
-
+    while((PIR1bits.RC1IF == 0) && (timeout > 0)){
+        timeout--;
     }
+
 }
-
-
-
-
+# 114 "main.c"
 void main(){
 
     OSCCON = 0x70;
     OSCTUNE = 0xC0;
 
     UART_Init();
-
-
     I2C2_Init();
 
-    I2C2_Start();
-    check_ack = I2C2_Send(0x50 << 1);
-    I2C2_Send(0x00);
-    I2C2_Send(0x01);
-    I2C2_Send(0x0A);
-    I2C2_Stop();
-
     while(1){
-     if(eeprom_query_flag){
-
-
-
-    I2C2_Start();
-    I2C2_Send(0x50 << 1);
-    I2C2_Send(0x00);
-    I2C2_Send(0x01);
-
-    I2C2_Start();
-    I2C2_Send((0x50 << 1) | 0x01);
-    eeprom_data = I2C2_Read();
-    I2C2_Stop();
-
-    UART_TransmitChar(eeprom_data);
-    eeprom_query_flag = 0x00;
- }
     }
 }

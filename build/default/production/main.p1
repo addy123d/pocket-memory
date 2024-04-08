@@ -1,4 +1,8 @@
 Version 4.0 HI-TECH Software Intermediate Code
+"21 main.c
+[; ;main.c: 21: typedef struct{
+[s S829 `uc 1 `uc 1 `uc -> 50 `i ]
+[n S829 . device_code function_code credential_data ]
 "19518 C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h
 [; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 19518: extern volatile __bit TRISC6 __attribute__((address(0x7CA6)));
 [v _TRISC6 `Vb ~T0 @X0 0 e@31910 ]
@@ -92,18 +96,6 @@ Version 4.0 HI-TECH Software Intermediate Code
 "34 ./i2c.h
 [; ;./i2c.h: 34: void I2C2_Init(void);
 [v _I2C2_Init `(v ~T0 @X0 0 ef ]
-"35
-[; ;./i2c.h: 35: void I2C2_Start(void);
-[v _I2C2_Start `(v ~T0 @X0 0 ef ]
-"40
-[; ;./i2c.h: 40: unsigned char I2C2_Send(unsigned char BYTE);
-[v _I2C2_Send `(uc ~T0 @X0 0 ef1`uc ]
-"37
-[; ;./i2c.h: 37: void I2C2_Stop(void);
-[v _I2C2_Stop `(v ~T0 @X0 0 ef ]
-"41
-[; ;./i2c.h: 41: unsigned char I2C2_Read(void);
-[v _I2C2_Read `(uc ~T0 @X0 0 ef ]
 "54 C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h
 [; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 54: __asm("ANSELA equ 0F38h");
 [; <" ANSELA equ 0F38h ;# ">
@@ -912,245 +904,177 @@ Version 4.0 HI-TECH Software Intermediate Code
 [p x EBTR3  =  OFF       ]
 "68
 [p x EBTRB  =  OFF       ]
-"17 main.c
-[; ;main.c: 17: unsigned char check_ack = 0x01;
-[v _check_ack `uc ~T0 @X0 1 e ]
-[i _check_ack
--> -> 1 `i `uc
+"19 main.c
+[; ;main.c: 19: unsigned int timeout = 1000;
+[v _timeout `ui ~T0 @X0 1 e ]
+[i _timeout
+-> -> 1000 `i `ui
 ]
-"18
-[; ;main.c: 18: unsigned char eeprom_data = 0x00;
-[v _eeprom_data `uc ~T0 @X0 1 e ]
-[i _eeprom_data
--> -> 0 `i `uc
-]
-"19
-[; ;main.c: 19: unsigned char eeprom_query_flag = 0x00;
-[v _eeprom_query_flag `uc ~T0 @X0 1 e ]
-[i _eeprom_query_flag
--> -> 0 `i `uc
-]
-"26
-[; ;main.c: 26: void UART_Init()
-[v _UART_Init `(v ~T0 @X0 1 ef ]
 "27
-[; ;main.c: 27: {
+[; ;main.c: 27: command user_command = {0x00, 0x00, 0x00};
+[v _user_command `S829 ~T0 @X0 1 e ]
+[i _user_command
+:U ..
+:U ..
+-> -> 0 `i `uc
+-> -> 0 `i `uc
+:U ..
+-> -> 0 `i `uc
+..
+..
+..
+]
+"34
+[; ;main.c: 34: void UART_Init()
+[v _UART_Init `(v ~T0 @X0 1 ef ]
+"35
+[; ;main.c: 35: {
 {
 [e :U _UART_Init ]
 [f ]
-"28
-[; ;main.c: 28:     float temp;
-[v _temp `f ~T0 @X0 1 a ]
-"30
-[; ;main.c: 30:     TRISC6 = 0;
-[e = _TRISC6 -> -> 0 `i `b ]
-"31
-[; ;main.c: 31:     TRISC7 = 1;
-[e = _TRISC7 -> -> 1 `i `b ]
-"32
-[; ;main.c: 32:     ANSELCbits.ANSC7 = 0;
-[e = . . _ANSELCbits 0 6 -> -> 0 `i `uc ]
-"35
-[; ;main.c: 35:     temp = (((float)(64000000 / 64) / (float)9600) - 1);
-[e = _temp - / -> / -> 64000000 `l -> -> 64 `i `l `f -> -> 9600 `i `f -> -> 1 `i `f ]
 "36
-[; ;main.c: 36:     SPBRG1 = (int)temp;
-[e = _SPBRG1 -> -> _temp `i `uc ]
+[; ;main.c: 36:     float temp;
+[v _temp `f ~T0 @X0 1 a ]
 "38
-[; ;main.c: 38:     INTCONbits.GIE = 1;
-[e = . . _INTCONbits 1 7 -> -> 1 `i `uc ]
+[; ;main.c: 38:     TRISC6 = 0;
+[e = _TRISC6 -> -> 0 `i `b ]
 "39
-[; ;main.c: 39:     INTCONbits.PEIE = 1;
-[e = . . _INTCONbits 1 6 -> -> 1 `i `uc ]
+[; ;main.c: 39:     TRISC7 = 1;
+[e = _TRISC7 -> -> 1 `i `b ]
 "40
-[; ;main.c: 40:     PIE1bits.RC1IE = 1;
-[e = . . _PIE1bits 0 5 -> -> 1 `i `uc ]
+[; ;main.c: 40:     ANSELCbits.ANSC7 = 0;
+[e = . . _ANSELCbits 0 6 -> -> 0 `i `uc ]
 "43
-[; ;main.c: 43:     TXSTA1 = 0x20;
-[e = _TXSTA1 -> -> 32 `i `uc ]
+[; ;main.c: 43:     temp = (((float)(64000000 / 64) / (float)9600) - 1);
+[e = _temp - / -> / -> 64000000 `l -> -> 64 `i `l `f -> -> 9600 `i `f -> -> 1 `i `f ]
 "44
-[; ;main.c: 44:     RCSTA1 = 0x90;
+[; ;main.c: 44:     SPBRG1 = (int)temp;
+[e = _SPBRG1 -> -> _temp `i `uc ]
+"46
+[; ;main.c: 46:     INTCONbits.GIE = 1;
+[e = . . _INTCONbits 1 7 -> -> 1 `i `uc ]
+"47
+[; ;main.c: 47:     INTCONbits.PEIE = 1;
+[e = . . _INTCONbits 1 6 -> -> 1 `i `uc ]
+"48
+[; ;main.c: 48:     PIE1bits.RC1IE = 1;
+[e = . . _PIE1bits 0 5 -> -> 1 `i `uc ]
+"51
+[; ;main.c: 51:     TXSTA1 = 0x20;
+[e = _TXSTA1 -> -> 32 `i `uc ]
+"52
+[; ;main.c: 52:     RCSTA1 = 0x90;
 [e = _RCSTA1 -> -> 144 `i `uc ]
-"45
-[; ;main.c: 45: }
-[e :UE 829 ]
-}
 "53
-[; ;main.c: 53: void UART_TransmitChar(uint8_t data)
-[v _UART_TransmitChar `(v ~T0 @X0 1 ef1`uc ]
-"54
-[; ;main.c: 54: {
-{
-[e :U _UART_TransmitChar ]
-"53
-[; ;main.c: 53: void UART_TransmitChar(uint8_t data)
-[v _data `uc ~T0 @X0 1 r1 ]
-"54
-[; ;main.c: 54: {
-[f ]
-"55
-[; ;main.c: 55:     while (!PIR1bits.TX1IF);
-[e $U 831  ]
-[e :U 832 ]
-[e :U 831 ]
-[e $ ! != -> . . _PIR1bits 0 4 `i -> 0 `i 832  ]
-[e :U 833 ]
-"56
-[; ;main.c: 56:     TXREG = data;
-[e = _TXREG _data ]
-"57
-[; ;main.c: 57: }
+[; ;main.c: 53: }
 [e :UE 830 ]
 }
+"61
+[; ;main.c: 61: void UART_TransmitChar(uint8_t data)
+[v _UART_TransmitChar `(v ~T0 @X0 1 ef1`uc ]
+"62
+[; ;main.c: 62: {
+{
+[e :U _UART_TransmitChar ]
+"61
+[; ;main.c: 61: void UART_TransmitChar(uint8_t data)
+[v _data `uc ~T0 @X0 1 r1 ]
+"62
+[; ;main.c: 62: {
+[f ]
+"63
+[; ;main.c: 63:     while (!PIR1bits.TX1IF);
+[e $U 832  ]
+[e :U 833 ]
+[e :U 832 ]
+[e $ ! != -> . . _PIR1bits 0 4 `i -> 0 `i 833  ]
+[e :U 834 ]
+"64
+[; ;main.c: 64:     TXREG = data;
+[e = _TXREG _data ]
+"65
+[; ;main.c: 65: }
+[e :UE 831 ]
+}
 [v $root$_isr `(v ~T0 @X0 0 e ]
-"66
-[; ;main.c: 66: void __attribute__((picinterrupt(("")))) isr(void)
+"74
+[; ;main.c: 74: void __attribute__((picinterrupt(("")))) isr(void)
 [v _isr `(v ~T1 @X0 1 ef ]
-"67
-[; ;main.c: 67: {
+"75
+[; ;main.c: 75: {
 {
 [e :U _isr ]
 [f ]
-"68
-[; ;main.c: 68:     unsigned char receive_data = 0x00;
+"76
+[; ;main.c: 76:     unsigned char receive_data = 0x00;
 [v _receive_data `uc ~T0 @X0 1 a ]
 [e = _receive_data -> -> 0 `i `uc ]
-"71
-[; ;main.c: 71:     if (PIR1bits.RC1IF)
-[e $ ! != -> . . _PIR1bits 0 5 `i -> 0 `i 835  ]
-"72
-[; ;main.c: 72:     {
-{
-"73
-[; ;main.c: 73:       receive_data = RCREG1;
-[e = _receive_data _RCREG1 ]
-"75
-[; ;main.c: 75:         PIR1bits.RC1IF = 0;
-[e = . . _PIR1bits 0 5 -> -> 0 `i `uc ]
-"76
-[; ;main.c: 76:     }
-}
-[e :U 835 ]
 "79
-[; ;main.c: 79:     if(check_ack == 0x00)
-[e $ ! == -> _check_ack `i -> 0 `i 836  ]
+[; ;main.c: 79:     if (PIR1bits.RC1IF)
+[e $ ! != -> . . _PIR1bits 0 5 `i -> 0 `i 836  ]
 "80
 [; ;main.c: 80:     {
 {
 "81
-[; ;main.c: 81:         if(receive_data == 0x01){
-[e $ ! == -> _receive_data `i -> 1 `i 837  ]
-{
-"82
-[; ;main.c: 82:             eeprom_query_flag = 0x01;
-[e = _eeprom_query_flag -> -> 1 `i `uc ]
+[; ;main.c: 81:       receive_data = RCREG1;
+[e = _receive_data _RCREG1 ]
 "83
-[; ;main.c: 83:         }else{
-}
-[e $U 838  ]
-[e :U 837 ]
-{
+[; ;main.c: 83:         PIR1bits.RC1IF = 0;
+[e = . . _PIR1bits 0 5 -> -> 0 `i `uc ]
 "84
-[; ;main.c: 84:             UART_TransmitChar(receive_data+1);
-[e ( _UART_TransmitChar (1 -> + -> _receive_data `i -> 1 `i `uc ]
-"85
-[; ;main.c: 85:         }
-}
-[e :U 838 ]
-"87
-[; ;main.c: 87:     }
+[; ;main.c: 84:     }
 }
 [e :U 836 ]
+"87
+[; ;main.c: 87:     while((PIR1bits.RC1IF == 0) && (timeout > 0)){
+[e $U 837  ]
+[e :U 838 ]
+{
 "88
-[; ;main.c: 88: }
-[e :UE 834 ]
+[; ;main.c: 88:         timeout--;
+[e -- _timeout -> -> 1 `i `ui ]
+"89
+[; ;main.c: 89:     }
+}
+[e :U 837 ]
+"87
+[; ;main.c: 87:     while((PIR1bits.RC1IF == 0) && (timeout > 0)){
+[e $ && == -> . . _PIR1bits 0 5 `i -> 0 `i > _timeout -> -> 0 `i `ui 838  ]
+[e :U 839 ]
+"91
+[; ;main.c: 91: }
+[e :UE 835 ]
 }
 [v $root$_main `(v ~T0 @X0 0 e ]
-"93
-[; ;main.c: 93: void main(){
+"114
+[; ;main.c: 114: void main(){
 [v _main `(v ~T0 @X0 1 ef ]
 {
 [e :U _main ]
 [f ]
-"95
-[; ;main.c: 95:     OSCCON = 0x70;
-[e = _OSCCON -> -> 112 `i `uc ]
-"96
-[; ;main.c: 96:     OSCTUNE = 0xC0;
-[e = _OSCTUNE -> -> 192 `i `uc ]
-"98
-[; ;main.c: 98:     UART_Init();
-[e ( _UART_Init ..  ]
-"101
-[; ;main.c: 101:     I2C2_Init();
-[e ( _I2C2_Init ..  ]
-"103
-[; ;main.c: 103:     I2C2_Start();
-[e ( _I2C2_Start ..  ]
-"104
-[; ;main.c: 104:     check_ack = I2C2_Send(0x50 << 1);
-[e = _check_ack ( _I2C2_Send (1 -> << -> 80 `i -> 1 `i `uc ]
-"105
-[; ;main.c: 105:     I2C2_Send(0x00);
-[e ( _I2C2_Send (1 -> -> 0 `i `uc ]
-"106
-[; ;main.c: 106:     I2C2_Send(0x01);
-[e ( _I2C2_Send (1 -> -> 1 `i `uc ]
-"107
-[; ;main.c: 107:     I2C2_Send(0x0A);
-[e ( _I2C2_Send (1 -> -> 10 `i `uc ]
-"108
-[; ;main.c: 108:     I2C2_Stop();
-[e ( _I2C2_Stop ..  ]
-"110
-[; ;main.c: 110:     while(1){
-[e :U 841 ]
-{
-"111
-[; ;main.c: 111:      if(eeprom_query_flag){
-[e $ ! != -> _eeprom_query_flag `i -> 0 `i 843  ]
-{
-"115
-[; ;main.c: 115:     I2C2_Start();
-[e ( _I2C2_Start ..  ]
 "116
-[; ;main.c: 116:     I2C2_Send(0x50 << 1);
-[e ( _I2C2_Send (1 -> << -> 80 `i -> 1 `i `uc ]
+[; ;main.c: 116:     OSCCON = 0x70;
+[e = _OSCCON -> -> 112 `i `uc ]
 "117
-[; ;main.c: 117:     I2C2_Send(0x00);
-[e ( _I2C2_Send (1 -> -> 0 `i `uc ]
-"118
-[; ;main.c: 118:     I2C2_Send(0x01);
-[e ( _I2C2_Send (1 -> -> 1 `i `uc ]
+[; ;main.c: 117:     OSCTUNE = 0xC0;
+[e = _OSCTUNE -> -> 192 `i `uc ]
+"119
+[; ;main.c: 119:     UART_Init();
+[e ( _UART_Init ..  ]
 "120
-[; ;main.c: 120:     I2C2_Start();
-[e ( _I2C2_Start ..  ]
-"121
-[; ;main.c: 121:     I2C2_Send((0x50 << 1) | 0x01);
-[e ( _I2C2_Send (1 -> | << -> 80 `i -> 1 `i -> 1 `i `uc ]
+[; ;main.c: 120:     I2C2_Init();
+[e ( _I2C2_Init ..  ]
 "122
-[; ;main.c: 122:     eeprom_data = I2C2_Read();
-[e = _eeprom_data ( _I2C2_Read ..  ]
-"123
-[; ;main.c: 123:     I2C2_Stop();
-[e ( _I2C2_Stop ..  ]
-"125
-[; ;main.c: 125:     UART_TransmitChar(eeprom_data);
-[e ( _UART_TransmitChar (1 _eeprom_data ]
-"126
-[; ;main.c: 126:     eeprom_query_flag = 0x00;
-[e = _eeprom_query_flag -> -> 0 `i `uc ]
-"127
-[; ;main.c: 127:  }
-}
-[e :U 843 ]
-"128
-[; ;main.c: 128:     }
-}
-[e :U 840 ]
-[e $U 841  ]
+[; ;main.c: 122:     while(1){
 [e :U 842 ]
-"129
-[; ;main.c: 129: }
-[e :UE 839 ]
+{
+"123
+[; ;main.c: 123:     }
+}
+[e :U 841 ]
+[e $U 842  ]
+[e :U 843 ]
+"124
+[; ;main.c: 124: }
+[e :UE 840 ]
 }
