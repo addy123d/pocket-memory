@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=pocket-memory.X
+PROJECTNAME=pocket-memory
 
 # Active Configuration
 DEFAULTCONF=default
