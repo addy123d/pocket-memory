@@ -231,36 +231,32 @@ function createWriteData(){
     return payload;
 }
 
-function sendRequest(payload_obj){
+async function sendRequest(payload_obj){
     //send start sequence first
     for(let i = 0; i < SEQUENCE_LEN; i++){
-        sleep(1000);
         send_data_via_uart(Buffer.from([parseInt(PACKET_START_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
-        sleep(1000);
     }
 
+    // send_data_via_uart(Buffer.from([parseInt('0A', 16)])); //convert hex string to ascii integer value
+
+    
     //send DEVICE CODE and Operation code
     send_data_via_uart(Buffer.from([parseInt(DEVICE_CODE, 16)])); //convert hex string to ascii integer value
-    sleep(1000);
     send_data_via_uart(Buffer.from([parseInt(operation_code, 16)])); //convert hex string to ascii integer value
-    sleep(1000);
 
     //send payload
     for(let i = 0; i < payload_obj.len; i++){
         send_data_via_uart(Buffer.from([parseInt(payload_obj.data[i], 16)])); //convert hex string to ascii integer value
-        sleep(1000);
     }
 
     //send payload length
     send_data_via_uart(Buffer.from([parseInt(decimalToHex(payload_obj.len), 16)])); //convert hex string to ascii integer value
-    sleep(1000);
 
     //send end sequence last
     for(let i = 0; i < SEQUENCE_LEN; i++){
         send_data_via_uart(Buffer.from([parseInt(PACKET_END_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
-        sleep(1000);
     }
-
+    
 
     responseTimeoutId = setTimeout(handleTimeout, 2000);
 }
@@ -284,7 +280,6 @@ function imageToByteArray(filePath) {
 
 // send serial data
 async function send_data_via_uart(data) {
-    sleep(100);
     try {
         await new Promise((resolve, reject) => {
             serialport.write(data, (error) => {

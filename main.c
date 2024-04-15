@@ -6,7 +6,6 @@
  * EEPROM Model Number : AT24LC256
  */
 
-#include <stdio.h>
 #include <xc.h>
 #include <pic18f25k22.h>
 #include "config.h"
@@ -85,63 +84,64 @@ void UART_Init()
 {
 	float temp;
 
-	// TRISC6 = 0;           /* Make Tx pin as output*/
-	// TRISC7 = 1;           /* Make Rx pin as input*/
-	// ANSELCbits.ANSC7 = 0; // set input as digital
+	 TRISC6 = 0;           /* Make Tx pin as output*/
+	 TRISC7 = 1;           /* Make Rx pin as input*/
+	 ANSELCbits.ANSC7 = 0; // set input as digital
 
-	/*
-	  INTCONbits.GIE = 1;    // Enable global interrupts
-	  INTCONbits.PEIE = 1;   // Enable peripheral interrupts
-	  PIE1bits.RC1IE = 1;    // set usart1 receive interrupt enable bit
-	*/
+	
+	INTCONbits.GIE = 1;    // Enable global interrupts
+	INTCONbits.PEIE = 1;   // Enable peripheral interrupts
+	PIE1bits.RC1IE = 1;    // set usart1 receive interrupt enable bit
+	
 
-	// TXSTA1 = 0x20; /* Enable Transmit(TX) */
-	// RCSTA1 = 0x90; /* Enable Receive(RX) & Serial */
+	 TXSTA1 = 0x20; /* Enable Transmit(TX) */
+	 RCSTA1 = 0x90; /* Enable Receive(RX) & Serial */
 
 	/* Baud rate=9600, SPBRG = (F_CPU /(64*9600))-1*/
 	temp = (((float)(F_CPU) / (float)BAUD_RATE) - 1);
 	SPBRG1 = (int)temp;
 
 	// below code is in assembly, refer datasheet for registers and respective addresses
-	#asm
-	TRISC_REG equ 0xF94 
-	BSR_REG equ 0xFE0 
-	ANSELC_REG equ 0xF3A 
-	TRANSMIT_REG equ 0xFAC 
-	RECEIVE_REG equ 0xFAB  
-	INTCON_REG equ 0xFF2 
-	PIE1_REG equ 0xF9D
+//	#asm
+//	TRISC_REG equ 0xF94 
+//	BSR_REG equ 0xFE0 
+//	ANSELC_REG equ 0xF3A 
+//	TRANSMIT_REG equ 0xFAC 
+//	RECEIVE_REG equ 0xFAB  
+//	INTCON_REG equ 0xFF2 
+//	PIE1_REG equ 0xF9D
+//
+//	;select bank 15 
+//	MOVLW 0x0F 
+//	MOVWF BSR_REG
+//
+//	;make rc6 output and rc7 pin digital input
+//	MOVLW 0b1011111 ;load value into w register 
+//	MOVWF TRISC_REG ;load contents of w into TRISC_REG
+//
+//	MOVLW 0b01111100 ;load value into w register 
+//	MOVWF ANSELC_REG ;load contents of w into ANSELC register
+//
+//	;enable global and peripheral interrupt
+//	
+//	MOVLW 0b11000000 ;load value into w register 
+//	MOVWF INTCON_REG ;load contents of w into INTCON_REG
+//
+//	;enable usart receive interrupt
+//	
+//	MOVLW 0b00100000 ;load value into w register 
+//	MOVWF PIE1_REG   ;load contents of w into PIE1_REG
+//
+//	;load TXSTA1 and RCSTA1 register 
+//	MOVLW 0x20         ;Load value for TXSTA1 register
+//    	MOVWF TRANSMIT_REG ;Enable Transmit(TX)
+//			   ;TXSTA1 reg addr - 0xFAC, ref : https : // ww1.microchip.com/downloads/en/DeviceDoc/40001412G.pdf
+//	
+//	MOVLW 0x90         ;Load value for RCSTA1 register
+//    	MOVWF RECEIVE_REG  ;Enable Receive(RX) & Serial
+//			   ;RCSTA1 reg addr - 0xFAB, ref : https: // ww1.microchip.com/downloads/en/DeviceDoc/40001412G.pdf
+//#endasm
 
-	;select bank 15 
-	MOVLW 0x0F 
-	MOVWF BSR_REG
-
-	;make rc6 output and rc7 pin digital input
-	MOVLW 0b1011111 ;load value into w register 
-	MOVWF TRISC_REG ;load contents of w into TRISC_REG
-
-	MOVLW 0b01111100 ;load value into w register 
-	MOVWF ANSELC_REG ;load contents of w into ANSELC register
-
-	;enable global and peripheral interrupt
-	
-	MOVLW 0b11000000 ;load value into w register 
-	MOVWF INTCON_REG ;load contents of w into INTCON_REG
-
-	;enable usart receive interrupt
-	
-	MOVLW 0b00100000 ;load value into w register 
-	MOVWF PIE1_REG   ;load contents of w into PIE1_REG
-
-	;load TXSTA1 and RCSTA1 register 
-	MOVLW 0x20         ;Load value for TXSTA1 register
-    	MOVWF TRANSMIT_REG ;Enable Transmit(TX)
-			   ;TXSTA1 reg addr - 0xFAC, ref : https : // ww1.microchip.com/downloads/en/DeviceDoc/40001412G.pdf
-	
-	MOVLW 0x90         ;Load value for RCSTA1 register
-    	MOVWF RECEIVE_REG  ;Enable Receive(RX) & Serial
-			   ;RCSTA1 reg addr - 0xFAB, ref : https: // ww1.microchip.com/downloads/en/DeviceDoc/40001412G.pdf
-#endasm
 }
 
 /*
@@ -155,6 +155,7 @@ void UART_TransmitChar(uint8_t data)
 	TXREG = data;
 }
 
+
 /*
  *@desc: interrupt routine which receives one byte of data via uart
  *@params: none
@@ -165,15 +166,10 @@ void __interrupt() isr(void)
 	// check whether receive interrupt flag is set or not
 	if (PIR1bits.RC1IF)
 	{
-		unsigned char receivedChar = RCREG1;
+		unsigned char receivedChar = RCREG;
 		PIE1bits.RC1IE = 0; //disable usart receive interrupt
-        
-	        if(RCSTA1bits.OERR)
-        	    RCSTA1bits.CREN = 0;
 		
-		#ifdef DEBUG
-		  UART_TransmitChar(receivedChar);
-		#endif
+		//UART_TransmitChar(receivedChar);
 
 		// check if we are currently receiving a packet
 		if (!receiveData.receiving)
@@ -253,7 +249,6 @@ void __interrupt() isr(void)
 		UART_TransmitChar(receivedChar + 1);
 	#endif
 
-        RCSTA1bits.CREN = 1;
 		PIE1bits.RC1IE = 1; //enable usart receive interrupt
 	}
 }
@@ -463,28 +458,24 @@ void sendResponse()
 void main()
 {
 	// Configure the oscillator(64MHz using PLL)
-	/*
 	OSCCON = 0x70;  // 0b01110000
 	OSCTUNE = 0xC0; // 0b11000000
-	*/
 
-#asm
-	OSCCON_REG equ 0xFD3 
-	OSCTUNE_REG equ 0xF9B
-
-	;configuring oscillator(64Mhz using PLL)
-
-	MOVLW 0x70       ;load contents in w register 
-	MOVWF OSCCON_REG ;load contents from w into OSCCON register
-
-	MOVLW 0xC0       ;load contents in w register 
-	MOVWF OSCTUNE_REG;load contents from w into OSCTUNE register
-#endasm
+//#asm
+//	OSCCON_REG equ 0xFD3 
+//	OSCTUNE_REG equ 0xF9B
+//
+//	;configuring oscillator(64Mhz using PLL)
+//
+//	MOVLW 0x70       ;load contents in w register 
+//	MOVWF OSCCON_REG ;load contents from w into OSCCON register
+//
+//	MOVLW 0xC0       ;load contents in w register 
+//	MOVWF OSCTUNE_REG;load contents from w into OSCTUNE register
+//#endasm
 
 	UART_Init(); // initialises uart peripherals
 	I2C2_Init(); // initialises i2c peripherals
-
-	__delay_ms(100);
 
 	while (1)
 	{

@@ -1,1 +1,1 @@
-                                                         main.d  main.p1:  main.c i2c.h config.h
+ main.d  main.p1:  main.c i2c.h config.h

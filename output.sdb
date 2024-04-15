@@ -3,7 +3,7 @@
 [d edition pro ]
 [d chip 18F25K22 ]
 [d frameptr 4065 ]
-"303 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"299 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [e E5828 ORDER_CODES `uc
 PING 17
 WRITE_MEM 1
@@ -47,25 +47,25 @@ DELETE_MEM 4
 [v _I2C2_Read I2C2_Read `(uc  1 e 1 0 ]
 "83 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _UART_Init UART_Init `(v  1 e 1 0 ]
-"151
+"152
 [v _UART_TransmitChar UART_TransmitChar `(v  1 e 1 0 ]
-"162
+"164
 [v _isr isr `IIH(v  1 e 1 0 ]
-"265
+"261
 [v _processRequest processRequest `(v  1 e 1 0 ]
-"295
+"291
 [v _createResponse createResponse `(v  1 e 1 0 ]
-"332
+"328
 [v _createPingResponse createPingResponse `(v  1 e 1 0 ]
-"345
+"341
 [v _writeDataToEEPROM writeDataToEEPROM `(v  1 e 1 0 ]
-"397
+"393
 [v _writeByteAT24_EEPROM writeByteAT24_EEPROM `(v  1 e 1 0 ]
-"413
+"409
 [v _sendResponse sendResponse `(v  1 e 1 0 ]
-"462
+"458
 [v _main main `(v  1 e 1 0 ]
-[s S335 . 1 `uc 1 . 1 0 :2:0 
+[s S35 . 1 `uc 1 . 1 0 :2:0 
 `uc 1 ANSC2 1 0 :1:2 
 `uc 1 ANSC3 1 0 :1:3 
 `uc 1 ANSC4 1 0 :1:4 
@@ -74,9 +74,9 @@ DELETE_MEM 4
 `uc 1 ANSC7 1 0 :1:7 
 ]
 "163 C:\Program Files\Microchip\xc8\v2.46\pic\include\proc\pic18f25k22.h
-[u S343 . 1 `S335 1 . 1 0 ]
-[v _ANSELCbits ANSELCbits `VES343  1 e 1 @3898 ]
-[s S295 . 1 `uc 1 TRISC0 1 0 :1:0 
+[u S43 . 1 `S35 1 . 1 0 ]
+[v _ANSELCbits ANSELCbits `VES43  1 e 1 @3898 ]
+[s S306 . 1 `uc 1 TRISC0 1 0 :1:0 
 `uc 1 TRISC1 1 0 :1:1 
 `uc 1 TRISC2 1 0 :1:2 
 `uc 1 TRISC3 1 0 :1:3 
@@ -86,7 +86,7 @@ DELETE_MEM 4
 `uc 1 TRISC7 1 0 :1:7 
 ]
 "8056
-[s S304 . 1 `uc 1 RC0 1 0 :1:0 
+[s S315 . 1 `uc 1 RC0 1 0 :1:0 
 `uc 1 RC1 1 0 :1:1 
 `uc 1 RC2 1 0 :1:2 
 `uc 1 RC3 1 0 :1:3 
@@ -95,9 +95,11 @@ DELETE_MEM 4
 `uc 1 RC6 1 0 :1:6 
 `uc 1 RC7 1 0 :1:7 
 ]
-[u S313 . 1 `S295 1 . 1 0 `S304 1 . 1 0 ]
-[v _TRISCbits TRISCbits `VES313  1 e 1 @3988 ]
-[s S66 . 1 `uc 1 TMR1IE 1 0 :1:0 
+[u S324 . 1 `S306 1 . 1 0 `S315 1 . 1 0 ]
+[v _TRISCbits TRISCbits `VES324  1 e 1 @3988 ]
+"8267
+[v _OSCTUNE OSCTUNE `VEuc  1 e 1 @3995 ]
+[s S103 . 1 `uc 1 TMR1IE 1 0 :1:0 
 `uc 1 TMR2IE 1 0 :1:1 
 `uc 1 CCP1IE 1 0 :1:2 
 `uc 1 SSP1IE 1 0 :1:3 
@@ -106,14 +108,14 @@ DELETE_MEM 4
 `uc 1 ADIE 1 0 :1:6 
 ]
 "8639
-[s S74 . 1 `uc 1 . 1 0 :3:0 
+[s S111 . 1 `uc 1 . 1 0 :3:0 
 `uc 1 SSPIE 1 0 :1:3 
 `uc 1 TXIE 1 0 :1:4 
 `uc 1 RCIE 1 0 :1:5 
 ]
-[u S79 . 1 `S66 1 . 1 0 `S74 1 . 1 0 ]
-[v _PIE1bits PIE1bits `VES79  1 e 1 @3997 ]
-[s S34 . 1 `uc 1 TMR1IF 1 0 :1:0 
+[u S116 . 1 `S103 1 . 1 0 `S111 1 . 1 0 ]
+[v _PIE1bits PIE1bits `VES116  1 e 1 @3997 ]
+[s S136 . 1 `uc 1 TMR1IF 1 0 :1:0 
 `uc 1 TMR2IF 1 0 :1:1 
 `uc 1 CCP1IF 1 0 :1:2 
 `uc 1 SSP1IF 1 0 :1:3 
@@ -122,54 +124,24 @@ DELETE_MEM 4
 `uc 1 ADIF 1 0 :1:6 
 ]
 "8716
-[s S42 . 1 `uc 1 . 1 0 :3:0 
+[s S144 . 1 `uc 1 . 1 0 :3:0 
 `uc 1 SSPIF 1 0 :1:3 
 `uc 1 TXIF 1 0 :1:4 
 `uc 1 RCIF 1 0 :1:5 
 ]
-[u S47 . 1 `S34 1 . 1 0 `S42 1 . 1 0 ]
-[v _PIR1bits PIR1bits `VES47  1 e 1 @3998 ]
-[s S96 . 1 `uc 1 RX9D 1 0 :1:0 
-`uc 1 OERR 1 0 :1:1 
-`uc 1 FERR 1 0 :1:2 
-`uc 1 ADDEN 1 0 :1:3 
-`uc 1 CREN 1 0 :1:4 
-`uc 1 SREN 1 0 :1:5 
-`uc 1 RX9 1 0 :1:6 
-`uc 1 SPEN 1 0 :1:7 
-]
-"9601
-[s S105 . 1 `uc 1 . 1 0 :3:0 
-`uc 1 ADEN 1 0 :1:3 
-]
-[s S108 . 1 `uc 1 RX9D1 1 0 :1:0 
-`uc 1 OERR1 1 0 :1:1 
-`uc 1 FERR1 1 0 :1:2 
-`uc 1 ADDEN1 1 0 :1:3 
-`uc 1 CREN1 1 0 :1:4 
-`uc 1 SREN1 1 0 :1:5 
-`uc 1 RX91 1 0 :1:6 
-`uc 1 SPEN1 1 0 :1:7 
-]
-[s S117 . 1 `uc 1 RCD8 1 0 :1:0 
-`uc 1 . 1 0 :5:1 
-`uc 1 RC8_9 1 0 :1:6 
-]
-[s S121 . 1 `uc 1 . 1 0 :6:0 
-`uc 1 RC9 1 0 :1:6 
-]
-[s S124 . 1 `uc 1 . 1 0 :5:0 
-`uc 1 SRENA 1 0 :1:5 
-]
-[u S127 . 1 `S96 1 . 1 0 `S105 1 . 1 0 `S108 1 . 1 0 `S117 1 . 1 0 `S121 1 . 1 0 `S124 1 . 1 0 ]
-[v _RCSTA1bits RCSTA1bits `VES127  1 e 1 @4011 ]
+[u S149 . 1 `S136 1 . 1 0 `S144 1 . 1 0 ]
+[v _PIR1bits PIR1bits `VES149  1 e 1 @3998 ]
+"9548
+[v _RCSTA1 RCSTA1 `VEuc  1 e 1 @4011 ]
+"10004
+[v _TXSTA1 TXSTA1 `VEuc  1 e 1 @4012 ]
 "10384
 [v _TXREG TXREG `VEuc  1 e 1 @4013 ]
-"10457
-[v _RCREG1 RCREG1 `VEuc  1 e 1 @4014 ]
+"10462
+[v _RCREG RCREG `VEuc  1 e 1 @4014 ]
 "10535
 [v _SPBRG1 SPBRG1 `VEuc  1 e 1 @4015 ]
-[s S357 . 1 `uc 1 SEN 1 0 :1:0 
+[s S360 . 1 `uc 1 SEN 1 0 :1:0 
 `uc 1 RSEN 1 0 :1:1 
 `uc 1 PEN 1 0 :1:2 
 `uc 1 RCEN 1 0 :1:3 
@@ -179,7 +151,7 @@ DELETE_MEM 4
 `uc 1 GCEN 1 0 :1:7 
 ]
 "13000
-[s S366 . 1 `uc 1 SEN1 1 0 :1:0 
+[s S369 . 1 `uc 1 SEN1 1 0 :1:0 
 `uc 1 ADMSK1 1 0 :1:1 
 `uc 1 ADMSK2 1 0 :1:2 
 `uc 1 ADMSK3 1 0 :1:3 
@@ -188,22 +160,22 @@ DELETE_MEM 4
 `uc 1 ACKSTAT1 1 0 :1:6 
 `uc 1 GCEN1 1 0 :1:7 
 ]
-[s S375 . 1 `uc 1 . 1 0 :1:0 
+[s S378 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 ADMSK11 1 0 :1:1 
 `uc 1 ADMSK21 1 0 :1:2 
 `uc 1 ADMSK31 1 0 :1:3 
 `uc 1 ADMSK4 1 0 :1:4 
 `uc 1 ADMSK5 1 0 :1:5 
 ]
-[s S382 . 1 `uc 1 . 1 0 :1:0 
+[s S385 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 RSEN1 1 0 :1:1 
 `uc 1 PEN1 1 0 :1:2 
 `uc 1 RCEN1 1 0 :1:3 
 `uc 1 ADMSK41 1 0 :1:4 
 `uc 1 ADMSK51 1 0 :1:5 
 ]
-[u S389 . 1 `S357 1 . 1 0 `S366 1 . 1 0 `S375 1 . 1 0 `S382 1 . 1 0 ]
-[v _SSP1CON2bits SSP1CON2bits `VES389  1 e 1 @4037 ]
+[u S392 . 1 `S360 1 . 1 0 `S369 1 . 1 0 `S378 1 . 1 0 `S385 1 . 1 0 ]
+[v _SSP1CON2bits SSP1CON2bits `VES392  1 e 1 @4037 ]
 "13306
 [v _SSP1CON1 SSP1CON1 `VEuc  1 e 1 @4038 ]
 "13544
@@ -212,6 +184,37 @@ DELETE_MEM 4
 [v _SSP1ADD SSP1ADD `VEuc  1 e 1 @4040 ]
 "14428
 [v _SSP1BUF SSP1BUF `VEuc  1 e 1 @4041 ]
+"15215
+[v _OSCCON OSCCON `VEuc  1 e 1 @4051 ]
+[s S54 . 1 `uc 1 RBIF 1 0 :1:0 
+`uc 1 INT0IF 1 0 :1:1 
+`uc 1 TMR0IF 1 0 :1:2 
+`uc 1 RBIE 1 0 :1:3 
+`uc 1 INT0IE 1 0 :1:4 
+`uc 1 TMR0IE 1 0 :1:5 
+`uc 1 PEIE_GIEL 1 0 :1:6 
+`uc 1 GIE_GIEH 1 0 :1:7 
+]
+"16127
+[s S63 . 1 `uc 1 . 1 0 :1:0 
+`uc 1 INT0F 1 0 :1:1 
+`uc 1 T0IF 1 0 :1:2 
+`uc 1 . 1 0 :1:3 
+`uc 1 INT0E 1 0 :1:4 
+`uc 1 T0IE 1 0 :1:5 
+`uc 1 PEIE 1 0 :1:6 
+`uc 1 GIE 1 0 :1:7 
+]
+[s S72 . 1 `uc 1 . 1 0 :6:0 
+`uc 1 GIEL 1 0 :1:6 
+`uc 1 GIEH 1 0 :1:7 
+]
+[u S76 . 1 `S54 1 . 1 0 `S63 1 . 1 0 `S72 1 . 1 0 ]
+[v _INTCONbits INTCONbits `VES76  1 e 1 @4082 ]
+"19518
+[v _TRISC6 TRISC6 `VEb  1 e 0 @31910 ]
+"19521
+[v _TRISC7 TRISC7 `VEb  1 e 0 @31911 ]
 "28 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _interrupt_flag interrupt_flag `uc  1 e 1 0 ]
 "29
@@ -232,35 +235,35 @@ DELETE_MEM 4
 [s S29 . 52 `[50]uc 1 buffer 50 0 `uc 1 index 1 50 `uc 1 receiving 1 51 ]
 "64
 [v _receiveData receiveData `S29  1 e 52 0 ]
-"462
+"458
 [v _main main `(v  1 e 1 0 ]
 {
-"496
+"488
 } 0
-"295
+"291
 [v _createResponse createResponse `(v  1 e 1 0 ]
 {
-"297
+"293
 [v createResponse@ORDER_CODE ORDER_CODE `uc  1 a 1 22 ]
-"324
+"320
 } 0
-"345
+"341
 [v _writeDataToEEPROM writeDataToEEPROM `(v  1 e 1 0 ]
 {
-"359
+"355
 [v writeDataToEEPROM@i i `us  1 a 2 20 ]
-"347
+"343
 [v writeDataToEEPROM@payload_length payload_length `us  1 a 2 18 ]
-"348
+"344
 [v writeDataToEEPROM@eeprom_data eeprom_data `uc  1 a 1 17 ]
-"390
+"386
 } 0
-"397
+"393
 [v _writeByteAT24_EEPROM writeByteAT24_EEPROM `(v  1 e 1 0 ]
 {
 [v writeByteAT24_EEPROM@address address `ui  1 p 2 12 ]
 [v writeByteAT24_EEPROM@data data `uc  1 p 1 14 ]
-"405
+"401
 } 0
 "82 C:\Users\Helion-Electrical\Desktop\pocket-memory\i2c.c
 [v _I2C2_Stop I2C2_Stop `(v  1 e 1 0 ]
@@ -285,32 +288,32 @@ DELETE_MEM 4
 {
 "152
 } 0
-"413 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"409 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _sendResponse sendResponse `(v  1 e 1 0 ]
 {
-"415
+"411
 [v sendResponse@index index `ui  1 a 2 13 ]
-"441
+"437
 } 0
-"151
+"152
 [v _UART_TransmitChar UART_TransmitChar `(v  1 e 1 0 ]
 {
 [v UART_TransmitChar@data data `uc  1 a 1 wreg ]
 [v UART_TransmitChar@data data `uc  1 a 1 wreg ]
 [v UART_TransmitChar@data data `uc  1 a 1 11 ]
-"155
+"156
 } 0
-"332
+"328
 [v _createPingResponse createPingResponse `(v  1 e 1 0 ]
 {
-"338
+"334
 } 0
 "83
 [v _UART_Init UART_Init `(v  1 e 1 0 ]
 {
 "85
 [v UART_Init@temp temp `f  1 a 3 26 ]
-"144
+"145
 } 0
 "44 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\fttol.c
 [v ___fttol __fttol `(l  1 e 4 0 ]
@@ -329,21 +332,21 @@ DELETE_MEM 4
 {
 "39
 } 0
-"162 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"164 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _isr isr `IIH(v  1 e 1 0 ]
 {
-"167
+"169
 [v isr@receivedChar receivedChar `uc  1 a 1 10 ]
-"258
+"254
 } 0
-"265
+"261
 [v _processRequest processRequest `(v  1 e 1 0 ]
 {
-"267
+"263
 [v processRequest@buffer_index buffer_index `ui  1 a 2 4 ]
-"268
+"264
 [v processRequest@length_index length_index `ui  1 a 2 2 ]
-"269
+"265
 [v processRequest@i i `ui  1 a 2 0 ]
-"288
+"284
 } 0

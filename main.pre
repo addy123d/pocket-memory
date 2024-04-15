@@ -1,69 +1,6 @@
 
 # 1 "main.c"
 
-# 4 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\__size_t.h"
-typedef unsigned size_t;
-
-# 7 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\stdarg.h"
-typedef void * va_list[1];
-
-#pragma intrinsic(__va_start)
-extern void * __va_start(void);
-
-#pragma intrinsic(__va_arg)
-extern void * __va_arg(void *, ...);
-
-# 43 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\stdio.h"
-struct __prbuf
-{
-char * ptr;
-void (* func)(char);
-};
-
-# 29 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\errno.h"
-extern int errno;
-
-# 12 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\conio.h"
-extern void init_uart(void);
-
-extern char getch(void);
-extern char getche(void) __attribute__((__deprecated__));
-extern void putch(char);
-extern void ungetch(char);
-
-extern __bit kbhit(void);
-
-# 23
-extern char * cgets(char *) __attribute__((__deprecated__));
-extern void cputs(const char *) __attribute__((__deprecated__));
-
-# 88 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\stdio.h"
-extern int cprintf(char *, ...);
-#pragma printf_check(cprintf)
-
-
-
-extern int _doprnt(struct __prbuf *, const register char *, register va_list);
-
-
-# 180
-#pragma printf_check(vprintf) const
-#pragma printf_check(vsprintf) const
-
-extern char * gets(char *);
-extern int puts(const char *);
-extern int scanf(const char *, ...) __attribute__((unsupported("scanf() is not supported by this compiler")));
-extern int sscanf(const char *, const char *, ...) __attribute__((unsupported("sscanf() is not supported by this compiler")));
-extern int vprintf(const char *, va_list) __attribute__((unsupported("vprintf() is not supported by this compiler")));
-extern int vsprintf(char *, const char *, va_list) __attribute__((unsupported("vsprintf() is not supported by this compiler")));
-extern int vscanf(const char *, va_list ap) __attribute__((unsupported("vscanf() is not supported by this compiler")));
-extern int vsscanf(const char *, const char *, va_list) __attribute__((unsupported("vsscanf() is not supported by this compiler")));
-
-#pragma printf_check(printf) const
-#pragma printf_check(sprintf) const
-extern int sprintf(char *, const char *, ...);
-extern int printf(const char *, ...);
-
 # 18 "C:\Program Files\Microchip\xc8\v2.46\pic\include\xc.h"
 extern const char __xc8_OPTIM_SPEED;
 
@@ -9370,6 +9307,9 @@ unsigned char __t3rd16on(void);
 
 #pragma config EBTRB = OFF
 
+# 4 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\__size_t.h"
+typedef unsigned size_t;
+
 # 14 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\string.h"
 extern void * memcpy(void *, const void *, size_t);
 extern void * memmove(void *, const void *, size_t);
@@ -9401,6 +9341,66 @@ extern char * strchr(const char *, int);
 extern char * strichr(const char *, int) __attribute__((__deprecated__));
 extern char * strrchr(const char *, int);
 extern char * strrichr(const char *, int) __attribute__((__deprecated__));
+
+# 7 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\stdarg.h"
+typedef void * va_list[1];
+
+#pragma intrinsic(__va_start)
+extern void * __va_start(void);
+
+#pragma intrinsic(__va_arg)
+extern void * __va_arg(void *, ...);
+
+# 43 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\stdio.h"
+struct __prbuf
+{
+char * ptr;
+void (* func)(char);
+};
+
+# 29 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\errno.h"
+extern int errno;
+
+# 12 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\conio.h"
+extern void init_uart(void);
+
+extern char getch(void);
+extern char getche(void) __attribute__((__deprecated__));
+extern void putch(char);
+extern void ungetch(char);
+
+extern __bit kbhit(void);
+
+# 23
+extern char * cgets(char *) __attribute__((__deprecated__));
+extern void cputs(const char *) __attribute__((__deprecated__));
+
+# 88 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\stdio.h"
+extern int cprintf(char *, ...);
+#pragma printf_check(cprintf)
+
+
+
+extern int _doprnt(struct __prbuf *, const register char *, register va_list);
+
+
+# 180
+#pragma printf_check(vprintf) const
+#pragma printf_check(vsprintf) const
+
+extern char * gets(char *);
+extern int puts(const char *);
+extern int scanf(const char *, ...) __attribute__((unsupported("scanf() is not supported by this compiler")));
+extern int sscanf(const char *, const char *, ...) __attribute__((unsupported("sscanf() is not supported by this compiler")));
+extern int vprintf(const char *, va_list) __attribute__((unsupported("vprintf() is not supported by this compiler")));
+extern int vsprintf(char *, const char *, va_list) __attribute__((unsupported("vsprintf() is not supported by this compiler")));
+extern int vscanf(const char *, va_list ap) __attribute__((unsupported("vscanf() is not supported by this compiler")));
+extern int vsscanf(const char *, const char *, va_list) __attribute__((unsupported("vsscanf() is not supported by this compiler")));
+
+#pragma printf_check(printf) const
+#pragma printf_check(sprintf) const
+extern int sprintf(char *, const char *, ...);
+extern int printf(const char *, ...);
 
 # 30 "C:\Program Files\Microchip\xc8\v2.46\pic\include\c90\math.h"
 extern double fabs(double);
@@ -9497,73 +9497,45 @@ void UART_Init()
 {
 float temp;
 
-# 101
+TRISC6 = 0;
+TRISC7 = 1;
+ANSELCbits.ANSC7 = 0;
+
+
+INTCONbits.GIE = 1;
+INTCONbits.PEIE = 1;
+PIE1bits.RC1IE = 1;
+
+
+TXSTA1 = 0x20;
+RCSTA1 = 0x90;
+
+
 temp = (((float)(64000000 / 64) / (float)9600) - 1);
 SPBRG1 = (int)temp;
 
-
-# 105
-#asm
- TRISC_REG equ 0xF94
- BSR_REG equ 0xFE0
- ANSELC_REG equ 0xF3A
- TRANSMIT_REG equ 0xFAC
- RECEIVE_REG equ 0xFAB
- INTCON_REG equ 0xFF2
- PIE1_REG equ 0xF9D
-
- ;select bank 15
- MOVLW 0x0F
- MOVWF BSR_REG
-
- ;make rc6 output and rc7 pin digital input
- MOVLW 0b1011111 ;load value into w register
- MOVWF TRISC_REG ;load contents of w into TRISC_REG
-
- MOVLW 0b01111100 ;load value into w register
- MOVWF ANSELC_REG ;load contents of w into ANSELC register
-
- ;enable global and peripheral interrupt
-
-  MOVLW 0b11000000 ;load value into w register
- MOVWF INTCON_REG ;load contents of w into INTCON_REG
-
- ;enable usart receive interrupt
-
-  MOVLW 0b00100000 ;load value into w register
- MOVWF PIE1_REG ;load contents of w into PIE1_REG
-
- ;load TXSTA1 and RCSTA1 register
- MOVLW 0x20 ;Load value for TXSTA1 register
-     MOVWF TRANSMIT_REG ;Enable Transmit(TX)
-      ;TXSTA1 reg addr - 0xFAC, ref : https :
-
-  MOVLW 0x90 ;Load value for RCSTA1 register
-     MOVWF RECEIVE_REG ;Enable Receive(RX) & Serial
-      ;RCSTA1 reg addr - 0xFAB, ref : https:
-#endasm 
+# 145
 }
 
-# 151
+# 152
 void UART_TransmitChar(uint8_t data)
 {
 while (!PIR1bits.TX1IF);
 TXREG = data;
 }
 
-# 162
+# 164
 void __interrupt() isr(void)
 {
 
 if (PIR1bits.RC1IF)
 {
-unsigned char receivedChar = RCREG1;
+unsigned char receivedChar = RCREG;
 PIE1bits.RC1IE = 0;
 
-if(RCSTA1bits.OERR)
-RCSTA1bits.CREN = 0;
 
-# 178
+
+
 if (!receiveData.receiving)
 {
 
@@ -9637,13 +9609,12 @@ receiveData.index = 0;
 }
 }
 
-# 255
-RCSTA1bits.CREN = 1;
+# 252
 PIE1bits.RC1IE = 1;
 }
 }
 
-# 265
+# 261
 void processRequest()
 {
 unsigned int buffer_index = 0;
@@ -9664,10 +9635,10 @@ length_index = buffer_index + 2;
 
 request_unit.payload_length_index = length_index;
 
-# 288
+# 284
 }
 
-# 295
+# 291
 void createResponse()
 {
 unsigned char ORDER_CODE = request_unit.ORDER_CODE;
@@ -9699,7 +9670,7 @@ sendResponse();
 }
 }
 
-# 332
+# 328
 void createPingResponse()
 {
 responseBuffer[0] = request_unit.DEVICE_ADDR;
@@ -9708,7 +9679,7 @@ responseBuffer[2] = 0x00;
 responseBuffer[3] = 0x00;
 }
 
-# 345
+# 341
 void writeDataToEEPROM()
 {
 unsigned short payload_length;
@@ -9756,7 +9727,7 @@ responseBuffer[2] = eeprom_data;
 responseBuffer[3] = (!checkAck) ? 0x01 : 0x00;
 }
 
-# 397
+# 393
 void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
 {
 I2C2_Start();
@@ -9767,7 +9738,7 @@ I2C2_Send(data);
 I2C2_Stop();
 }
 
-# 413
+# 409
 void sendResponse()
 {
 unsigned int index = 0;
@@ -9798,29 +9769,16 @@ index--;
 }
 }
 
-# 462
+# 458
 void main()
 {
 
+OSCCON = 0x70;
+OSCTUNE = 0xC0;
 
-# 470
-#asm
- OSCCON_REG equ 0xFD3
- OSCTUNE_REG equ 0xF9B
-
- ;configuring oscillator(64Mhz using PLL)
-
- MOVLW 0x70 ;load contents in w register
- MOVWF OSCCON_REG ;load contents from w into OSCCON register
-
- MOVLW 0xC0 ;load contents in w register
- MOVWF OSCTUNE_REG;load contents from w into OSCTUNE register
-#endasm 
-
+# 477
 UART_Init();
 I2C2_Init();
-
-_delay((unsigned long)((100)*(64000000/4000.0)));
 
 while (1)
 {
