@@ -3,6 +3,7 @@
  * Author: Aditya Chaudhary
  *
  * Created on April 04, 2024, 4:53 AM
+ * EEPROM Model Number : AT24LC256
  */
 
 #include <stdio.h>
@@ -22,7 +23,7 @@
 #define PACKET_START_MARKER_UPPER 0x23
 #define PACKET_END_MARKER_LOWER 0x0D
 #define PACKET_END_MARKER_UPPER 0x0A
-#define EEPROM_CAPACITY 0x7FFF
+#define EEPROM_CAPACITY 0x7FFF       //32,768 locations of 8 bit each (32K x 8).
 
 unsigned int timeout = 1000;		 // timeout variable
 unsigned char interrupt_flag = 0x00; // interrupt flag
@@ -162,14 +163,18 @@ void UART_TransmitChar(uint8_t data)
 void __interrupt() isr(void)
 {
 	// check whether receive interrupt flag is set or not
-	if (PIR1bits.RC1IF) //it's a readonly flag
+	if (PIR1bits.RC1IF)
 	{
 		unsigned char receivedChar = RCREG1;
 		PIE1bits.RC1IE = 0; //disable usart receive interrupt
         
-        if(RCSTA1bits.OERR)
-            RCSTA1bits.CREN = 0;
-        
+	        if(RCSTA1bits.OERR)
+        	    RCSTA1bits.CREN = 0;
+		
+		#ifdef DEBUG
+		  UART_TransmitChar(receivedChar);
+		#endif
+
 		// check if we are currently receiving a packet
 		if (!receiveData.receiving)
 		{
@@ -248,7 +253,7 @@ void __interrupt() isr(void)
 		UART_TransmitChar(receivedChar + 1);
 	#endif
 
-        RCSTA1bits.CREN = 1; //set CREN bit
+        RCSTA1bits.CREN = 1;
 		PIE1bits.RC1IE = 1; //enable usart receive interrupt
 	}
 }
@@ -366,7 +371,7 @@ void writeDataToEEPROM()
 	__delay_ms(100);
 	
 
-	//read some data from eeprom
+	//read last byte save in eeprom
 	I2C2_Start(); //send start condition
 	I2C2_Send(EEPROM_ADDRESS << 1); //send slave address with write bit
 	I2C2_Send(((at24_eeprom_address - 1) >> 8) & 0xFF); //word address high byte

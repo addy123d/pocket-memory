@@ -53,7 +53,7 @@ parser.on('data', (data) => {
         showMenu();
 
         clearTimeout(responseDataEndId);
-    }, 100);
+    }, 500);
 });
 
 function decimalToHex(decimalNum) {
@@ -148,6 +148,7 @@ async function showMenu() {
 
     //give user a prompt to enter operation code
     await selectOperation();
+    
 }
 
 async function selectOperation() {
@@ -233,31 +234,31 @@ function createWriteData(){
 function sendRequest(payload_obj){
     //send start sequence first
     for(let i = 0; i < SEQUENCE_LEN; i++){
-        sleep(150);
+        sleep(1000);
         send_data_via_uart(Buffer.from([parseInt(PACKET_START_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
-        sleep(150);
+        sleep(1000);
     }
 
     //send DEVICE CODE and Operation code
     send_data_via_uart(Buffer.from([parseInt(DEVICE_CODE, 16)])); //convert hex string to ascii integer value
-    sleep(150);
+    sleep(1000);
     send_data_via_uart(Buffer.from([parseInt(operation_code, 16)])); //convert hex string to ascii integer value
-    sleep(150);
+    sleep(1000);
 
     //send payload
     for(let i = 0; i < payload_obj.len; i++){
         send_data_via_uart(Buffer.from([parseInt(payload_obj.data[i], 16)])); //convert hex string to ascii integer value
-        sleep(150);
+        sleep(1000);
     }
 
     //send payload length
     send_data_via_uart(Buffer.from([parseInt(decimalToHex(payload_obj.len), 16)])); //convert hex string to ascii integer value
-    sleep(150);
+    sleep(1000);
 
     //send end sequence last
     for(let i = 0; i < SEQUENCE_LEN; i++){
         send_data_via_uart(Buffer.from([parseInt(PACKET_END_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
-        sleep(150);
+        sleep(1000);
     }
 
 

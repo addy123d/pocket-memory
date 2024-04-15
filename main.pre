@@ -9563,7 +9563,7 @@ PIE1bits.RC1IE = 0;
 if(RCSTA1bits.OERR)
 RCSTA1bits.CREN = 0;
 
-
+# 178
 if (!receiveData.receiving)
 {
 
@@ -9637,13 +9637,13 @@ receiveData.index = 0;
 }
 }
 
-# 251
+# 255
 RCSTA1bits.CREN = 1;
 PIE1bits.RC1IE = 1;
 }
 }
 
-# 261
+# 265
 void processRequest()
 {
 unsigned int buffer_index = 0;
@@ -9664,10 +9664,10 @@ length_index = buffer_index + 2;
 
 request_unit.payload_length_index = length_index;
 
-# 284
+# 288
 }
 
-# 291
+# 295
 void createResponse()
 {
 unsigned char ORDER_CODE = request_unit.ORDER_CODE;
@@ -9699,7 +9699,7 @@ sendResponse();
 }
 }
 
-# 328
+# 332
 void createPingResponse()
 {
 responseBuffer[0] = request_unit.DEVICE_ADDR;
@@ -9708,7 +9708,7 @@ responseBuffer[2] = 0x00;
 responseBuffer[3] = 0x00;
 }
 
-# 341
+# 345
 void writeDataToEEPROM()
 {
 unsigned short payload_length;
@@ -9756,7 +9756,7 @@ responseBuffer[2] = eeprom_data;
 responseBuffer[3] = (!checkAck) ? 0x01 : 0x00;
 }
 
-# 393
+# 397
 void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
 {
 I2C2_Start();
@@ -9767,7 +9767,7 @@ I2C2_Send(data);
 I2C2_Stop();
 }
 
-# 409
+# 413
 void sendResponse()
 {
 unsigned int index = 0;
@@ -9798,12 +9798,12 @@ index--;
 }
 }
 
-# 458
+# 462
 void main()
 {
 
 
-# 466
+# 470
 #asm
  OSCCON_REG equ 0xFD3
  OSCTUNE_REG equ 0xF9B
