@@ -162,14 +162,18 @@ void UART_TransmitChar(uint8_t data)
 void __interrupt() isr(void)
 {
 	// check whether receive interrupt flag is set or not
-	if (PIR1bits.RC1IF)
+	if (PIR1bits.RC1IF) //it's a readonly flag
 	{
 		unsigned char receivedChar = RCREG1;
-
+		PIE1bits.RC1IE = 0; //disable usart receive interrupt
+        
+        if(RCSTA1bits.OERR)
+            RCSTA1bits.CREN = 0;
+        
 		// check if we are currently receiving a packet
 		if (!receiveData.receiving)
 		{
-
+			//first packet will be LOW byte of START sequence, followed by HIGH byte of START sequence
 			// check if the received character is lower byte of start sequence
 			if ((receivedChar == PACKET_START_MARKER_LOWER) && (start_sequence_flag == 0x00))
 			{
@@ -194,7 +198,6 @@ void __interrupt() isr(void)
 			// check if the received character is lower byte of end sequence
 			if ((receivedChar == PACKET_END_MARKER_LOWER) && (end_sequence_flag == 0x00))
 			{
-
 				end_sequence_flag = 0x01; // set end sequence flag.
 			}
 			else if ((receivedChar == PACKET_END_MARKER_UPPER) && (end_sequence_flag == 0x01))
@@ -213,6 +216,7 @@ void __interrupt() isr(void)
 
 				// clear end sequence flag
 				end_sequence_flag = 0x00;
+
 			}
 			else
 			{
@@ -224,7 +228,7 @@ void __interrupt() isr(void)
 					if (end_sequence_flag == 0x01)
 					{
 						// we got end sequence lower byte, but it is not a sequence byte, but it is part of payload
-						end_sequence_flag ^= 1;
+						end_sequence_flag  = 0x00;
 
 						// we have to store lower byte of end sequence because it is part of payload
 						requestBuffer[receiveData.index++] = PACKET_END_MARKER_LOWER;
@@ -244,7 +248,8 @@ void __interrupt() isr(void)
 		UART_TransmitChar(receivedChar + 1);
 	#endif
 
-		PIR1bits.RC1IF = 0;
+        RCSTA1bits.CREN = 1; //set CREN bit
+		PIE1bits.RC1IE = 1; //enable usart receive interrupt
 	}
 }
 
@@ -424,10 +429,10 @@ void sendResponse()
 
 
 	//reset request buffer
-	index = 0;
-	while(index < PACKET_SIZE){
-	     requestBuffer[index] = 0xFF;
-	     index++;
+	index = PACKET_SIZE;
+	while(index > 0){
+	     requestBuffer[PACKET_SIZE - index] = 0xFF;
+	     index--;
 	}
 }
 
@@ -473,6 +478,8 @@ void main()
 
 	UART_Init(); // initialises uart peripherals
 	I2C2_Init(); // initialises i2c peripherals
+
+	__delay_ms(100);
 
 	while (1)
 	{

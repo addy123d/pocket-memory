@@ -9558,6 +9558,10 @@ void __interrupt() isr(void)
 if (PIR1bits.RC1IF)
 {
 unsigned char receivedChar = RCREG1;
+PIE1bits.RC1IE = 0;
+
+if(RCSTA1bits.OERR)
+RCSTA1bits.CREN = 0;
 
 
 if (!receiveData.receiving)
@@ -9587,7 +9591,6 @@ else
 
 if ((receivedChar == 0x0D) && (end_sequence_flag == 0x00))
 {
-
 end_sequence_flag = 0x01;
 }
 else if ((receivedChar == 0x0A) && (end_sequence_flag == 0x01))
@@ -9606,6 +9609,7 @@ interrupt_flag = 0x01;
 
 
 end_sequence_flag = 0x00;
+
 }
 else
 {
@@ -9617,7 +9621,7 @@ if (receiveData.index < 50)
 if (end_sequence_flag == 0x01)
 {
 
-end_sequence_flag ^= 1;
+end_sequence_flag = 0x00;
 
 
 requestBuffer[receiveData.index++] = 0x0D;
@@ -9633,12 +9637,13 @@ receiveData.index = 0;
 }
 }
 
-# 247
-PIR1bits.RC1IF = 0;
+# 251
+RCSTA1bits.CREN = 1;
+PIE1bits.RC1IE = 1;
 }
 }
 
-# 256
+# 261
 void processRequest()
 {
 unsigned int buffer_index = 0;
@@ -9659,10 +9664,10 @@ length_index = buffer_index + 2;
 
 request_unit.payload_length_index = length_index;
 
-# 279
+# 284
 }
 
-# 286
+# 291
 void createResponse()
 {
 unsigned char ORDER_CODE = request_unit.ORDER_CODE;
@@ -9694,7 +9699,7 @@ sendResponse();
 }
 }
 
-# 323
+# 328
 void createPingResponse()
 {
 responseBuffer[0] = request_unit.DEVICE_ADDR;
@@ -9703,7 +9708,7 @@ responseBuffer[2] = 0x00;
 responseBuffer[3] = 0x00;
 }
 
-# 336
+# 341
 void writeDataToEEPROM()
 {
 unsigned short payload_length;
@@ -9751,7 +9756,7 @@ responseBuffer[2] = eeprom_data;
 responseBuffer[3] = (!checkAck) ? 0x01 : 0x00;
 }
 
-# 388
+# 393
 void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
 {
 I2C2_Start();
@@ -9762,7 +9767,7 @@ I2C2_Send(data);
 I2C2_Stop();
 }
 
-# 404
+# 409
 void sendResponse()
 {
 unsigned int index = 0;
@@ -9786,19 +9791,19 @@ UART_TransmitChar(0x0A);
 
 
 
-index = 0;
-while(index < 50){
-requestBuffer[index] = 0xFF;
-index++;
+index = 50;
+while(index > 0){
+requestBuffer[50 - index] = 0xFF;
+index--;
 }
 }
 
-# 453
+# 458
 void main()
 {
 
 
-# 461
+# 466
 #asm
  OSCCON_REG equ 0xFD3
  OSCTUNE_REG equ 0xF9B
@@ -9814,6 +9819,8 @@ void main()
 
 UART_Init();
 I2C2_Init();
+
+_delay((unsigned long)((100)*(64000000/4000.0)));
 
 while (1)
 {

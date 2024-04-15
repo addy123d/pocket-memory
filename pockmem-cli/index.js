@@ -173,6 +173,7 @@ async function selectOperation() {
 
 async function performOperation() {
     let OPERATION_CODE = operation_code;
+    let errorFlag = false;
     let payload_data = {}; //it will contain, an array,and its respective length.
 
     switch(OPERATION_CODE){
@@ -190,10 +191,12 @@ async function performOperation() {
             break;
         default:
             console.log(chalk.bgRed("INVALID OPERATION CODE"));
+            errorFlag = true;
             break;
     }
 
-    sendRequest(payload_data);
+    if(!errorFlag)
+        sendRequest(payload_data);
 }
 
 function createPingData(){
@@ -228,9 +231,9 @@ function createWriteData(){
 }
 
 function sendRequest(payload_obj){
-
     //send start sequence first
     for(let i = 0; i < SEQUENCE_LEN; i++){
+        sleep(150);
         send_data_via_uart(Buffer.from([parseInt(PACKET_START_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
         sleep(150);
     }
@@ -257,6 +260,7 @@ function sendRequest(payload_obj){
         sleep(150);
     }
 
+
     responseTimeoutId = setTimeout(handleTimeout, 2000);
 }
 
@@ -279,6 +283,7 @@ function imageToByteArray(filePath) {
 
 // send serial data
 async function send_data_via_uart(data) {
+    sleep(100);
     try {
         await new Promise((resolve, reject) => {
             serialport.write(data, (error) => {

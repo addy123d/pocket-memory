@@ -1,7 +1,7 @@
 ### HEXMate logfile and output summary ###
 
 ### Command-line arguments ###
- C:\Users\HELION~1\AppData\Local\Temp\xcAskgs.\driver_tmp_3.obj
+ C:\Users\HELION~1\AppData\Local\Temp\xcAs9p8.\driver_tmp_3.obj
  -Ooutput.hex
  -logfile=output.hxl
  -addressing=1
@@ -9,21 +9,21 @@
 
 ### Memory Usage ###
  Input file ranges:
-  0h - 3h		(C:\Users\HELION~1\AppData\Local\Temp\xcAskgs.\driver_tmp_3.obj)
-  8h - E5h		(C:\Users\HELION~1\AppData\Local\Temp\xcAskgs.\driver_tmp_3.obj)
-  600h - A24h		(C:\Users\HELION~1\AppData\Local\Temp\xcAskgs.\driver_tmp_3.obj)
-  A26h - A51h		(C:\Users\HELION~1\AppData\Local\Temp\xcAskgs.\driver_tmp_3.obj)
-  300000h - 30000Dh		(C:\Users\HELION~1\AppData\Local\Temp\xcAskgs.\driver_tmp_3.obj)
+  0h - 3h		(C:\Users\HELION~1\AppData\Local\Temp\xcAs9p8.\driver_tmp_3.obj)
+  8h - EDh		(C:\Users\HELION~1\AppData\Local\Temp\xcAs9p8.\driver_tmp_3.obj)
+  600h - A38h		(C:\Users\HELION~1\AppData\Local\Temp\xcAs9p8.\driver_tmp_3.obj)
+  A3Ah - A65h		(C:\Users\HELION~1\AppData\Local\Temp\xcAs9p8.\driver_tmp_3.obj)
+  300000h - 30000Dh		(C:\Users\HELION~1\AppData\Local\Temp\xcAs9p8.\driver_tmp_3.obj)
  Unused ranges:
   4h - 7h
-  E6h - 5FFh
-  A25h - A25h
-  A52h - 2FFFFFh
+  EEh - 5FFh
+  A39h - A39h
+  A66h - 2FFFFFh
 
 ### Hex Memory Map ###
  Legend:
   -- = Unused memory
-  H1 = Input file             (C:\Users\HELION~1\AppData\Local\Temp\xcAskgs.\driver_tmp_3.obj)
+  H1 = Input file             (C:\Users\HELION~1\AppData\Local\Temp\xcAs9p8.\driver_tmp_3.obj)
 ----------------------------------------------------------
          | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
 ----------------------------------------------------------
@@ -41,7 +41,7 @@
 000000B0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 000000C0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 000000D0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-000000E0 | H1 H1 H1 H1 H1 H1 -- -- -- -- -- -- -- -- -- --
+000000E0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 -- --
 ----------------------------------------------------------
 00000600 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000610 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
@@ -109,10 +109,11 @@
 000009F0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000A00 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000A10 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-00000A20 | H1 H1 H1 H1 H1 -- H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-00000A30 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00000A20 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00000A30 | H1 H1 H1 H1 H1 H1 H1 H1 H1 -- H1 H1 H1 H1 H1 H1
 00000A40 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-00000A50 | H1 H1 -- -- -- -- -- -- -- -- -- -- -- -- -- --
+00000A50 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00000A60 | H1 H1 H1 H1 H1 H1 -- -- -- -- -- -- -- -- -- --
 ----------------------------------------------------------
 00300000 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 -- --
 00300010 | --
