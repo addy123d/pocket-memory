@@ -13,6 +13,8 @@
 
 
 
+
+
 # 1 "C:\\Program Files\\Microchip\\xc8\\v2.46\\pic\\include\\xc.h" 1 3
 # 18 "C:\\Program Files\\Microchip\\xc8\\v2.46\\pic\\include\\xc.h" 3
 extern const char __xc8_OPTIM_SPEED;
@@ -9219,7 +9221,7 @@ __attribute__((__unsupported__("The " "Write_b_eep" " routine is no longer suppo
 unsigned char __t1rd16on(void);
 unsigned char __t3rd16on(void);
 # 33 "C:\\Program Files\\Microchip\\xc8\\v2.46\\pic\\include\\xc.h" 2 3
-# 7 "main.c" 2
+# 9 "main.c" 2
 
 
 # 1 "./config.h" 1
@@ -9282,7 +9284,7 @@ unsigned char __t3rd16on(void);
 
 
 #pragma config EBTRB = OFF
-# 9 "main.c" 2
+# 11 "main.c" 2
 
 # 1 "./i2c.h" 1
 # 17 "./i2c.h"
@@ -9881,17 +9883,69 @@ void I2C2_Send_ACK(void);
 void I2C2_Send_NACK(void);
 unsigned char I2C2_Send(unsigned char BYTE);
 unsigned char I2C2_Read(void);
-# 10 "main.c" 2
-# 19 "main.c"
+# 12 "main.c" 2
+# 27 "main.c"
 unsigned int timeout = 1000;
+unsigned char interrupt_flag = 0x00;
+unsigned char requestBuffer[50];
+unsigned char responseBuffer[10];
+unsigned char start_sequence_flag = 0x00;
+unsigned char end_sequence_flag = 0x00;
+unsigned short at24_eeprom_address = 0x0000;
+unsigned char checkAck = 0x01;
 
-typedef struct{
-    unsigned char device_code;
-    unsigned char function_code;
-    unsigned char credential_data[50];
-} command;
 
-command user_command = {0x00, 0x00, 0x00};
+enum ORDER_CODES
+{
+ PING = 0x11,
+ WRITE_MEM = 0x01,
+ READ_MEM = 0x02,
+ UPDATE_MEM = 0x03,
+ DELETE_MEM = 0x04
+};
+
+enum PIC_EEPROM_CONFIG
+{
+ PASSWORD_ADDR_START_L = 0x00,
+ PASSWORD_ADDR_START_H = 0x00,
+ ADDRESS_POINTER_H = 0x0A,
+ ADDRESS_POINTER_L = 0x0B
+};
+
+
+
+typedef struct
+{
+ unsigned char buffer[50];
+ unsigned char index;
+ unsigned char receiving;
+} ReceivePacketData;
+
+
+typedef struct
+{
+ unsigned char DEVICE_ADDR;
+ unsigned char ORDER_CODE;
+ unsigned int payload_length_index;
+ unsigned char payload_data[50 - 2];
+} UART_Request;
+
+UART_Request request_unit = {0, 0, 0, 0};
+ReceivePacketData receiveData = {0, 0, 0};
+
+
+unsigned char digits[10] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
+
+
+void processRequest(void);
+void createResponse(void);
+void createPingResponse(void);
+void writeDataToEEPROM();
+void writeByteAT24_EEPROM(unsigned int, unsigned char);
+int hexCharToInt(unsigned char hexValue);
+void EEPROM_Write(unsigned char addr, unsigned char eep_data);
+unsigned char EEPROM_Read(unsigned char addr);
+void sendResponse(void);
 
 
 
@@ -9900,25 +9954,26 @@ command user_command = {0x00, 0x00, 0x00};
 
 void UART_Init()
 {
-    float temp;
+ float temp;
 
-    TRISC6 = 0;
-    TRISC7 = 1;
-    ANSELCbits.ANSC7 = 0;
-
-
-    temp = (((float)(64000000 / 64) / (float)9600) - 1);
-    SPBRG1 = (int)temp;
-
-    INTCONbits.GIE = 1;
-    INTCONbits.PEIE = 1;
-    PIE1bits.RC1IE = 1;
+  TRISC6 = 0;
+  TRISC7 = 1;
+  ANSELCbits.ANSC7 = 0;
 
 
-    TXSTA1 = 0x20;
-    RCSTA1 = 0x90;
+ INTCONbits.GIE = 1;
+ INTCONbits.PEIE = 1;
+ PIE1bits.RC1IE = 1;
+
+
+  TXSTA1 = 0x20;
+  RCSTA1 = 0x90;
+
+
+ temp = (((float)(64000000 / 64) / (float)9600) - 1);
+ SPBRG1 = (int)temp;
+# 156 "main.c"
 }
-
 
 
 
@@ -9927,37 +9982,362 @@ void UART_Init()
 
 void UART_TransmitChar(uint8_t data)
 {
-    while (!PIR1bits.TX1IF);
-    TXREG = data;
+ while (!PIR1bits.TX1IF);
+ TXREG = data;
 }
-# 74 "main.c"
+
+
+
+
+
+
+
 void __attribute__((picinterrupt(("")))) isr(void)
 {
-    unsigned char receive_data = 0x00;
+
+ if (PIR1bits.RC1IF)
+ {
+  unsigned char receivedChar = RCREG;
+  PIE1bits.RC1IE = 0;
 
 
-    if (PIR1bits.RC1IF)
+
+
+  if (!receiveData.receiving)
+  {
+
+
+   if ((receivedChar == 0x3A) && (start_sequence_flag == 0x00))
+   {
+
+    start_sequence_flag ^= 1;
+   }
+
+
+   if ((receivedChar == 0x23) && (start_sequence_flag == 0x01))
+   {
+
+    receiveData.receiving = 0x01;
+    receiveData.index = 0;
+
+
+    start_sequence_flag ^= 1;
+   }
+  }
+  else
+  {
+
+
+   if ((receivedChar == 0x0D) && (end_sequence_flag == 0x00))
+   {
+    end_sequence_flag = 0x01;
+   }
+   else if ((receivedChar == 0x0A) && (end_sequence_flag == 0x01))
+   {
+
+
+    requestBuffer[receiveData.index++] = 0x00;
+
+
+    processRequest();
+
+
+    receiveData.index = 0;
+    receiveData.receiving = 0x00;
+    interrupt_flag = 0x01;
+
+
+    end_sequence_flag = 0x00;
+
+   }
+   else
+   {
+
+
+
+    if (receiveData.index < 50)
     {
-      receive_data = RCREG1;
+     if (end_sequence_flag == 0x01)
+     {
 
-        PIR1bits.RC1IF = 0;
+      end_sequence_flag = 0x00;
+
+
+      requestBuffer[receiveData.index++] = 0x0D;
+     }
+
+     requestBuffer[receiveData.index++] = receivedChar;
     }
+    else
+    {
 
-
-    while((PIR1bits.RC1IF == 0) && (timeout > 0)){
-        timeout--;
+     receiveData.index = 0;
     }
+   }
+  }
+
+
+
+
+
+  PIE1bits.RC1IE = 1;
+ }
+}
+
+
+
+
+
+
+void processRequest()
+{
+ unsigned int buffer_index = 0;
+ unsigned int length_index = 0;
+ unsigned int i = 0;
+
+ request_unit.DEVICE_ADDR = requestBuffer[0];
+ request_unit.ORDER_CODE = requestBuffer[1];
+
+
+ for (buffer_index = 0; requestBuffer[buffer_index + 2] != 0x00; buffer_index++){
+  request_unit.payload_data[buffer_index] = requestBuffer[buffer_index + 2];
+
+
+  length_index = buffer_index + 2;
+        }
+
+
+ request_unit.payload_length_index = length_index;
+
+
+
 
 }
-# 114 "main.c"
-void main(){
 
-    OSCCON = 0x70;
-    OSCTUNE = 0xC0;
 
-    UART_Init();
-    I2C2_Init();
 
-    while(1){
-    }
+
+
+
+void createResponse()
+{
+ unsigned char ORDER_CODE = request_unit.ORDER_CODE;
+
+
+ if (request_unit.DEVICE_ADDR == 0x21)
+ {
+
+  switch (ORDER_CODE)
+  {
+  case PING:
+   createPingResponse();
+   break;
+  case WRITE_MEM:
+   writeDataToEEPROM();
+   break;
+  case READ_MEM:
+   break;
+  case UPDATE_MEM:
+   break;
+  case DELETE_MEM:
+   break;
+  default:
+   break;
+  }
+
+
+  sendResponse();
+ }
+}
+
+
+
+
+
+
+
+void createPingResponse()
+{
+ responseBuffer[0] = request_unit.DEVICE_ADDR;
+ responseBuffer[1] = request_unit.ORDER_CODE;
+ responseBuffer[2] = 0x00;
+ responseBuffer[3] = 0x00;
+}
+
+
+
+
+
+
+void writeDataToEEPROM()
+{
+ unsigned short payload_length;
+ unsigned char eeprom_data = 0x00;
+ unsigned char at24_eep_addr_H = 0x00;
+ unsigned char at24_eep_addr_L = 0x00;
+ unsigned short at24_eeprom_addr_start = 0x0000;
+
+
+
+
+
+ at24_eep_addr_H = EEPROM_Read(ADDRESS_POINTER_H);
+ _delay((unsigned long)((500)*(64000000/4000.0)));
+ at24_eep_addr_L = EEPROM_Read(ADDRESS_POINTER_L);
+
+
+ at24_eeprom_address = (at24_eep_addr_H << 8) | at24_eep_addr_L;
+
+
+ if(at24_eeprom_address == 0xFFFF)
+  at24_eeprom_address = 0x0000;
+
+
+ at24_eeprom_addr_start = at24_eeprom_address;
+
+
+ payload_length = (requestBuffer[request_unit.payload_length_index]) & 0xFF;
+
+
+ writeByteAT24_EEPROM(at24_eeprom_address, requestBuffer[request_unit.payload_length_index]);
+ at24_eeprom_address += 1;
+
+ _delay((unsigned long)((10)*(64000000/4000.0)));
+
+
+ for(unsigned short i = 0; i < payload_length; i++){
+  writeByteAT24_EEPROM((at24_eeprom_address + i), request_unit.payload_data[i]);
+  _delay((unsigned long)((10)*(64000000/4000.0)));
+ }
+
+
+ at24_eeprom_address += payload_length;
+
+
+
+
+
+
+ EEPROM_Write(ADDRESS_POINTER_H, ((at24_eeprom_address >> 8) & 0xFF));
+ _delay((unsigned long)((50)*(64000000/4000.0)));
+ EEPROM_Write(ADDRESS_POINTER_L, (at24_eeprom_address & 0xFF));
+ _delay((unsigned long)((50)*(64000000/4000.0)));
+# 421 "main.c"
+ responseBuffer[0] = request_unit.DEVICE_ADDR;
+ responseBuffer[1] = request_unit.ORDER_CODE;
+ responseBuffer[2] = (at24_eeprom_addr_start >> 8) & 0xFF;
+ responseBuffer[3] = at24_eeprom_addr_start & 0xFF;
+ responseBuffer[4] = (!checkAck) ? 0x01 : 0x00;
+
+}
+
+
+
+
+
+
+void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
+{
+ I2C2_Start();
+ checkAck = I2C2_Send(0x50 << 1);
+ I2C2_Send((address >> 8) & 0xFF);
+ I2C2_Send(address & 0xFF);
+ I2C2_Send(data);
+ I2C2_Stop();
+}
+
+
+
+
+
+
+
+void sendResponse()
+{
+ unsigned int index = 0;
+
+
+ UART_TransmitChar(0x3A);
+ _delay((unsigned long)((10)*(64000000/4000.0)));
+ UART_TransmitChar(0x23);
+ _delay((unsigned long)((10)*(64000000/4000.0)));
+
+ for (index = 0; index < 10; index++)
+ {
+  UART_TransmitChar(responseBuffer[index]);
+  _delay((unsigned long)((10)*(64000000/4000.0)));
+ }
+
+
+ UART_TransmitChar(0x0D);
+ _delay((unsigned long)((10)*(64000000/4000.0)));
+ UART_TransmitChar(0x0A);
+
+
+
+ index = 50;
+ while(index > 0){
+      requestBuffer[50 - index] = 0xFF;
+      index--;
+ }
+}
+
+
+
+
+
+
+void EEPROM_Write(unsigned char addr, unsigned char eep_data){
+     EEADR = addr & 0xFF;
+     EEDATA = eep_data;
+
+     EECON1bits.EEPGD = 0;
+     EECON1bits.CFGS = 0;
+     EECON1bits.WREN = 1;
+
+     INTCONbits.GIE = 0;
+
+
+     EECON2 = 0x55;
+     EECON2 = 0xAA;
+     EECON1bits.WR = 1;
+
+     INTCONbits.GIE = 1;
+
+     PIE2bits.EEIE = 1;
+     while(PIR2bits.EEIF == 0);
+
+     PIR2bits.EEIF = 0;
+}
+
+
+
+
+
+
+unsigned char EEPROM_Read(unsigned char addr){
+ EEADR = addr;
+ EECON1bits.EEPGD = 0;
+ EECON1bits.RD = 1;
+
+ return EEDATA;
+}
+# 540 "main.c"
+void main()
+{
+
+ OSCCON = 0x70;
+ OSCTUNE = 0xC0;
+# 559 "main.c"
+ UART_Init();
+ I2C2_Init();
+
+ while (1)
+ {
+  if (interrupt_flag)
+  {
+   createResponse();
+   interrupt_flag = 0x00;
+  }
+ }
 }

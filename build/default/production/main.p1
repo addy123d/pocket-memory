@@ -1,8 +1,12 @@
 Version 4.0 HI-TECH Software Intermediate Code
-"21 main.c
-[; ;main.c: 21: typedef struct{
-[s S829 `uc 1 `uc 1 `uc -> 50 `i ]
-[n S829 . device_code function_code credential_data ]
+"65 main.c
+[; ;main.c: 65: {
+[s S830 `uc 1 `uc 1 `ui 1 `uc -> 48 `i ]
+[n S830 . DEVICE_ADDR ORDER_CODE payload_length_index payload_data ]
+"57
+[; ;main.c: 57: {
+[s S829 `uc -> 50 `i `uc 1 `uc 1 ]
+[n S829 . buffer index receiving ]
 "19518 C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h
 [; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 19518: extern volatile __bit TRISC6 __attribute__((address(0x7CA6)));
 [v _TRISC6 `Vb ~T0 @X0 0 e@31910 ]
@@ -20,9 +24,6 @@ Version 4.0 HI-TECH Software Intermediate Code
 "163
 [; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 163: extern volatile ANSELCbits_t ANSELCbits __attribute__((address(0xF3A)));
 [v _ANSELCbits `VS10 ~T0 @X0 0 e@3898 ]
-"10535
-[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 10535: extern volatile unsigned char SPBRG1 __attribute__((address(0xFAF)));
-[v _SPBRG1 `Vuc ~T0 @X0 0 e@4015 ]
 "16101
 [; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 16101:     struct {
 [s S798 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 ]
@@ -63,6 +64,9 @@ Version 4.0 HI-TECH Software Intermediate Code
 "9548
 [; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 9548: extern volatile unsigned char RCSTA1 __attribute__((address(0xFAB)));
 [v _RCSTA1 `Vuc ~T0 @X0 0 e@4011 ]
+"10535
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 10535: extern volatile unsigned char SPBRG1 __attribute__((address(0xFAF)));
+[v _SPBRG1 `Vuc ~T0 @X0 0 e@4015 ]
 "8700
 [; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 8700:     struct {
 [s S416 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 ]
@@ -83,9 +87,113 @@ Version 4.0 HI-TECH Software Intermediate Code
 [v _TXREG `Vuc ~T0 @X0 0 e@4013 ]
 [t ~ __interrupt . k ]
 [t T1 __interrupt ]
-"10457
-[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 10457: extern volatile unsigned char RCREG1 __attribute__((address(0xFAE)));
-[v _RCREG1 `Vuc ~T0 @X0 0 e@4014 ]
+"10462
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 10462: extern volatile unsigned char RCREG __attribute__((address(0xFAE)));
+[v _RCREG `Vuc ~T0 @X0 0 e@4014 ]
+"79 main.c
+[; ;main.c: 79: void processRequest(void);
+[v _processRequest `(v ~T0 @X0 0 ef ]
+"81
+[; ;main.c: 81: void createPingResponse(void);
+[v _createPingResponse `(v ~T0 @X0 0 ef ]
+"82
+[; ;main.c: 82: void writeDataToEEPROM();
+[v _writeDataToEEPROM `(v ~T0 @X0 0 e? ]
+"326
+[; ;main.c: 326:   }
+[c E6686 17 1 2 3 4 .. ]
+[n E6686 ORDER_CODES PING WRITE_MEM READ_MEM UPDATE_MEM DELETE_MEM  ]
+"87
+[; ;main.c: 87: void sendResponse(void);
+[v _sendResponse `(v ~T0 @X0 0 ef ]
+"86
+[; ;main.c: 86: unsigned char EEPROM_Read(unsigned char addr);
+[v _EEPROM_Read `(uc ~T0 @X0 0 ef1`uc ]
+"364
+[; ;main.c: 364:  at24_eep_addr_H = EEPROM_Read(ADDRESS_POINTER_H);
+[c E6692 0 0 10 11 .. ]
+[n E6692 PIC_EEPROM_CONFIG PASSWORD_ADDR_START_L PASSWORD_ADDR_START_H ADDRESS_POINTER_H ADDRESS_POINTER_L  ]
+[v F205 `(v ~T0 @X0 1 tf1`ul ]
+"20 C:\Program Files\Microchip\xc8\v2.46\pic\include\builtins.h
+[v __delay `JF205 ~T0 @X0 0 e ]
+[p i __delay ]
+"83 main.c
+[; ;main.c: 83: void writeByteAT24_EEPROM(unsigned int, unsigned char);
+[v _writeByteAT24_EEPROM `(v ~T0 @X0 0 ef2`ui`uc ]
+"85
+[; ;main.c: 85: void EEPROM_Write(unsigned char addr, unsigned char eep_data);
+[v _EEPROM_Write `(v ~T0 @X0 0 ef2`uc`uc ]
+"35 ./i2c.h
+[; ;./i2c.h: 35: void I2C2_Start(void);
+[v _I2C2_Start `(v ~T0 @X0 0 ef ]
+"40
+[; ;./i2c.h: 40: unsigned char I2C2_Send(unsigned char BYTE);
+[v _I2C2_Send `(uc ~T0 @X0 0 ef1`uc ]
+"37
+[; ;./i2c.h: 37: void I2C2_Stop(void);
+[v _I2C2_Stop `(v ~T0 @X0 0 ef ]
+"9478 C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 9478: extern volatile unsigned char EEADR __attribute__((address(0xFA9)));
+[v _EEADR `Vuc ~T0 @X0 0 e@4009 ]
+"9458
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 9458: extern volatile unsigned char EEDATA __attribute__((address(0xFA8)));
+[v _EEDATA `Vuc ~T0 @X0 0 e@4008 ]
+"9378
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 9378:     struct {
+[s S444 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 ]
+[n S444 . RD WR WREN WRERR FREE . CFGS EEPGD ]
+"9388
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 9388:     struct {
+[s S445 :6 `uc 1 :1 `uc 1 ]
+[n S445 . . EEFS ]
+"9377
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 9377: typedef union {
+[u S443 `S444 1 `S445 1 ]
+[n S443 . . . ]
+"9393
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 9393: extern volatile EECON1bits_t EECON1bits __attribute__((address(0xFA6)));
+[v _EECON1bits `VS443 ~T0 @X0 0 e@4006 ]
+"9438
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 9438: extern volatile unsigned char EECON2 __attribute__((address(0xFA7)));
+[v _EECON2 `Vuc ~T0 @X0 0 e@4007 ]
+"8854
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 8854:     struct {
+[s S422 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 ]
+[n S422 . CCP2IE TMR3IE HLVDIE BCL1IE EEIE C2IE C1IE OSCFIE ]
+"8864
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 8864:     struct {
+[s S423 :2 `uc 1 :1 `uc 1 :1 `uc 1 ]
+[n S423 . . LVDIE BCLIE ]
+"8869
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 8869:     struct {
+[s S424 :6 `uc 1 :1 `uc 1 ]
+[n S424 . . CMIE ]
+"8853
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 8853: typedef union {
+[u S421 `S422 1 `S423 1 `S424 1 ]
+[n S421 . . . . ]
+"8874
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 8874: extern volatile PIE2bits_t PIE2bits __attribute__((address(0xFA0)));
+[v _PIE2bits `VS421 ~T0 @X0 0 e@4000 ]
+"8940
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 8940:     struct {
+[s S426 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 :1 `uc 1 ]
+[n S426 . CCP2IF TMR3IF HLVDIF BCL1IF EEIF C2IF C1IF OSCFIF ]
+"8950
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 8950:     struct {
+[s S427 :2 `uc 1 :1 `uc 1 :1 `uc 1 ]
+[n S427 . . LVDIF BCLIF ]
+"8955
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 8955:     struct {
+[s S428 :6 `uc 1 :1 `uc 1 ]
+[n S428 . . CMIF ]
+"8939
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 8939: typedef union {
+[u S425 `S426 1 `S427 1 `S428 1 ]
+[n S425 . . . . ]
+"8960
+[; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 8960: extern volatile PIR2bits_t PIR2bits __attribute__((address(0xFA1)));
+[v _PIR2bits `VS425 ~T0 @X0 0 e@4001 ]
 [p mainexit ]
 "15215
 [; ;C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h: 15215: extern volatile unsigned char OSCCON __attribute__((address(0xFD3)));
@@ -904,177 +1012,877 @@ Version 4.0 HI-TECH Software Intermediate Code
 [p x EBTR3  =  OFF       ]
 "68
 [p x EBTRB  =  OFF       ]
-"19 main.c
-[; ;main.c: 19: unsigned int timeout = 1000;
+"27 main.c
+[; ;main.c: 27: unsigned int timeout = 1000;
 [v _timeout `ui ~T0 @X0 1 e ]
 [i _timeout
 -> -> 1000 `i `ui
 ]
-"27
-[; ;main.c: 27: command user_command = {0x00, 0x00, 0x00};
-[v _user_command `S829 ~T0 @X0 1 e ]
-[i _user_command
+"28
+[; ;main.c: 28: unsigned char interrupt_flag = 0x00;
+[v _interrupt_flag `uc ~T0 @X0 1 e ]
+[i _interrupt_flag
+-> -> 0 `i `uc
+]
+"29
+[; ;main.c: 29: unsigned char requestBuffer[50];
+[v _requestBuffer `uc ~T0 @X0 -> 50 `i e ]
+"30
+[; ;main.c: 30: unsigned char responseBuffer[10];
+[v _responseBuffer `uc ~T0 @X0 -> 10 `i e ]
+"31
+[; ;main.c: 31: unsigned char start_sequence_flag = 0x00;
+[v _start_sequence_flag `uc ~T0 @X0 1 e ]
+[i _start_sequence_flag
+-> -> 0 `i `uc
+]
+"32
+[; ;main.c: 32: unsigned char end_sequence_flag = 0x00;
+[v _end_sequence_flag `uc ~T0 @X0 1 e ]
+[i _end_sequence_flag
+-> -> 0 `i `uc
+]
+"33
+[; ;main.c: 33: unsigned short at24_eeprom_address = 0x0000;
+[v _at24_eeprom_address `us ~T0 @X0 1 e ]
+[i _at24_eeprom_address
+-> -> 0 `i `us
+]
+"34
+[; ;main.c: 34: unsigned char checkAck = 0x01;
+[v _checkAck `uc ~T0 @X0 1 e ]
+[i _checkAck
+-> -> 1 `i `uc
+]
+"72
+[; ;main.c: 72: UART_Request request_unit = {0, 0, 0, 0};
+[v _request_unit `S830 ~T0 @X0 1 e ]
+[i _request_unit
 :U ..
 :U ..
 -> -> 0 `i `uc
 -> -> 0 `i `uc
+-> -> 0 `i `ui
 :U ..
 -> -> 0 `i `uc
 ..
 ..
 ..
 ]
-"34
-[; ;main.c: 34: void UART_Init()
+"73
+[; ;main.c: 73: ReceivePacketData receiveData = {0, 0, 0};
+[v _receiveData `S829 ~T0 @X0 1 e ]
+[i _receiveData
+:U ..
+:U ..
+:U ..
+-> -> 0 `i `uc
+-> -> 0 `i `uc
+-> -> 0 `i `uc
+..
+..
+..
+]
+"76
+[; ;main.c: 76: unsigned char digits[10] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
+[v _digits `uc ~T0 @X0 -> 10 `i e ]
+[i _digits
+:U ..
+-> -> 0 `i `uc
+-> -> 1 `i `uc
+-> -> 2 `i `uc
+-> -> 3 `i `uc
+-> -> 4 `i `uc
+-> -> 5 `i `uc
+-> -> 6 `i `uc
+-> -> 7 `i `uc
+-> -> 8 `i `uc
+-> -> 9 `i `uc
+..
+]
+"94
+[; ;main.c: 94: void UART_Init()
 [v _UART_Init `(v ~T0 @X0 1 ef ]
-"35
-[; ;main.c: 35: {
+"95
+[; ;main.c: 95: {
 {
 [e :U _UART_Init ]
 [f ]
-"36
-[; ;main.c: 36:     float temp;
+"96
+[; ;main.c: 96:  float temp;
 [v _temp `f ~T0 @X0 1 a ]
-"38
-[; ;main.c: 38:     TRISC6 = 0;
+"98
+[; ;main.c: 98:   TRISC6 = 0;
 [e = _TRISC6 -> -> 0 `i `b ]
-"39
-[; ;main.c: 39:     TRISC7 = 1;
+"99
+[; ;main.c: 99:   TRISC7 = 1;
 [e = _TRISC7 -> -> 1 `i `b ]
-"40
-[; ;main.c: 40:     ANSELCbits.ANSC7 = 0;
+"100
+[; ;main.c: 100:   ANSELCbits.ANSC7 = 0;
 [e = . . _ANSELCbits 0 6 -> -> 0 `i `uc ]
-"43
-[; ;main.c: 43:     temp = (((float)(64000000 / 64) / (float)9600) - 1);
-[e = _temp - / -> / -> 64000000 `l -> -> 64 `i `l `f -> -> 9600 `i `f -> -> 1 `i `f ]
-"44
-[; ;main.c: 44:     SPBRG1 = (int)temp;
-[e = _SPBRG1 -> -> _temp `i `uc ]
-"46
-[; ;main.c: 46:     INTCONbits.GIE = 1;
+"103
+[; ;main.c: 103:  INTCONbits.GIE = 1;
 [e = . . _INTCONbits 1 7 -> -> 1 `i `uc ]
-"47
-[; ;main.c: 47:     INTCONbits.PEIE = 1;
+"104
+[; ;main.c: 104:  INTCONbits.PEIE = 1;
 [e = . . _INTCONbits 1 6 -> -> 1 `i `uc ]
-"48
-[; ;main.c: 48:     PIE1bits.RC1IE = 1;
+"105
+[; ;main.c: 105:  PIE1bits.RC1IE = 1;
 [e = . . _PIE1bits 0 5 -> -> 1 `i `uc ]
-"51
-[; ;main.c: 51:     TXSTA1 = 0x20;
+"108
+[; ;main.c: 108:   TXSTA1 = 0x20;
 [e = _TXSTA1 -> -> 32 `i `uc ]
-"52
-[; ;main.c: 52:     RCSTA1 = 0x90;
+"109
+[; ;main.c: 109:   RCSTA1 = 0x90;
 [e = _RCSTA1 -> -> 144 `i `uc ]
-"53
-[; ;main.c: 53: }
-[e :UE 830 ]
-}
-"61
-[; ;main.c: 61: void UART_TransmitChar(uint8_t data)
-[v _UART_TransmitChar `(v ~T0 @X0 1 ef1`uc ]
-"62
-[; ;main.c: 62: {
-{
-[e :U _UART_TransmitChar ]
-"61
-[; ;main.c: 61: void UART_TransmitChar(uint8_t data)
-[v _data `uc ~T0 @X0 1 r1 ]
-"62
-[; ;main.c: 62: {
-[f ]
-"63
-[; ;main.c: 63:     while (!PIR1bits.TX1IF);
-[e $U 832  ]
-[e :U 833 ]
-[e :U 832 ]
-[e $ ! != -> . . _PIR1bits 0 4 `i -> 0 `i 833  ]
-[e :U 834 ]
-"64
-[; ;main.c: 64:     TXREG = data;
-[e = _TXREG _data ]
-"65
-[; ;main.c: 65: }
+"112
+[; ;main.c: 112:  temp = (((float)(64000000 / 64) / (float)9600) - 1);
+[e = _temp - / -> / -> 64000000 `l -> -> 64 `i `l `f -> -> 9600 `i `f -> -> 1 `i `f ]
+"113
+[; ;main.c: 113:  SPBRG1 = (int)temp;
+[e = _SPBRG1 -> -> _temp `i `uc ]
+"156
+[; ;main.c: 156: }
 [e :UE 831 ]
 }
+"163
+[; ;main.c: 163: void UART_TransmitChar(uint8_t data)
+[v _UART_TransmitChar `(v ~T0 @X0 1 ef1`uc ]
+"164
+[; ;main.c: 164: {
+{
+[e :U _UART_TransmitChar ]
+"163
+[; ;main.c: 163: void UART_TransmitChar(uint8_t data)
+[v _data `uc ~T0 @X0 1 r1 ]
+"164
+[; ;main.c: 164: {
+[f ]
+"165
+[; ;main.c: 165:  while (!PIR1bits.TX1IF);
+[e $U 833  ]
+[e :U 834 ]
+[e :U 833 ]
+[e $ ! != -> . . _PIR1bits 0 4 `i -> 0 `i 834  ]
+[e :U 835 ]
+"166
+[; ;main.c: 166:  TXREG = data;
+[e = _TXREG _data ]
+"167
+[; ;main.c: 167: }
+[e :UE 832 ]
+}
 [v $root$_isr `(v ~T0 @X0 0 e ]
-"74
-[; ;main.c: 74: void __attribute__((picinterrupt(("")))) isr(void)
+"175
+[; ;main.c: 175: void __attribute__((picinterrupt(("")))) isr(void)
 [v _isr `(v ~T1 @X0 1 ef ]
-"75
-[; ;main.c: 75: {
+"176
+[; ;main.c: 176: {
 {
 [e :U _isr ]
 [f ]
-"76
-[; ;main.c: 76:     unsigned char receive_data = 0x00;
-[v _receive_data `uc ~T0 @X0 1 a ]
-[e = _receive_data -> -> 0 `i `uc ]
-"79
-[; ;main.c: 79:     if (PIR1bits.RC1IF)
-[e $ ! != -> . . _PIR1bits 0 5 `i -> 0 `i 836  ]
-"80
-[; ;main.c: 80:     {
+"178
+[; ;main.c: 178:  if (PIR1bits.RC1IF)
+[e $ ! != -> . . _PIR1bits 0 5 `i -> 0 `i 837  ]
+"179
+[; ;main.c: 179:  {
 {
-"81
-[; ;main.c: 81:       receive_data = RCREG1;
-[e = _receive_data _RCREG1 ]
-"83
-[; ;main.c: 83:         PIR1bits.RC1IF = 0;
-[e = . . _PIR1bits 0 5 -> -> 0 `i `uc ]
-"84
-[; ;main.c: 84:     }
+"180
+[; ;main.c: 180:   unsigned char receivedChar = RCREG;
+[v _receivedChar `uc ~T0 @X0 1 a ]
+[e = _receivedChar _RCREG ]
+"181
+[; ;main.c: 181:   PIE1bits.RC1IE = 0;
+[e = . . _PIE1bits 0 5 -> -> 0 `i `uc ]
+"186
+[; ;main.c: 186:   if (!receiveData.receiving)
+[e $ ! ! != -> . _receiveData 2 `i -> 0 `i 838  ]
+"187
+[; ;main.c: 187:   {
+{
+"190
+[; ;main.c: 190:    if ((receivedChar == 0x3A) && (start_sequence_flag == 0x00))
+[e $ ! && == -> _receivedChar `i -> 58 `i == -> _start_sequence_flag `i -> 0 `i 839  ]
+"191
+[; ;main.c: 191:    {
+{
+"193
+[; ;main.c: 193:     start_sequence_flag ^= 1;
+[e =^ _start_sequence_flag -> -> 1 `i `uc ]
+"194
+[; ;main.c: 194:    }
 }
-[e :U 836 ]
-"87
-[; ;main.c: 87:     while((PIR1bits.RC1IF == 0) && (timeout > 0)){
-[e $U 837  ]
-[e :U 838 ]
+[e :U 839 ]
+"197
+[; ;main.c: 197:    if ((receivedChar == 0x23) && (start_sequence_flag == 0x01))
+[e $ ! && == -> _receivedChar `i -> 35 `i == -> _start_sequence_flag `i -> 1 `i 840  ]
+"198
+[; ;main.c: 198:    {
 {
-"88
-[; ;main.c: 88:         timeout--;
-[e -- _timeout -> -> 1 `i `ui ]
-"89
-[; ;main.c: 89:     }
+"200
+[; ;main.c: 200:     receiveData.receiving = 0x01;
+[e = . _receiveData 2 -> -> 1 `i `uc ]
+"201
+[; ;main.c: 201:     receiveData.index = 0;
+[e = . _receiveData 1 -> -> 0 `i `uc ]
+"204
+[; ;main.c: 204:     start_sequence_flag ^= 1;
+[e =^ _start_sequence_flag -> -> 1 `i `uc ]
+"205
+[; ;main.c: 205:    }
+}
+[e :U 840 ]
+"206
+[; ;main.c: 206:   }
+}
+[e $U 841  ]
+"207
+[; ;main.c: 207:   else
+[e :U 838 ]
+"208
+[; ;main.c: 208:   {
+{
+"211
+[; ;main.c: 211:    if ((receivedChar == 0x0D) && (end_sequence_flag == 0x00))
+[e $ ! && == -> _receivedChar `i -> 13 `i == -> _end_sequence_flag `i -> 0 `i 842  ]
+"212
+[; ;main.c: 212:    {
+{
+"213
+[; ;main.c: 213:     end_sequence_flag = 0x01;
+[e = _end_sequence_flag -> -> 1 `i `uc ]
+"214
+[; ;main.c: 214:    }
+}
+[e $U 843  ]
+"215
+[; ;main.c: 215:    else if ((receivedChar == 0x0A) && (end_sequence_flag == 0x01))
+[e :U 842 ]
+[e $ ! && == -> _receivedChar `i -> 10 `i == -> _end_sequence_flag `i -> 1 `i 844  ]
+"216
+[; ;main.c: 216:    {
+{
+"219
+[; ;main.c: 219:     requestBuffer[receiveData.index++] = 0x00;
+[e = *U + &U _requestBuffer * -> ++ . _receiveData 1 -> -> 1 `i `uc `ux -> -> # *U &U _requestBuffer `ui `ux -> -> 0 `i `uc ]
+"222
+[; ;main.c: 222:     processRequest();
+[e ( _processRequest ..  ]
+"225
+[; ;main.c: 225:     receiveData.index = 0;
+[e = . _receiveData 1 -> -> 0 `i `uc ]
+"226
+[; ;main.c: 226:     receiveData.receiving = 0x00;
+[e = . _receiveData 2 -> -> 0 `i `uc ]
+"227
+[; ;main.c: 227:     interrupt_flag = 0x01;
+[e = _interrupt_flag -> -> 1 `i `uc ]
+"230
+[; ;main.c: 230:     end_sequence_flag = 0x00;
+[e = _end_sequence_flag -> -> 0 `i `uc ]
+"232
+[; ;main.c: 232:    }
+}
+[e $U 845  ]
+"233
+[; ;main.c: 233:    else
+[e :U 844 ]
+"234
+[; ;main.c: 234:    {
+{
+"238
+[; ;main.c: 238:     if (receiveData.index < 50)
+[e $ ! < -> . _receiveData 1 `i -> 50 `i 846  ]
+"239
+[; ;main.c: 239:     {
+{
+"240
+[; ;main.c: 240:      if (end_sequence_flag == 0x01)
+[e $ ! == -> _end_sequence_flag `i -> 1 `i 847  ]
+"241
+[; ;main.c: 241:      {
+{
+"243
+[; ;main.c: 243:       end_sequence_flag = 0x00;
+[e = _end_sequence_flag -> -> 0 `i `uc ]
+"246
+[; ;main.c: 246:       requestBuffer[receiveData.index++] = 0x0D;
+[e = *U + &U _requestBuffer * -> ++ . _receiveData 1 -> -> 1 `i `uc `ux -> -> # *U &U _requestBuffer `ui `ux -> -> 13 `i `uc ]
+"247
+[; ;main.c: 247:      }
+}
+[e :U 847 ]
+"249
+[; ;main.c: 249:      requestBuffer[receiveData.index++] = receivedChar;
+[e = *U + &U _requestBuffer * -> ++ . _receiveData 1 -> -> 1 `i `uc `ux -> -> # *U &U _requestBuffer `ui `ux _receivedChar ]
+"250
+[; ;main.c: 250:     }
+}
+[e $U 848  ]
+"251
+[; ;main.c: 251:     else
+[e :U 846 ]
+"252
+[; ;main.c: 252:     {
+{
+"254
+[; ;main.c: 254:      receiveData.index = 0;
+[e = . _receiveData 1 -> -> 0 `i `uc ]
+"255
+[; ;main.c: 255:     }
+}
+[e :U 848 ]
+"256
+[; ;main.c: 256:    }
+}
+[e :U 845 ]
+[e :U 843 ]
+"257
+[; ;main.c: 257:   }
+}
+[e :U 841 ]
+"263
+[; ;main.c: 263:   PIE1bits.RC1IE = 1;
+[e = . . _PIE1bits 0 5 -> -> 1 `i `uc ]
+"264
+[; ;main.c: 264:  }
 }
 [e :U 837 ]
-"87
-[; ;main.c: 87:     while((PIR1bits.RC1IF == 0) && (timeout > 0)){
-[e $ && == -> . . _PIR1bits 0 5 `i -> 0 `i > _timeout -> -> 0 `i `ui 838  ]
-[e :U 839 ]
-"91
-[; ;main.c: 91: }
-[e :UE 835 ]
+"265
+[; ;main.c: 265: }
+[e :UE 836 ]
+}
+"272
+[; ;main.c: 272: void processRequest()
+[v _processRequest `(v ~T0 @X0 1 ef ]
+"273
+[; ;main.c: 273: {
+{
+[e :U _processRequest ]
+[f ]
+"274
+[; ;main.c: 274:  unsigned int buffer_index = 0;
+[v _buffer_index `ui ~T0 @X0 1 a ]
+[e = _buffer_index -> -> 0 `i `ui ]
+"275
+[; ;main.c: 275:  unsigned int length_index = 0;
+[v _length_index `ui ~T0 @X0 1 a ]
+[e = _length_index -> -> 0 `i `ui ]
+"276
+[; ;main.c: 276:  unsigned int i = 0;
+[v _i `ui ~T0 @X0 1 a ]
+[e = _i -> -> 0 `i `ui ]
+"278
+[; ;main.c: 278:  request_unit.DEVICE_ADDR = requestBuffer[0];
+[e = . _request_unit 0 *U + &U _requestBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _requestBuffer `ui `ux ]
+"279
+[; ;main.c: 279:  request_unit.ORDER_CODE = requestBuffer[1];
+[e = . _request_unit 1 *U + &U _requestBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _requestBuffer `ui `ux ]
+"282
+[; ;main.c: 282:  for (buffer_index = 0; requestBuffer[buffer_index + 2] != 0x00; buffer_index++){
+{
+[e = _buffer_index -> -> 0 `i `ui ]
+[e $U 853  ]
+[e :U 850 ]
+{
+"283
+[; ;main.c: 283:   request_unit.payload_data[buffer_index] = requestBuffer[buffer_index + 2];
+[e = *U + &U . _request_unit 3 * -> _buffer_index `ux -> -> # *U &U . _request_unit 3 `ui `ux *U + &U _requestBuffer * -> + _buffer_index -> -> 2 `i `ui `ux -> -> # *U &U _requestBuffer `ui `ux ]
+"286
+[; ;main.c: 286:   length_index = buffer_index + 2;
+[e = _length_index + _buffer_index -> -> 2 `i `ui ]
+"287
+[; ;main.c: 287:         }
+}
+[e ++ _buffer_index -> -> 1 `i `ui ]
+[e :U 853 ]
+[e $ != -> *U + &U _requestBuffer * -> + _buffer_index -> -> 2 `i `ui `ux -> -> # *U &U _requestBuffer `ui `ux `i -> 0 `i 850  ]
+[e :U 851 ]
+}
+"290
+[; ;main.c: 290:  request_unit.payload_length_index = length_index;
+[e = . _request_unit 2 _length_index ]
+"295
+[; ;main.c: 295: }
+[e :UE 849 ]
+}
+"302
+[; ;main.c: 302: void createResponse()
+[v _createResponse `(v ~T0 @X0 1 ef ]
+"303
+[; ;main.c: 303: {
+{
+[e :U _createResponse ]
+[f ]
+"304
+[; ;main.c: 304:  unsigned char ORDER_CODE = request_unit.ORDER_CODE;
+[v _ORDER_CODE `uc ~T0 @X0 1 a ]
+[e = _ORDER_CODE . _request_unit 1 ]
+"307
+[; ;main.c: 307:  if (request_unit.DEVICE_ADDR == 0x21)
+[e $ ! == -> . _request_unit 0 `i -> 33 `i 855  ]
+"308
+[; ;main.c: 308:  {
+{
+"310
+[; ;main.c: 310:   switch (ORDER_CODE)
+[e $U 857  ]
+"311
+[; ;main.c: 311:   {
+{
+"312
+[; ;main.c: 312:   case PING:
+[e :U 858 ]
+"313
+[; ;main.c: 313:    createPingResponse();
+[e ( _createPingResponse ..  ]
+"314
+[; ;main.c: 314:    break;
+[e $U 856  ]
+"315
+[; ;main.c: 315:   case WRITE_MEM:
+[e :U 859 ]
+"316
+[; ;main.c: 316:    writeDataToEEPROM();
+[e ( _writeDataToEEPROM ..  ]
+"317
+[; ;main.c: 317:    break;
+[e $U 856  ]
+"318
+[; ;main.c: 318:   case READ_MEM:
+[e :U 860 ]
+"319
+[; ;main.c: 319:    break;
+[e $U 856  ]
+"320
+[; ;main.c: 320:   case UPDATE_MEM:
+[e :U 861 ]
+"321
+[; ;main.c: 321:    break;
+[e $U 856  ]
+"322
+[; ;main.c: 322:   case DELETE_MEM:
+[e :U 862 ]
+"323
+[; ;main.c: 323:    break;
+[e $U 856  ]
+"324
+[; ;main.c: 324:   default:
+[e :U 863 ]
+"325
+[; ;main.c: 325:    break;
+[e $U 856  ]
+"326
+[; ;main.c: 326:   }
+}
+[e $U 856  ]
+[e :U 857 ]
+[e [\ _ORDER_CODE , $ . `E6686 0 858
+ , $ . `E6686 1 859
+ , $ . `E6686 2 860
+ , $ . `E6686 3 861
+ , $ . `E6686 4 862
+ 863 ]
+[e :U 856 ]
+"329
+[; ;main.c: 329:   sendResponse();
+[e ( _sendResponse ..  ]
+"330
+[; ;main.c: 330:  }
+}
+[e :U 855 ]
+"331
+[; ;main.c: 331: }
+[e :UE 854 ]
+}
+"339
+[; ;main.c: 339: void createPingResponse()
+[v _createPingResponse `(v ~T0 @X0 1 ef ]
+"340
+[; ;main.c: 340: {
+{
+[e :U _createPingResponse ]
+[f ]
+"341
+[; ;main.c: 341:  responseBuffer[0] = request_unit.DEVICE_ADDR;
+[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
+"342
+[; ;main.c: 342:  responseBuffer[1] = request_unit.ORDER_CODE;
+[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
+"343
+[; ;main.c: 343:  responseBuffer[2] = 0x00;
+[e = *U + &U _responseBuffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 0 `i `uc ]
+"344
+[; ;main.c: 344:  responseBuffer[3] = 0x00;
+[e = *U + &U _responseBuffer * -> -> -> 3 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 0 `i `uc ]
+"345
+[; ;main.c: 345: }
+[e :UE 864 ]
+}
+"352
+[; ;main.c: 352: void writeDataToEEPROM()
+[v _writeDataToEEPROM `(v ~T0 @X0 1 ef ]
+"353
+[; ;main.c: 353: {
+{
+[e :U _writeDataToEEPROM ]
+[f ]
+"354
+[; ;main.c: 354:  unsigned short payload_length;
+[v _payload_length `us ~T0 @X0 1 a ]
+"355
+[; ;main.c: 355:  unsigned char eeprom_data = 0x00;
+[v _eeprom_data `uc ~T0 @X0 1 a ]
+[e = _eeprom_data -> -> 0 `i `uc ]
+"356
+[; ;main.c: 356:  unsigned char at24_eep_addr_H = 0x00;
+[v _at24_eep_addr_H `uc ~T0 @X0 1 a ]
+[e = _at24_eep_addr_H -> -> 0 `i `uc ]
+"357
+[; ;main.c: 357:  unsigned char at24_eep_addr_L = 0x00;
+[v _at24_eep_addr_L `uc ~T0 @X0 1 a ]
+[e = _at24_eep_addr_L -> -> 0 `i `uc ]
+"358
+[; ;main.c: 358:  unsigned short at24_eeprom_addr_start = 0x0000;
+[v _at24_eeprom_addr_start `us ~T0 @X0 1 a ]
+[e = _at24_eeprom_addr_start -> -> 0 `i `us ]
+"364
+[; ;main.c: 364:  at24_eep_addr_H = EEPROM_Read(ADDRESS_POINTER_H);
+[e = _at24_eep_addr_H ( _EEPROM_Read (1 -> . `E6692 2 `uc ]
+"365
+[; ;main.c: 365:  _delay((unsigned long)((500)*(64000000/4000.0)));
+[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"366
+[; ;main.c: 366:  at24_eep_addr_L = EEPROM_Read(ADDRESS_POINTER_L);
+[e = _at24_eep_addr_L ( _EEPROM_Read (1 -> . `E6692 3 `uc ]
+"369
+[; ;main.c: 369:  at24_eeprom_address = (at24_eep_addr_H << 8) | at24_eep_addr_L;
+[e = _at24_eeprom_address -> | << -> _at24_eep_addr_H `i -> 8 `i -> _at24_eep_addr_L `i `us ]
+"372
+[; ;main.c: 372:  if(at24_eeprom_address == 0xFFFF)
+[e $ ! == -> _at24_eeprom_address `ui -> 65535 `ui 866  ]
+"373
+[; ;main.c: 373:   at24_eeprom_address = 0x0000;
+[e = _at24_eeprom_address -> -> 0 `i `us ]
+[e :U 866 ]
+"376
+[; ;main.c: 376:  at24_eeprom_addr_start = at24_eeprom_address;
+[e = _at24_eeprom_addr_start _at24_eeprom_address ]
+"379
+[; ;main.c: 379:  payload_length = (requestBuffer[request_unit.payload_length_index]) & 0xFF;
+[e = _payload_length -> & -> *U + &U _requestBuffer * -> . _request_unit 2 `ux -> -> # *U &U _requestBuffer `ui `ux `i -> 255 `i `us ]
+"382
+[; ;main.c: 382:  writeByteAT24_EEPROM(at24_eeprom_address, requestBuffer[request_unit.payload_length_index]);
+[e ( _writeByteAT24_EEPROM (2 , -> _at24_eeprom_address `ui *U + &U _requestBuffer * -> . _request_unit 2 `ux -> -> # *U &U _requestBuffer `ui `ux ]
+"383
+[; ;main.c: 383:  at24_eeprom_address += 1;
+[e =+ _at24_eeprom_address -> -> 1 `i `us ]
+"385
+[; ;main.c: 385:  _delay((unsigned long)((10)*(64000000/4000.0)));
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"388
+[; ;main.c: 388:  for(unsigned short i = 0; i < payload_length; i++){
+{
+[v _i `us ~T0 @X0 1 a ]
+[e = _i -> -> 0 `i `us ]
+[e $U 870  ]
+[e :U 867 ]
+{
+"389
+[; ;main.c: 389:   writeByteAT24_EEPROM((at24_eeprom_address + i), request_unit.payload_data[i]);
+[e ( _writeByteAT24_EEPROM (2 , + -> _at24_eeprom_address `ui -> _i `ui *U + &U . _request_unit 3 * -> _i `ux -> -> # *U &U . _request_unit 3 `ui `ux ]
+"390
+[; ;main.c: 390:   _delay((unsigned long)((10)*(64000000/4000.0)));
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"391
+[; ;main.c: 391:  }
+}
+[e ++ _i -> -> 1 `i `us ]
+[e :U 870 ]
+[e $ < -> _i `ui -> _payload_length `ui 867  ]
+[e :U 868 ]
+}
+"394
+[; ;main.c: 394:  at24_eeprom_address += payload_length;
+[e =+ _at24_eeprom_address -> _payload_length `us ]
+"401
+[; ;main.c: 401:  EEPROM_Write(ADDRESS_POINTER_H, ((at24_eeprom_address >> 8) & 0xFF));
+[e ( _EEPROM_Write (2 , -> . `E6692 2 `uc -> & >> -> _at24_eeprom_address `ui -> 8 `i -> -> 255 `i `ui `uc ]
+"402
+[; ;main.c: 402:  _delay((unsigned long)((50)*(64000000/4000.0)));
+[e ( __delay (1 -> * -> -> 50 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"403
+[; ;main.c: 403:  EEPROM_Write(ADDRESS_POINTER_L, (at24_eeprom_address & 0xFF));
+[e ( _EEPROM_Write (2 , -> . `E6692 3 `uc -> & -> _at24_eeprom_address `ui -> -> 255 `i `ui `uc ]
+"404
+[; ;main.c: 404:  _delay((unsigned long)((50)*(64000000/4000.0)));
+[e ( __delay (1 -> * -> -> 50 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"421
+[; ;main.c: 421:  responseBuffer[0] = request_unit.DEVICE_ADDR;
+[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
+"422
+[; ;main.c: 422:  responseBuffer[1] = request_unit.ORDER_CODE;
+[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
+"423
+[; ;main.c: 423:  responseBuffer[2] = (at24_eeprom_addr_start >> 8) & 0xFF;
+[e = *U + &U _responseBuffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> & >> -> _at24_eeprom_addr_start `ui -> 8 `i -> -> 255 `i `ui `uc ]
+"424
+[; ;main.c: 424:  responseBuffer[3] = at24_eeprom_addr_start & 0xFF;
+[e = *U + &U _responseBuffer * -> -> -> 3 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> & -> _at24_eeprom_addr_start `ui -> -> 255 `i `ui `uc ]
+"425
+[; ;main.c: 425:  responseBuffer[4] = (!checkAck) ? 0x01 : 0x00;
+[e = *U + &U _responseBuffer * -> -> -> 4 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> ? ! != -> _checkAck `i -> 0 `i : -> 1 `i -> 0 `i `uc ]
+"427
+[; ;main.c: 427: }
+[e :UE 865 ]
+}
+"434
+[; ;main.c: 434: void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
+[v _writeByteAT24_EEPROM `(v ~T0 @X0 1 ef2`ui`uc ]
+"435
+[; ;main.c: 435: {
+{
+[e :U _writeByteAT24_EEPROM ]
+"434
+[; ;main.c: 434: void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
+[v _address `ui ~T0 @X0 1 r1 ]
+[v _data `uc ~T0 @X0 1 r2 ]
+"435
+[; ;main.c: 435: {
+[f ]
+"436
+[; ;main.c: 436:  I2C2_Start();
+[e ( _I2C2_Start ..  ]
+"437
+[; ;main.c: 437:  checkAck = I2C2_Send(0x50 << 1);
+[e = _checkAck ( _I2C2_Send (1 -> << -> 80 `i -> 1 `i `uc ]
+"438
+[; ;main.c: 438:  I2C2_Send((address >> 8) & 0xFF);
+[e ( _I2C2_Send (1 -> & >> _address -> 8 `i -> -> 255 `i `ui `uc ]
+"439
+[; ;main.c: 439:  I2C2_Send(address & 0xFF);
+[e ( _I2C2_Send (1 -> & _address -> -> 255 `i `ui `uc ]
+"440
+[; ;main.c: 440:  I2C2_Send(data);
+[e ( _I2C2_Send (1 _data ]
+"441
+[; ;main.c: 441:  I2C2_Stop();
+[e ( _I2C2_Stop ..  ]
+"442
+[; ;main.c: 442: }
+[e :UE 871 ]
+}
+"450
+[; ;main.c: 450: void sendResponse()
+[v _sendResponse `(v ~T0 @X0 1 ef ]
+"451
+[; ;main.c: 451: {
+{
+[e :U _sendResponse ]
+[f ]
+"452
+[; ;main.c: 452:  unsigned int index = 0;
+[v _index `ui ~T0 @X0 1 a ]
+[e = _index -> -> 0 `i `ui ]
+"455
+[; ;main.c: 455:  UART_TransmitChar(0x3A);
+[e ( _UART_TransmitChar (1 -> -> 58 `i `uc ]
+"456
+[; ;main.c: 456:  _delay((unsigned long)((10)*(64000000/4000.0)));
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"457
+[; ;main.c: 457:  UART_TransmitChar(0x23);
+[e ( _UART_TransmitChar (1 -> -> 35 `i `uc ]
+"458
+[; ;main.c: 458:  _delay((unsigned long)((10)*(64000000/4000.0)));
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"460
+[; ;main.c: 460:  for (index = 0; index < 10; index++)
+{
+[e = _index -> -> 0 `i `ui ]
+[e $ < _index -> -> 10 `i `ui 873  ]
+[e $U 874  ]
+[e :U 873 ]
+"461
+[; ;main.c: 461:  {
+{
+"462
+[; ;main.c: 462:   UART_TransmitChar(responseBuffer[index]);
+[e ( _UART_TransmitChar (1 *U + &U _responseBuffer * -> _index `ux -> -> # *U &U _responseBuffer `ui `ux ]
+"463
+[; ;main.c: 463:   _delay((unsigned long)((10)*(64000000/4000.0)));
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"464
+[; ;main.c: 464:  }
+}
+[e ++ _index -> -> 1 `i `ui ]
+[e $ < _index -> -> 10 `i `ui 873  ]
+[e :U 874 ]
+}
+"467
+[; ;main.c: 467:  UART_TransmitChar(0x0D);
+[e ( _UART_TransmitChar (1 -> -> 13 `i `uc ]
+"468
+[; ;main.c: 468:  _delay((unsigned long)((10)*(64000000/4000.0)));
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"469
+[; ;main.c: 469:  UART_TransmitChar(0x0A);
+[e ( _UART_TransmitChar (1 -> -> 10 `i `uc ]
+"473
+[; ;main.c: 473:  index = 50;
+[e = _index -> -> 50 `i `ui ]
+"474
+[; ;main.c: 474:  while(index > 0){
+[e $U 876  ]
+[e :U 877 ]
+{
+"475
+[; ;main.c: 475:       requestBuffer[50 - index] = 0xFF;
+[e = *U + &U _requestBuffer * -> - -> -> 50 `i `ui _index `ux -> -> # *U &U _requestBuffer `ui `ux -> -> 255 `i `uc ]
+"476
+[; ;main.c: 476:       index--;
+[e -- _index -> -> 1 `i `ui ]
+"477
+[; ;main.c: 477:  }
+}
+[e :U 876 ]
+"474
+[; ;main.c: 474:  while(index > 0){
+[e $ > _index -> -> 0 `i `ui 877  ]
+[e :U 878 ]
+"478
+[; ;main.c: 478: }
+[e :UE 872 ]
+}
+"485
+[; ;main.c: 485: void EEPROM_Write(unsigned char addr, unsigned char eep_data){
+[v _EEPROM_Write `(v ~T0 @X0 1 ef2`uc`uc ]
+{
+[e :U _EEPROM_Write ]
+[v _addr `uc ~T0 @X0 1 r1 ]
+[v _eep_data `uc ~T0 @X0 1 r2 ]
+[f ]
+"486
+[; ;main.c: 486:      EEADR = addr & 0xFF;
+[e = _EEADR -> & -> _addr `i -> 255 `i `uc ]
+"487
+[; ;main.c: 487:      EEDATA = eep_data;
+[e = _EEDATA _eep_data ]
+"489
+[; ;main.c: 489:      EECON1bits.EEPGD = 0;
+[e = . . _EECON1bits 0 7 -> -> 0 `i `uc ]
+"490
+[; ;main.c: 490:      EECON1bits.CFGS = 0;
+[e = . . _EECON1bits 0 6 -> -> 0 `i `uc ]
+"491
+[; ;main.c: 491:      EECON1bits.WREN = 1;
+[e = . . _EECON1bits 0 2 -> -> 1 `i `uc ]
+"493
+[; ;main.c: 493:      INTCONbits.GIE = 0;
+[e = . . _INTCONbits 1 7 -> -> 0 `i `uc ]
+"496
+[; ;main.c: 496:      EECON2 = 0x55;
+[e = _EECON2 -> -> 85 `i `uc ]
+"497
+[; ;main.c: 497:      EECON2 = 0xAA;
+[e = _EECON2 -> -> 170 `i `uc ]
+"498
+[; ;main.c: 498:      EECON1bits.WR = 1;
+[e = . . _EECON1bits 0 1 -> -> 1 `i `uc ]
+"500
+[; ;main.c: 500:      INTCONbits.GIE = 1;
+[e = . . _INTCONbits 1 7 -> -> 1 `i `uc ]
+"502
+[; ;main.c: 502:      PIE2bits.EEIE = 1;
+[e = . . _PIE2bits 0 4 -> -> 1 `i `uc ]
+"503
+[; ;main.c: 503:      while(PIR2bits.EEIF == 0);
+[e $U 880  ]
+[e :U 881 ]
+[e :U 880 ]
+[e $ == -> . . _PIR2bits 0 4 `i -> 0 `i 881  ]
+[e :U 882 ]
+"505
+[; ;main.c: 505:      PIR2bits.EEIF = 0;
+[e = . . _PIR2bits 0 4 -> -> 0 `i `uc ]
+"506
+[; ;main.c: 506: }
+[e :UE 879 ]
+}
+"513
+[; ;main.c: 513: unsigned char EEPROM_Read(unsigned char addr){
+[v _EEPROM_Read `(uc ~T0 @X0 1 ef1`uc ]
+{
+[e :U _EEPROM_Read ]
+[v _addr `uc ~T0 @X0 1 r1 ]
+[f ]
+"514
+[; ;main.c: 514:  EEADR = addr;
+[e = _EEADR _addr ]
+"515
+[; ;main.c: 515:  EECON1bits.EEPGD = 0;
+[e = . . _EECON1bits 0 7 -> -> 0 `i `uc ]
+"516
+[; ;main.c: 516:  EECON1bits.RD = 1;
+[e = . . _EECON1bits 0 0 -> -> 1 `i `uc ]
+"518
+[; ;main.c: 518:  return EEDATA;
+[e ) _EEDATA ]
+[e $UE 883  ]
+"519
+[; ;main.c: 519: }
+[e :UE 883 ]
 }
 [v $root$_main `(v ~T0 @X0 0 e ]
-"114
-[; ;main.c: 114: void main(){
+"540
+[; ;main.c: 540: void main()
 [v _main `(v ~T0 @X0 1 ef ]
+"541
+[; ;main.c: 541: {
 {
 [e :U _main ]
 [f ]
-"116
-[; ;main.c: 116:     OSCCON = 0x70;
+"543
+[; ;main.c: 543:  OSCCON = 0x70;
 [e = _OSCCON -> -> 112 `i `uc ]
-"117
-[; ;main.c: 117:     OSCTUNE = 0xC0;
+"544
+[; ;main.c: 544:  OSCTUNE = 0xC0;
 [e = _OSCTUNE -> -> 192 `i `uc ]
-"119
-[; ;main.c: 119:     UART_Init();
+"559
+[; ;main.c: 559:  UART_Init();
 [e ( _UART_Init ..  ]
-"120
-[; ;main.c: 120:     I2C2_Init();
+"560
+[; ;main.c: 560:  I2C2_Init();
 [e ( _I2C2_Init ..  ]
-"122
-[; ;main.c: 122:     while(1){
-[e :U 842 ]
+"562
+[; ;main.c: 562:  while (1)
+[e :U 886 ]
+"563
+[; ;main.c: 563:  {
 {
-"123
-[; ;main.c: 123:     }
+"564
+[; ;main.c: 564:   if (interrupt_flag)
+[e $ ! != -> _interrupt_flag `i -> 0 `i 888  ]
+"565
+[; ;main.c: 565:   {
+{
+"566
+[; ;main.c: 566:    createResponse();
+[e ( _createResponse ..  ]
+"567
+[; ;main.c: 567:    interrupt_flag = 0x00;
+[e = _interrupt_flag -> -> 0 `i `uc ]
+"568
+[; ;main.c: 568:   }
 }
-[e :U 841 ]
-[e $U 842  ]
-[e :U 843 ]
-"124
-[; ;main.c: 124: }
-[e :UE 840 ]
+[e :U 888 ]
+"569
+[; ;main.c: 569:  }
+}
+[e :U 885 ]
+[e $U 886  ]
+[e :U 887 ]
+"570
+[; ;main.c: 570: }
+[e :UE 884 ]
 }

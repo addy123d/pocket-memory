@@ -17,7 +17,7 @@
 #define EEPROM_ADDRESS 0x50
 #define DEVICE_CODE 0x21
 #define PACKET_SIZE 50
-#define RESPONSE_PACKET_SIZE 4
+#define RESPONSE_PACKET_SIZE 10
 #define PACKET_START_MARKER_LOWER 0x3A
 #define PACKET_START_MARKER_UPPER 0x23
 #define PACKET_END_MARKER_LOWER 0x0D
@@ -42,6 +42,15 @@ enum ORDER_CODES
 	UPDATE_MEM = 0x03,
 	DELETE_MEM = 0x04
 };
+
+enum PIC_EEPROM_CONFIG
+{
+	PASSWORD_ADDR_START_L = 0x00,
+	PASSWORD_ADDR_START_H = 0x00,
+	ADDRESS_POINTER_H = 0x0A,
+	ADDRESS_POINTER_L = 0x0B
+};
+//address pointer will store address of next location where data will be stored on at24lc256
 
 // struct to hold variables related to receiving packets
 typedef struct
@@ -73,6 +82,8 @@ void createPingResponse(void);
 void writeDataToEEPROM();
 void writeByteAT24_EEPROM(unsigned int, unsigned char);
 int hexCharToInt(unsigned char hexValue);
+void EEPROM_Write(unsigned char addr, unsigned char eep_data);
+unsigned char EEPROM_Read(unsigned char addr);
 void sendResponse(void);
 
 /*
@@ -342,7 +353,30 @@ void writeDataToEEPROM()
 {
 	unsigned short payload_length;
 	unsigned char eeprom_data = 0x00;
+	unsigned char at24_eep_addr_H = 0x00;
+	unsigned char at24_eep_addr_L = 0x00;
+	unsigned short at24_eeprom_addr_start = 0x0000;
+
+
+	//read new location address from PIC-EEPROM
+	//0x0A and 0x0B, location to store address_counter which has address of location where new data will be stored.
 	
+	at24_eep_addr_H = EEPROM_Read(ADDRESS_POINTER_H);
+	__delay_ms(500); //give sufficient time to read data from eeprom
+	at24_eep_addr_L = EEPROM_Read(ADDRESS_POINTER_L);
+
+
+	//(at24_eep_addr_H << 8, will give you 8 bit High byte of a 16bit integer)
+	at24_eeprom_address = (at24_eep_addr_H << 8) | at24_eep_addr_L;
+
+	//if it's a fresh eeprom, assign address reset address from 0x0000.
+	if(at24_eeprom_address == 0xFFFF)
+		at24_eeprom_address = 0x0000; //start from the first word address, i.e 0x0000
+
+	//assign start address to a local variable for further use
+	at24_eeprom_addr_start = at24_eeprom_address;
+
+	//length of string to be stored, convert it to 16bit
 	payload_length = (requestBuffer[request_unit.payload_length_index]) & 0xFF;																																																																																																																																									
 
 	//store length of data first.
@@ -363,10 +397,17 @@ void writeDataToEEPROM()
 	//for example, while storing length, address incremented by 1, so it became 0x0001.
         // now, 0x0001 + 0x000F -> 0x0010, this is the new location
 
-	__delay_ms(100);
+
+	__delay_ms(1000);
+	//write next address location on PIC-EEPROM
+	EEPROM_Write(ADDRESS_POINTER_H, ((at24_eeprom_address >> 8) & 0xFF)); //write word address HIGH Byte
+	__delay_ms(1000); //give some delay to conduct write operation
+	EEPROM_Write(ADDRESS_POINTER_L, (at24_eeprom_address & 0xFF)); //write word address LOW Byte
+	__delay_ms(1000); 
 	
 
 	//read last byte save in eeprom
+	/*
 	I2C2_Start(); //send start condition
 	I2C2_Send(EEPROM_ADDRESS << 1); //send slave address with write bit
 	I2C2_Send(((at24_eeprom_address - 1) >> 8) & 0xFF); //word address high byte
@@ -376,13 +417,15 @@ void writeDataToEEPROM()
 	I2C2_Send((EEPROM_ADDRESS << 1) | 0x01); //send slave address with read bit
 	eeprom_data = I2C2_Read(); //read 8 bit data from the mentioned address
 	I2C2_Stop(); //send stop condition
-
+        */
 
 	// update response buffer
 	responseBuffer[0] = request_unit.DEVICE_ADDR;
-	responseBuffer[1] = request_unit.ORDER_CODE;
-	responseBuffer[2] = eeprom_data;         		// last data stored - address high byte
-	responseBuffer[3] = (!checkAck) ? 0x01 : 0x00;		// last data stored - low byte
+	responseBuffer[1] = request_unit.ORDER_CODE;         
+	responseBuffer[2] = (at24_eeprom_addr_start >> 8) & 0xFF;  //START address high byte
+	responseBuffer[3] = at24_eeprom_addr_start & 0xFF;         //START address low byte
+	responseBuffer[4] = (!checkAck) ? 0x01 : 0x00;
+	
 }
 
 /*
@@ -393,7 +436,7 @@ void writeDataToEEPROM()
 void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
 {
 	I2C2_Start();					  // start condition
-	checkAck = I2C2_Send(EEPROM_ADDRESS << 1);	  		  // send control code(4 bits), the chip select(3 bits) and the R/W bit (logic low)
+	checkAck = I2C2_Send(EEPROM_ADDRESS << 1);	  // send control code(4 bits), the chip select(3 bits) and the R/W bit (logic low)
 	I2C2_Send((address >> 8) & 0xFF); 		  // address high byte (MSB)
 	I2C2_Send(address & 0xFF);		  	  // address low byte (LSB)
 	I2C2_Send(data);				  // data word to be written into the addressed memory location
@@ -434,6 +477,49 @@ void sendResponse()
 	     requestBuffer[PACKET_SIZE - index] = 0xFF;
 	     index--;
 	}
+}
+
+/*
+ *@desc: writes data to eeprom
+ *@params: (unsigned short addr, unsigned char eep_data)
+ *@return: nothing
+ */
+void EEPROM_Write(unsigned char addr, unsigned char eep_data){
+    __delay_ms(1000);
+
+     EEADR = addr & 0xFF;    // word address
+     EEDATA = eep_data; // holds the data.
+
+     EECON1bits.EEPGD = 0;  // access data eeprom memory, memory select bit
+     EECON1bits.CFGS = 0;   // access flash or data eeprom memory, comfiguration select bit 
+     EECON1bits.WREN = 1;   // allows write cycles to flash program/data eeprom
+ 
+     INTCONbits.GIE = 0;    // disable global interrupts
+
+     //This sequence is important to write data in eeprom
+     EECON2 = 0x55;
+     EECON2 = 0xAA;
+     EECON1bits.WR = 1;     // Write Control Bit, Initiates a data EEPROM erase/write cycle or a program memory erase cycle or write cycle.
+
+     INTCONbits.GIE = 1;    // enable global interrupts
+
+     //PIE2bits.EEIE = 1; // Data EEPROM/Flash Write Operation Interrupt Enable bit	
+     while(PIR2bits.EEIF == 0); //wait for write operation complete
+
+     PIR2bits.EEIF = 0; // reset flag after eeprom write operation.
+}
+
+/*
+ *@desc: reads data from 25K22 eeprom
+ *@params: (unsigned short)addr
+ *@return: (unsigned char) eep_data
+ */
+unsigned char EEPROM_Read(unsigned char addr){
+	EEADR = addr;   // word address
+	EECON1bits.EEPGD = 0; // reset memory select bit
+	EECON1bits.RD = 1;    // set read control bit
+
+	return EEDATA;
 }
 
 // writing to eeprom

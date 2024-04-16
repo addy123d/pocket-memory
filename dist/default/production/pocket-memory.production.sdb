@@ -1,10 +1,10 @@
-[p GLOBOPT AUTOSTATIC LFSROK ]
+[p GLOBOPT AUTOSTATIC IEEE_FLT IEEE_DBL LFSROK EMI_WORD ]
 [d version 1.1 ]
 [d edition pro ]
 [d chip 18F25K22 ]
 [d frameptr 4065 ]
-"310 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
-[e E5828 ORDER_CODES `uc
+"326 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+[e E6686 ORDER_CODES `uc
 PING 17
 WRITE_MEM 1
 READ_MEM 2
@@ -12,36 +12,38 @@ UPDATE_MEM 3
 DELETE_MEM 4
 ]
 "364
-[e E5834 PIC_EEPROM_CONFIG `uc
+[e E6692 PIC_EEPROM_CONFIG `uc
 PASSWORD_ADDR_START_L 0
 PASSWORD_ADDR_START_H 0
 ADDRESS_POINTER_H 10
 ADDRESS_POINTER_L 11
 ]
-"62 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\float.c
-[v ___ftpack __ftpack `(f  1 e 3 0 ]
-"86 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\ftadd.c
-[v ___ftadd __ftadd `(f  1 e 3 0 ]
-"54 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\ftdiv.c
-[v ___ftdiv __ftdiv `(f  1 e 3 0 ]
-"62 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\ftmul.c
-[v ___ftmul __ftmul `(f  1 e 3 0 ]
-"19 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\ftsub.c
-[v ___ftsub __ftsub `(f  1 e 3 0 ]
-"44 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\fttol.c
-[v ___fttol __fttol `(l  1 e 4 0 ]
-"10 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\sprcadd.c
-[v ___fladd __fladd `(d  1 e 3 0 ]
+"4 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\fleq.c
+[v ___fleq __fleq `(b  1 e 0 0 ]
+"62 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\float.c
+[v ___ftpack __ftpack `(f  1 e 4 0 ]
+"43 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\fltol.c
+[v ___fltol __fltol `(l  1 e 4 0 ]
+"86 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\ftadd.c
+[v ___ftadd __ftadd `(f  1 e 4 0 ]
+"54 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\ftdiv.c
+[v ___ftdiv __ftdiv `(f  1 e 4 0 ]
+"62 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\ftmul.c
+[v ___ftmul __ftmul `(f  1 e 4 0 ]
+"19 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\ftsub.c
+[v ___ftsub __ftsub `(f  1 e 4 0 ]
+"10 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\sprcadd.c
+[v ___fladd __fladd `(d  1 e 4 0 ]
 "245
-[v ___flsub __flsub `(d  1 e 3 0 ]
-"11 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\sprcdiv.c
-[v ___fldiv __fldiv `(d  1 e 3 0 ]
-"8 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\sprcmul.c
-[v ___flmul __flmul `(d  1 e 3 0 ]
-"15 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\Umul32.c
+[v ___flsub __flsub `(d  1 e 4 0 ]
+"11 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\sprcdiv.c
+[v ___fldiv __fldiv `(d  1 e 4 0 ]
+"8 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\sprcmul.c
+[v ___flmul __flmul `(d  1 e 4 0 ]
+"15 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\Umul32.c
 [v ___lmul __lmul `(ul  1 e 4 0 ]
-"91 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\Umul64.c
-[v ___omul __omul `(ul  1 e 4 0 ]
+"91 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\Umul64.c
+[v ___omul __omul `(uo  1 e 8 0 ]
 "20 C:\Users\Helion-Electrical\Desktop\pocket-memory\i2c.c
 [v _I2C2_Init I2C2_Init `(v  1 e 1 0 ]
 "51
@@ -64,15 +66,15 @@ ADDRESS_POINTER_L 11
 [v _createPingResponse createPingResponse `(v  1 e 1 0 ]
 "352
 [v _writeDataToEEPROM writeDataToEEPROM `(v  1 e 1 0 ]
-"436
+"434
 [v _writeByteAT24_EEPROM writeByteAT24_EEPROM `(v  1 e 1 0 ]
-"452
+"450
 [v _sendResponse sendResponse `(v  1 e 1 0 ]
-"487
+"485
 [v _EEPROM_Write EEPROM_Write `(v  1 e 1 0 ]
-"517
+"513
 [v _EEPROM_Read EEPROM_Read `(uc  1 e 1 0 ]
-"544
+"540
 [v _main main `(v  1 e 1 0 ]
 [s S35 . 1 `uc 1 . 1 0 :2:0 
 `uc 1 ANSC2 1 0 :1:2 
@@ -82,10 +84,10 @@ ADDRESS_POINTER_L 11
 `uc 1 ANSC6 1 0 :1:6 
 `uc 1 ANSC7 1 0 :1:7 
 ]
-"163 C:\Program Files\Microchip\xc8\v2.46\pic\include\proc\pic18f25k22.h
+"163 C:/Program Files/Microchip/MPLABX/v6.20/packs/Microchip/PIC18F-K_DFP/1.13.292/xc8\pic\include\proc\pic18f25k22.h
 [u S43 . 1 `S35 1 . 1 0 ]
 [v _ANSELCbits ANSELCbits `VES43  1 e 1 @3898 ]
-[s S410 . 1 `uc 1 TRISC0 1 0 :1:0 
+[s S455 . 1 `uc 1 TRISC0 1 0 :1:0 
 `uc 1 TRISC1 1 0 :1:1 
 `uc 1 TRISC2 1 0 :1:2 
 `uc 1 TRISC3 1 0 :1:3 
@@ -95,7 +97,7 @@ ADDRESS_POINTER_L 11
 `uc 1 TRISC7 1 0 :1:7 
 ]
 "8056
-[s S419 . 1 `uc 1 RC0 1 0 :1:0 
+[s S464 . 1 `uc 1 RC0 1 0 :1:0 
 `uc 1 RC1 1 0 :1:1 
 `uc 1 RC2 1 0 :1:2 
 `uc 1 RC3 1 0 :1:3 
@@ -104,8 +106,8 @@ ADDRESS_POINTER_L 11
 `uc 1 RC6 1 0 :1:6 
 `uc 1 RC7 1 0 :1:7 
 ]
-[u S428 . 1 `S410 1 . 1 0 `S419 1 . 1 0 ]
-[v _TRISCbits TRISCbits `VES428  1 e 1 @3988 ]
+[u S473 . 1 `S455 1 . 1 0 `S464 1 . 1 0 ]
+[v _TRISCbits TRISCbits `VES473  1 e 1 @3988 ]
 "8267
 [v _OSCTUNE OSCTUNE `VEuc  1 e 1 @3995 ]
 [s S103 . 1 `uc 1 TMR1IE 1 0 :1:0 
@@ -140,7 +142,26 @@ ADDRESS_POINTER_L 11
 ]
 [u S149 . 1 `S136 1 . 1 0 `S144 1 . 1 0 ]
 [v _PIR1bits PIR1bits `VES149  1 e 1 @3998 ]
-[s S262 . 1 `uc 1 CCP2IF 1 0 :1:0 
+[s S262 . 1 `uc 1 CCP2IE 1 0 :1:0 
+`uc 1 TMR3IE 1 0 :1:1 
+`uc 1 HLVDIE 1 0 :1:2 
+`uc 1 BCL1IE 1 0 :1:3 
+`uc 1 EEIE 1 0 :1:4 
+`uc 1 C2IE 1 0 :1:5 
+`uc 1 C1IE 1 0 :1:6 
+`uc 1 OSCFIE 1 0 :1:7 
+]
+"8874
+[s S271 . 1 `uc 1 . 1 0 :2:0 
+`uc 1 LVDIE 1 0 :1:2 
+`uc 1 BCLIE 1 0 :1:3 
+]
+[s S275 . 1 `uc 1 . 1 0 :6:0 
+`uc 1 CMIE 1 0 :1:6 
+]
+[u S278 . 1 `S262 1 . 1 0 `S271 1 . 1 0 `S275 1 . 1 0 ]
+[v _PIE2bits PIE2bits `VES278  1 e 1 @4000 ]
+[s S299 . 1 `uc 1 CCP2IF 1 0 :1:0 
 `uc 1 TMR3IF 1 0 :1:1 
 `uc 1 HLVDIF 1 0 :1:2 
 `uc 1 BCL1IF 1 0 :1:3 
@@ -150,15 +171,15 @@ ADDRESS_POINTER_L 11
 `uc 1 OSCFIF 1 0 :1:7 
 ]
 "8960
-[s S271 . 1 `uc 1 . 1 0 :2:0 
+[s S308 . 1 `uc 1 . 1 0 :2:0 
 `uc 1 LVDIF 1 0 :1:2 
 `uc 1 BCLIF 1 0 :1:3 
 ]
-[s S275 . 1 `uc 1 . 1 0 :6:0 
+[s S312 . 1 `uc 1 . 1 0 :6:0 
 `uc 1 CMIF 1 0 :1:6 
 ]
-[u S278 . 1 `S262 1 . 1 0 `S271 1 . 1 0 `S275 1 . 1 0 ]
-[v _PIR2bits PIR2bits `VES278  1 e 1 @4001 ]
+[u S315 . 1 `S299 1 . 1 0 `S308 1 . 1 0 `S312 1 . 1 0 ]
+[v _PIR2bits PIR2bits `VES315  1 e 1 @4001 ]
 [s S233 . 1 `uc 1 RD 1 0 :1:0 
 `uc 1 WR 1 0 :1:1 
 `uc 1 WREN 1 0 :1:2 
@@ -190,7 +211,7 @@ ADDRESS_POINTER_L 11
 [v _RCREG RCREG `VEuc  1 e 1 @4014 ]
 "10535
 [v _SPBRG1 SPBRG1 `VEuc  1 e 1 @4015 ]
-[s S464 . 1 `uc 1 SEN 1 0 :1:0 
+[s S509 . 1 `uc 1 SEN 1 0 :1:0 
 `uc 1 RSEN 1 0 :1:1 
 `uc 1 PEN 1 0 :1:2 
 `uc 1 RCEN 1 0 :1:3 
@@ -200,7 +221,7 @@ ADDRESS_POINTER_L 11
 `uc 1 GCEN 1 0 :1:7 
 ]
 "13000
-[s S473 . 1 `uc 1 SEN1 1 0 :1:0 
+[s S518 . 1 `uc 1 SEN1 1 0 :1:0 
 `uc 1 ADMSK1 1 0 :1:1 
 `uc 1 ADMSK2 1 0 :1:2 
 `uc 1 ADMSK3 1 0 :1:3 
@@ -209,22 +230,22 @@ ADDRESS_POINTER_L 11
 `uc 1 ACKSTAT1 1 0 :1:6 
 `uc 1 GCEN1 1 0 :1:7 
 ]
-[s S482 . 1 `uc 1 . 1 0 :1:0 
+[s S527 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 ADMSK11 1 0 :1:1 
 `uc 1 ADMSK21 1 0 :1:2 
 `uc 1 ADMSK31 1 0 :1:3 
 `uc 1 ADMSK4 1 0 :1:4 
 `uc 1 ADMSK5 1 0 :1:5 
 ]
-[s S489 . 1 `uc 1 . 1 0 :1:0 
+[s S534 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 RSEN1 1 0 :1:1 
 `uc 1 PEN1 1 0 :1:2 
 `uc 1 RCEN1 1 0 :1:3 
 `uc 1 ADMSK41 1 0 :1:4 
 `uc 1 ADMSK51 1 0 :1:5 
 ]
-[u S496 . 1 `S464 1 . 1 0 `S473 1 . 1 0 `S482 1 . 1 0 `S489 1 . 1 0 ]
-[v _SSP1CON2bits SSP1CON2bits `VES496  1 e 1 @4037 ]
+[u S541 . 1 `S509 1 . 1 0 `S518 1 . 1 0 `S527 1 . 1 0 `S534 1 . 1 0 ]
+[v _SSP1CON2bits SSP1CON2bits `VES541  1 e 1 @4037 ]
 "13306
 [v _SSP1CON1 SSP1CON1 `VEuc  1 e 1 @4038 ]
 "13544
@@ -284,10 +305,10 @@ ADDRESS_POINTER_L 11
 [s S29 . 52 `[50]uc 1 buffer 50 0 `uc 1 index 1 50 `uc 1 receiving 1 51 ]
 "73
 [v _receiveData receiveData `S29  1 e 52 0 ]
-"544
+"540
 [v _main main `(v  1 e 1 0 ]
 {
-"574
+"570
 } 0
 "302
 [v _createResponse createResponse `(v  1 e 1 0 ]
@@ -299,7 +320,7 @@ ADDRESS_POINTER_L 11
 "352
 [v _writeDataToEEPROM writeDataToEEPROM `(v  1 e 1 0 ]
 {
-"389
+"388
 [v writeDataToEEPROM@i i `us  1 a 2 23 ]
 "358
 [v writeDataToEEPROM@at24_eeprom_addr_start at24_eeprom_addr_start `us  1 a 2 21 ]
@@ -309,14 +330,14 @@ ADDRESS_POINTER_L 11
 [v writeDataToEEPROM@at24_eep_addr_L at24_eep_addr_L `uc  1 a 1 18 ]
 "356
 [v writeDataToEEPROM@at24_eep_addr_H at24_eep_addr_H `uc  1 a 1 17 ]
-"429
+"427
 } 0
-"436
+"434
 [v _writeByteAT24_EEPROM writeByteAT24_EEPROM `(v  1 e 1 0 ]
 {
 [v writeByteAT24_EEPROM@address address `ui  1 p 2 12 ]
 [v writeByteAT24_EEPROM@data data `uc  1 p 1 14 ]
-"444
+"442
 } 0
 "82 C:\Users\Helion-Electrical\Desktop\pocket-memory\i2c.c
 [v _I2C2_Stop I2C2_Stop `(v  1 e 1 0 ]
@@ -336,29 +357,29 @@ ADDRESS_POINTER_L 11
 [v I2C2_Send@BYTE BYTE `uc  1 a 1 11 ]
 "136
 } 0
-"487 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"485 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _EEPROM_Write EEPROM_Write `(v  1 e 1 0 ]
 {
 [v EEPROM_Write@addr addr `uc  1 a 1 wreg ]
 [v EEPROM_Write@addr addr `uc  1 a 1 wreg ]
 [v EEPROM_Write@eep_data eep_data `uc  1 p 1 11 ]
-[v EEPROM_Write@addr addr `uc  1 a 1 14 ]
-"510
+[v EEPROM_Write@addr addr `uc  1 a 1 12 ]
+"506
 } 0
-"517
+"513
 [v _EEPROM_Read EEPROM_Read `(uc  1 e 1 0 ]
 {
 [v EEPROM_Read@addr addr `uc  1 a 1 wreg ]
 [v EEPROM_Read@addr addr `uc  1 a 1 wreg ]
 [v EEPROM_Read@addr addr `uc  1 a 1 11 ]
-"523
+"519
 } 0
-"452
+"450
 [v _sendResponse sendResponse `(v  1 e 1 0 ]
 {
-"454
+"452
 [v sendResponse@index index `ui  1 a 2 13 ]
-"480
+"478
 } 0
 "163
 [v _UART_TransmitChar UART_TransmitChar `(v  1 e 1 0 ]
@@ -377,20 +398,18 @@ ADDRESS_POINTER_L 11
 [v _UART_Init UART_Init `(v  1 e 1 0 ]
 {
 "96
-[v UART_Init@temp temp `f  1 a 3 26 ]
+[v UART_Init@temp temp `f  1 a 4 21 ]
 "156
 } 0
-"44 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\fttol.c
-[v ___fttol __fttol `(l  1 e 4 0 ]
+"43 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c99\common\fltol.c
+[v ___fltol __fltol `(l  1 e 4 0 ]
 {
-"47
-[v ___fttol@lval lval `ul  1 a 4 21 ]
-"46
-[v ___fttol@exp1 exp1 `uc  1 a 1 25 ]
-[v ___fttol@sign1 sign1 `uc  1 a 1 20 ]
-"44
-[v ___fttol@f1 f1 `f  1 p 3 11 ]
-"73
+"45
+[v ___fltol@exp1 exp1 `uc  1 a 1 20 ]
+[v ___fltol@sign1 sign1 `uc  1 a 1 19 ]
+"43
+[v ___fltol@f1 f1 `d  1 p 4 11 ]
+"70
 } 0
 "20 C:\Users\Helion-Electrical\Desktop\pocket-memory\i2c.c
 [v _I2C2_Init I2C2_Init `(v  1 e 1 0 ]

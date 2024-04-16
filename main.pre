@@ -9444,7 +9444,7 @@ unsigned char I2C2_Read(void);
 unsigned int timeout = 1000;
 unsigned char interrupt_flag = 0x00;
 unsigned char requestBuffer[50];
-unsigned char responseBuffer[4];
+unsigned char responseBuffer[10];
 unsigned char start_sequence_flag = 0x00;
 unsigned char end_sequence_flag = 0x00;
 unsigned short at24_eeprom_address = 0x0000;
@@ -9459,6 +9459,15 @@ READ_MEM = 0x02,
 UPDATE_MEM = 0x03,
 DELETE_MEM = 0x04
 };
+
+enum PIC_EEPROM_CONFIG
+{
+PASSWORD_ADDR_START_L = 0x00,
+PASSWORD_ADDR_START_H = 0x00,
+ADDRESS_POINTER_H = 0x0A,
+ADDRESS_POINTER_L = 0x0B
+};
+
 
 
 typedef struct
@@ -9490,9 +9499,11 @@ void createPingResponse(void);
 void writeDataToEEPROM();
 void writeByteAT24_EEPROM(unsigned int, unsigned char);
 int hexCharToInt(unsigned char hexValue);
+void EEPROM_Write(unsigned char addr, unsigned char eep_data);
+unsigned char EEPROM_Read(unsigned char addr);
 void sendResponse(void);
 
-# 83
+# 94
 void UART_Init()
 {
 float temp;
@@ -9514,17 +9525,17 @@ RCSTA1 = 0x90;
 temp = (((float)(64000000 / 64) / (float)9600) - 1);
 SPBRG1 = (int)temp;
 
-# 145
+# 156
 }
 
-# 152
+# 163
 void UART_TransmitChar(uint8_t data)
 {
 while (!PIR1bits.TX1IF);
 TXREG = data;
 }
 
-# 164
+# 175
 void __interrupt() isr(void)
 {
 
@@ -9609,12 +9620,12 @@ receiveData.index = 0;
 }
 }
 
-# 252
+# 263
 PIE1bits.RC1IE = 1;
 }
 }
 
-# 261
+# 272
 void processRequest()
 {
 unsigned int buffer_index = 0;
@@ -9635,10 +9646,10 @@ length_index = buffer_index + 2;
 
 request_unit.payload_length_index = length_index;
 
-# 284
+# 295
 }
 
-# 291
+# 302
 void createResponse()
 {
 unsigned char ORDER_CODE = request_unit.ORDER_CODE;
@@ -9670,7 +9681,7 @@ sendResponse();
 }
 }
 
-# 328
+# 339
 void createPingResponse()
 {
 responseBuffer[0] = request_unit.DEVICE_ADDR;
@@ -9679,11 +9690,31 @@ responseBuffer[2] = 0x00;
 responseBuffer[3] = 0x00;
 }
 
-# 341
+# 352
 void writeDataToEEPROM()
 {
 unsigned short payload_length;
 unsigned char eeprom_data = 0x00;
+unsigned char at24_eep_addr_H = 0x00;
+unsigned char at24_eep_addr_L = 0x00;
+unsigned short at24_eeprom_addr_start = 0x0000;
+
+# 364
+at24_eep_addr_H = EEPROM_Read(ADDRESS_POINTER_H);
+_delay((unsigned long)((500)*(64000000/4000.0)));
+at24_eep_addr_L = EEPROM_Read(ADDRESS_POINTER_L);
+
+
+
+at24_eeprom_address = (at24_eep_addr_H << 8) | at24_eep_addr_L;
+
+
+if(at24_eeprom_address == 0xFFFF)
+at24_eeprom_address = 0x0000;
+
+
+at24_eeprom_addr_start = at24_eeprom_address;
+
 
 payload_length = (requestBuffer[request_unit.payload_length_index]) & 0xFF;
 
@@ -9702,32 +9733,24 @@ _delay((unsigned long)((10)*(64000000/4000.0)));
 
 at24_eeprom_address += payload_length;
 
+# 401
+_delay((unsigned long)((1000)*(64000000/4000.0)));
 
+EEPROM_Write(ADDRESS_POINTER_H, ((at24_eeprom_address >> 8) & 0xFF));
+_delay((unsigned long)((1000)*(64000000/4000.0)));
+EEPROM_Write(ADDRESS_POINTER_L, (at24_eeprom_address & 0xFF));
+_delay((unsigned long)((1000)*(64000000/4000.0)));
 
-
-_delay((unsigned long)((100)*(64000000/4000.0)));
-
-
-
-I2C2_Start();
-I2C2_Send(0x50 << 1);
-I2C2_Send(((at24_eeprom_address - 1) >> 8) & 0xFF);
-I2C2_Send((at24_eeprom_address - 1) & 0xFF);
-
-I2C2_Start();
-I2C2_Send((0x50 << 1) | 0x01);
-eeprom_data = I2C2_Read();
-I2C2_Stop();
-
-
-
+# 423
 responseBuffer[0] = request_unit.DEVICE_ADDR;
 responseBuffer[1] = request_unit.ORDER_CODE;
-responseBuffer[2] = eeprom_data;
-responseBuffer[3] = (!checkAck) ? 0x01 : 0x00;
+responseBuffer[2] = (at24_eeprom_addr_start >> 8) & 0xFF;
+responseBuffer[3] = at24_eeprom_addr_start & 0xFF;
+responseBuffer[4] = (!checkAck) ? 0x01 : 0x00;
+
 }
 
-# 393
+# 436
 void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
 {
 I2C2_Start();
@@ -9738,7 +9761,7 @@ I2C2_Send(data);
 I2C2_Stop();
 }
 
-# 409
+# 452
 void sendResponse()
 {
 unsigned int index = 0;
@@ -9749,7 +9772,7 @@ _delay((unsigned long)((10)*(64000000/4000.0)));
 UART_TransmitChar(0x23);
 _delay((unsigned long)((10)*(64000000/4000.0)));
 
-for (index = 0; index < 4; index++)
+for (index = 0; index < 10; index++)
 {
 UART_TransmitChar(responseBuffer[index]);
 _delay((unsigned long)((10)*(64000000/4000.0)));
@@ -9769,14 +9792,49 @@ index--;
 }
 }
 
-# 458
+# 487
+void EEPROM_Write(unsigned char addr, unsigned char eep_data){
+_delay((unsigned long)((1000)*(64000000/4000.0)));
+
+EEADR = addr & 0xFF;
+EEDATA = eep_data;
+
+EECON1bits.EEPGD = 0;
+EECON1bits.CFGS = 0;
+EECON1bits.WREN = 1;
+
+INTCONbits.GIE = 0;
+
+
+EECON2 = 0x55;
+EECON2 = 0xAA;
+EECON1bits.WR = 1;
+
+INTCONbits.GIE = 1;
+
+
+while(PIR2bits.EEIF == 0);
+
+PIR2bits.EEIF = 0;
+}
+
+# 517
+unsigned char EEPROM_Read(unsigned char addr){
+EEADR = addr;
+EECON1bits.EEPGD = 0;
+EECON1bits.RD = 1;
+
+return EEDATA;
+}
+
+# 544
 void main()
 {
 
 OSCCON = 0x70;
 OSCTUNE = 0xC0;
 
-# 477
+# 563
 UART_Init();
 I2C2_Init();
 

@@ -53,7 +53,7 @@ parser.on('data', (data) => {
         showMenu();
 
         clearTimeout(responseDataEndId);
-    }, 500);
+    }, 4000);
 });
 
 function decimalToHex(decimalNum) {
