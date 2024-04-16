@@ -33,7 +33,7 @@ unsigned char start_sequence_flag = 0x00;
 unsigned char end_sequence_flag = 0x00;
 unsigned short at24_eeprom_address = 0x0000;
 unsigned char checkAck = 0x01;
-
+unsigned char isPasswordSet = 0x01;
 
 enum ORDER_CODES
 {
@@ -71,14 +71,19 @@ typedef struct
 	unsigned char payload_data[PACKET_SIZE - 2];
 } UART_Request;
 
+//struct to hold variables related to master password
+//these are cache variables
+typedef struct{
+	unsigned char PASSWORD_CACHE[PASSWORD_ADDR_END - PASSWORD_ADDR_START]; //we will only store payload, excluding its length
+	unsigned char cache_length;
+} Password;
+
 UART_Request request_unit = {0, 0, 0, 0};
 ReceivePacketData receiveData = {0, 0, 0};
-
+Password master = {0, 0};
+ 
 /*integer to hex array*/
 unsigned char digits[10] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
-
-//Password cache array, which we will extract from PIC EEPROM
-unsigned char PASSWORD_CACHE[(PASSWORD_ADDR_END - PASSWORD_ADDR_START) + 1];
 
 // Function declarations
 void processRequest(void);
@@ -87,7 +92,7 @@ void createPingResponse(void);
 void writeDataToEEPROM();
 void writePasswordToEEPROM();
 void writeByteAT24_EEPROM(unsigned int, unsigned char);
-int hexCharToInt(unsigned char hexValue);
+void ReadPasswordFromEEPROM();
 void EEPROM_Write(unsigned char addr, unsigned char eep_data);
 unsigned char EEPROM_Read(unsigned char addr);
 void sendResponse(void);
@@ -101,9 +106,9 @@ void UART_Init()
 {
 	float temp;
 
-	 TRISC6 = 0;           /* Make Tx pin as output*/
-	 TRISC7 = 1;           /* Make Rx pin as input*/
-	 ANSELCbits.ANSC7 = 0; // set input as digital
+	TRISC6 = 0;           /* Make Tx pin as output*/
+	TRISC7 = 1;           /* Make Rx pin as input*/
+	ANSELCbits.ANSC7 = 0; // set input as digital
 
 	
 	INTCONbits.GIE = 1;    // Enable global interrupts
@@ -111,14 +116,15 @@ void UART_Init()
 	PIE1bits.RC1IE = 1;    // set usart1 receive interrupt enable bit
 	
 
-	 TXSTA1 = 0x20; /* Enable Transmit(TX) */
-	 RCSTA1 = 0x90; /* Enable Receive(RX) & Serial */
+	TXSTA1 = 0x20; /* Enable Transmit(TX) */
+	RCSTA1 = 0x90; /* Enable Receive(RX) & Serial */
 
 	/* Baud rate=9600, SPBRG = (F_CPU /(64*9600))-1*/
 	temp = (((float)(F_CPU) / (float)BAUD_RATE) - 1);
 	SPBRG1 = (int)temp;
 
 	// below code is in assembly, refer datasheet for registers and respective addresses
+
 //	#asm
 //	TRISC_REG equ 0xF94 
 //	BSR_REG equ 0xFE0 
@@ -309,6 +315,9 @@ void createResponse()
 {
 	unsigned char ORDER_CODE = request_unit.ORDER_CODE;
 
+
+	//@todo: we have to start raising exception responses, if password is set or not, or if password doesn't match with this device.
+
 	//if device code matches with our device code, then only perform operations or send response. 
 	if (request_unit.DEVICE_ADDR == DEVICE_CODE)
 	{
@@ -437,7 +446,6 @@ void writePasswordToEEPROM(){
 
 	pic_eeprom_addr = PASSWORD_ADDR_START;	
 
-
 	payload_length = requestBuffer[request_unit.payload_length_index];
 	
 	//maximum password length allowed is 8bytes
@@ -542,7 +550,7 @@ void EEPROM_Write(unsigned char addr, unsigned char eep_data){
     __delay_ms(1000);
 
      EEADR = addr & 0xFF;    // word address
-     EEDATA = eep_data; // holds the data.
+     EEDATA = eep_data;      // holds the data.
 
      EECON1bits.EEPGD = 0;  // access data eeprom memory, memory select bit
      EECON1bits.CFGS = 0;   // access flash or data eeprom memory, comfiguration select bit 
@@ -595,6 +603,68 @@ unsigned char EEPROM_Read(unsigned char addr){
 //  eeprom_data = I2C2_Read(); //read 8 bit data from the mentioned address
 //  I2C2_Stop(); //send stop condition
 
+/* 
+ *@desc: reads password bytes from PIC EEPROM
+ *@params: none
+ *@return: none
+ */
+void ReadPasswordFromEEPROM(){
+	unsigned char password_length = 0x00;
+	unsigned char password_addr = PASSWORD_ADDR_START;
+
+	//read master password from PIC EEPROM, we will store that password as cache
+	__delay_ms(500);
+	password_length = EEPROM_Read(password_addr);
+	__delay_ms(500);
+	password_addr += 1; //Increment address counter by 1
+
+	if(password_length != 0xFF){
+		//store whole password in cache array
+		for(unsigned char index = 0x00; index < password_length; index++){
+			__delay_ms(500);
+			master.PASSWORD_CACHE[index] = EEPROM_Read(password_addr + index); //store each password byte in cache buffer
+			__delay_ms(500);
+		}
+	}else{
+		isPasswordSet = 0x00; //clear the password set flag, this means user needs to set master password to interact with this device
+	}
+
+	//store cached password length in global struct variable.
+	master.cache_length = password_length;
+}
+
+/*
+ *@desc: matches user entered password with cache stored password
+ *@params: none
+ *@return: (unsigned char) matchFlag, will either 0x01 or 0x00, depends on the authentication
+ */
+
+unsigned char isPasswordMatched(){
+	unsigned char payload_length = 0x00;
+	unsigned char index = 0x00;
+	unsigned char matchFlag = 0x01;
+
+	//length of password payload
+	payload_length = requestBuffer[request_unit.payload_length_index]; 
+
+	//check if password length matches
+	if(payload_length != master.cache_length){
+		//if master password length does not matches with user entered password
+		return 0x00;
+	}
+
+	//if length matches, check if password matches bytes. 
+	for(index = 0x00; index < master.cache_length; index++){
+		if(master.PASSWORD_CACHE[index] != request_unit.payload_data[index]){ //if any one of the bytes mismatches, clear the flag and break the loop
+			matchFlag = 0x00; //reset the flag
+			break; //break the loop here itself
+		}
+	}
+
+	return matchFlag;
+}
+
+
 void main()
 {
 	// Configure the oscillator(64MHz using PLL)
@@ -616,25 +686,7 @@ void main()
 
 	UART_Init(); // initialises uart peripherals
 	I2C2_Init(); // initialises i2c peripherals
-
-	unsigned char password_length = 0x00;
-	unsigned char password_addr = PASSWORD_ADDR_START;
-
-	//read master password from PIC EEPROM, we will store that password as cache
-	__delay_ms(500);
-	password_length = EEPROM_Read(password_addr);
-	__delay_ms(500);
-	password_addr += 1;
-
-	if(password_length != 0xFF){
-		//store whole password in cache array
-		for(unsigned char index = 0x00; index < password_length; index++){
-			__delay_ms(500);
-			PASSWORD_CACHE[index] = EEPROM_Read(password_addr + index);
-			__delay_ms(500);
-		}
-	}
-	
+	ReadPasswordFromEEPROM(); //reads password from eeprom and caches it in an array buffer.
 
 	while (1)
 	{
