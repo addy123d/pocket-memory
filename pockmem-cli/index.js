@@ -30,7 +30,8 @@ const menu = Object.freeze({
     WRITE: '01',
     READ: '02',
     UPDATE: '03',
-    DELETE: '04',
+    DELETE: 'F0',
+    CHANGE_PASSWORD : 'F1',
     EXIT: 'X'
 });
 
@@ -141,6 +142,7 @@ async function showMenu() {
     ${menu.READ} : READ
     ${menu.UPDATE} : UPDATE
     ${menu.DELETE} : FORMAT DISK (ADMIN ACCESS)
+    ${menu.CHANGE_PASSWORD} : CHANGE PASSWORD
     ${menu.EXIT} : EXIT
     `;
 
@@ -190,6 +192,9 @@ async function performOperation() {
             break;
         case menu.DELETE:
             break;
+        case menu.CHANGE_PASSWORD: //set master password for eeprom
+            payload_data = createCPData();
+            break;
         default:
             console.log(chalk.bgRed("INVALID OPERATION CODE"));
             errorFlag = true;
@@ -231,13 +236,31 @@ function createWriteData(){
     return payload;
 }
 
+function createCPData(){
+    let hexString = 'Adi$1'; //random password sample
+    let hexArr = [];
+
+    //write a code to prompt user to enter string from command line
+
+    //stringtoHex will return an array of hex bytes
+    //for example : "Hello, World!" - ['48', '65', '6C', '6C', '6F', '2C', '20', '57', '6F', '72', '6C', '64', '21']
+    hexArr = stringtoHex(hexString); 
+
+    //generate payload
+    payload = {
+        data : hexArr,
+        len : hexArr.length
+    }
+
+    return payload;
+}
+
 async function sendRequest(payload_obj){
     //send start sequence first
     for(let i = 0; i < SEQUENCE_LEN; i++){
         send_data_via_uart(Buffer.from([parseInt(PACKET_START_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
     }
 
-    // send_data_via_uart(Buffer.from([parseInt('0A', 16)])); //convert hex string to ascii integer value
 
     
     //send DEVICE CODE and Operation code

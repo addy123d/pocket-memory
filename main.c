@@ -24,6 +24,7 @@
 #define PACKET_END_MARKER_UPPER 0x0A
 #define EEPROM_CAPACITY 0x7FFF       //32,768 locations of 8 bit each (32K x 8).
 
+
 unsigned int timeout = 1000;		 // timeout variable
 unsigned char interrupt_flag = 0x00; // interrupt flag
 unsigned char requestBuffer[PACKET_SIZE];
@@ -40,13 +41,14 @@ enum ORDER_CODES
 	WRITE_MEM = 0x01,
 	READ_MEM = 0x02,
 	UPDATE_MEM = 0x03,
-	DELETE_MEM = 0x04
+	DELETE_MEM = 0x04,
+	SET_PASSWORD = 0xF1
 };
 
 enum PIC_EEPROM_CONFIG
 {
-	PASSWORD_ADDR_START_L = 0x00,
-	PASSWORD_ADDR_START_H = 0x00,
+	PASSWORD_ADDR_START = 0x00,
+	PASSWORD_ADDR_END = 0x08,
 	ADDRESS_POINTER_H = 0x0A,
 	ADDRESS_POINTER_L = 0x0B
 };
@@ -75,11 +77,15 @@ ReceivePacketData receiveData = {0, 0, 0};
 /*integer to hex array*/
 unsigned char digits[10] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
 
+//Password cache array, which we will extract from PIC EEPROM
+unsigned char PASSWORD_CACHE[(PASSWORD_ADDR_END - PASSWORD_ADDR_START) + 1];
+
 // Function declarations
 void processRequest(void);
 void createResponse(void);
 void createPingResponse(void);
 void writeDataToEEPROM();
+void writePasswordToEEPROM();
 void writeByteAT24_EEPROM(unsigned int, unsigned char);
 int hexCharToInt(unsigned char hexValue);
 void EEPROM_Write(unsigned char addr, unsigned char eep_data);
@@ -321,6 +327,9 @@ void createResponse()
 			break;
 		case DELETE_MEM:
 			break;
+                case SET_PASSWORD:
+			writePasswordToEEPROM(); //stores the master password 
+			break;
 		default: // invalid function code
 			break;
 		}
@@ -404,20 +413,6 @@ void writeDataToEEPROM()
 	__delay_ms(1000); //give some delay to conduct write operation
 	EEPROM_Write(ADDRESS_POINTER_L, (at24_eeprom_address & 0xFF)); //write word address LOW Byte
 	__delay_ms(1000); 
-	
-
-	//read last byte save in eeprom
-	/*
-	I2C2_Start(); //send start condition
-	I2C2_Send(EEPROM_ADDRESS << 1); //send slave address with write bit
-	I2C2_Send(((at24_eeprom_address - 1) >> 8) & 0xFF); //word address high byte
-	I2C2_Send((at24_eeprom_address - 1) & 0xFF); //word address low byte
-
-	I2C2_Start(); //send start condition again
-	I2C2_Send((EEPROM_ADDRESS << 1) | 0x01); //send slave address with read bit
-	eeprom_data = I2C2_Read(); //read 8 bit data from the mentioned address
-	I2C2_Stop(); //send stop condition
-        */
 
 	// update response buffer
 	responseBuffer[0] = request_unit.DEVICE_ADDR;
@@ -425,6 +420,65 @@ void writeDataToEEPROM()
 	responseBuffer[2] = (at24_eeprom_addr_start >> 8) & 0xFF;  //START address high byte
 	responseBuffer[3] = at24_eeprom_addr_start & 0xFF;         //START address low byte
 	responseBuffer[4] = (!checkAck) ? 0x01 : 0x00;
+}
+
+
+/*
+ *@desc: writes master password on PIC-EEPROM, on reserved locations (00 - 0A)
+ *@params: none
+ *@return: none
+ */
+void writePasswordToEEPROM(){
+	unsigned char payload_length = 0x00;
+	unsigned char index = 0x00;
+	unsigned char pic_eeprom_addr;
+	unsigned char last_byte_addr = 0x00;
+	unsigned char last_byte_data = 0x00;
+
+	pic_eeprom_addr = PASSWORD_ADDR_START;	
+
+
+	payload_length = requestBuffer[request_unit.payload_length_index];
+	
+	//maximum password length allowed is 8bytes
+	//we reserved 9 addresses for password, range is 0x00 - 0x08.
+	//9 because first byte will be length of password, rest 8 will be password.
+	//payload length can be maximum (password_addr_end - password_addr_start).
+        //for now 0x00 is start and 0x08 is end, that means we have 9 locations. 9th location to store length of payload.
+
+	if(payload_length > (PASSWORD_ADDR_END - PASSWORD_ADDR_START)){ 
+		UART_TransmitChar(0xFF);
+		//entered password is bigger than locations reserved on eeprom.
+		return;
+	}
+
+	//write length to eeprom
+	__delay_ms(1000);
+	EEPROM_Write(pic_eeprom_addr, payload_length); //In this case payload length is 8 bit.
+	__delay_ms(1000);
+
+	//increment address counter.
+	pic_eeprom_addr++;
+	
+	//store rest of password inside eeprom
+	for(index = 0x00; index < payload_length; index++){
+	   __delay_ms(500);
+	   EEPROM_Write((pic_eeprom_addr + index), request_unit.payload_data[index]);	
+           __delay_ms(500);
+
+	   last_byte_addr = pic_eeprom_addr + index;
+	}
+
+	__delay_ms(100);
+	last_byte_data = EEPROM_Read(last_byte_addr);
+	__delay_ms(100);
+
+	// update response buffer
+        responseBuffer[0] = request_unit.DEVICE_ADDR;
+        responseBuffer[1] = request_unit.ORDER_CODE;
+        responseBuffer[2] = last_byte_data;
+        responseBuffer[3] = 0x00;         //START address low byte
+        responseBuffer[4] = 0x00;
 	
 }
 
@@ -562,6 +616,25 @@ void main()
 
 	UART_Init(); // initialises uart peripherals
 	I2C2_Init(); // initialises i2c peripherals
+
+	unsigned char password_length = 0x00;
+	unsigned char password_addr = PASSWORD_ADDR_START;
+
+	//read master password from PIC EEPROM, we will store that password as cache
+	__delay_ms(500);
+	password_length = EEPROM_Read(password_addr);
+	__delay_ms(500);
+	password_addr += 1;
+
+	if(password_length != 0xFF){
+		//store whole password in cache array
+		for(unsigned char index = 0x00; index < password_length; index++){
+			__delay_ms(500);
+			PASSWORD_CACHE[index] = EEPROM_Read(password_addr + index);
+			__delay_ms(500);
+		}
+	}
+	
 
 	while (1)
 	{
