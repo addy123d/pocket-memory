@@ -1095,6 +1095,7 @@ TOSU equ 0FFFh ;#
 	FNCALL	_main,_UART_Init
 	FNCALL	_main,_createResponse
 	FNCALL	_createResponse,_createPingResponse
+	FNCALL	_createResponse,_isPasswordMatched
 	FNCALL	_createResponse,_sendResponse
 	FNCALL	_createResponse,_writeDataToEEPROM
 	FNCALL	_createResponse,_writePasswordToEEPROM
@@ -1121,7 +1122,7 @@ psect	idataCOMRAM,class=CODE,space=0,delta=1,noexec
 global __pidataCOMRAM
 __pidataCOMRAM:
 	file	"main.c"
-	line	86
+	line	101
 
 ;initializer for _digits
 	db	low(0)
@@ -1149,6 +1150,8 @@ __pidataCOMRAM:
 	global	_responseBuffer
 	global	_master
 	global	_at24_eeprom_address
+	global	_exception_code
+	global	_isExceptionRaised
 	global	_end_sequence_flag
 	global	_start_sequence_flag
 	global	_interrupt_flag
@@ -1269,6 +1272,12 @@ _master:
 	global	_at24_eeprom_address
 _at24_eeprom_address:
        ds      2
+	global	_exception_code
+_exception_code:
+       ds      1
+	global	_isExceptionRaised
+_isExceptionRaised:
+       ds      1
 	global	_end_sequence_flag
 _end_sequence_flag:
        ds      1
@@ -1282,7 +1291,7 @@ psect	dataCOMRAM,class=COMRAM,space=1,noexec,lowdata
 global __pdataCOMRAM
 __pdataCOMRAM:
 	file	"main.c"
-	line	86
+	line	101
 	global	_digits
 	global	_digits
 _digits:
@@ -1347,10 +1356,10 @@ clear_0:
 clrf	postinc0,c
 decf	wreg
 bnz	clear_0
-; Clear objects allocated to COMRAM (24 bytes)
+; Clear objects allocated to COMRAM (26 bytes)
 	global __pbssCOMRAM
 lfsr	0,__pbssCOMRAM
-movlw	24
+movlw	26
 clear_1:
 clrf	postinc0,c
 decf	wreg
@@ -1377,6 +1386,7 @@ __pcstackCOMRAM:
 ?_createPingResponse:	; 1 bytes @ 0x0
 ?_writeDataToEEPROM:	; 1 bytes @ 0x0
 ?_writePasswordToEEPROM:	; 1 bytes @ 0x0
+?_isPasswordMatched:	; 1 bytes @ 0x0
 ?_sendResponse:	; 1 bytes @ 0x0
 ?_EEPROM_Read:	; 1 bytes @ 0x0
 ?_I2C2_Start:	; 1 bytes @ 0x0
@@ -1404,6 +1414,7 @@ processRequest@buffer_index:	; 2 bytes @ 0x4
 isr@receivedChar:	; 1 bytes @ 0xA
 	ds   1
 ??_createPingResponse:	; 1 bytes @ 0xB
+??_isPasswordMatched:	; 1 bytes @ 0xB
 ??_EEPROM_Read:	; 1 bytes @ 0xB
 ?_EEPROM_Write:	; 1 bytes @ 0xB
 ??_I2C2_Start:	; 1 bytes @ 0xB
@@ -1431,8 +1442,10 @@ ___fttol@f1:	; 3 bytes @ 0xB
 	global	writeByteAT24_EEPROM@address
 writeByteAT24_EEPROM@address:	; 2 bytes @ 0xC
 	ds   1
-	global	sendResponse@index
-sendResponse@index:	; 2 bytes @ 0xD
+	global	sendResponse@isExceptionOccurred
+sendResponse@isExceptionOccurred:	; 1 bytes @ 0xD
+	global	isPasswordMatched@payload_length
+isPasswordMatched@payload_length:	; 1 bytes @ 0xD
 	ds   1
 	global	writeByteAT24_EEPROM@data
 writeByteAT24_EEPROM@data:	; 1 bytes @ 0xE
@@ -1440,6 +1453,10 @@ writeByteAT24_EEPROM@data:	; 1 bytes @ 0xE
 EEPROM_Write@addr:	; 1 bytes @ 0xE
 	global	ReadPasswordFromEEPROM@password_addr
 ReadPasswordFromEEPROM@password_addr:	; 1 bytes @ 0xE
+	global	isPasswordMatched@matchFlag
+isPasswordMatched@matchFlag:	; 1 bytes @ 0xE
+	global	sendResponse@index
+sendResponse@index:	; 2 bytes @ 0xE
 	ds   1
 ??_writeDataToEEPROM:	; 1 bytes @ 0xF
 ??_writePasswordToEEPROM:	; 1 bytes @ 0xF
@@ -1447,6 +1464,8 @@ ReadPasswordFromEEPROM@password_addr:	; 1 bytes @ 0xE
 ??___fttol:	; 1 bytes @ 0xF
 	global	ReadPasswordFromEEPROM@password_length
 ReadPasswordFromEEPROM@password_length:	; 1 bytes @ 0xF
+	global	isPasswordMatched@index
+isPasswordMatched@index:	; 1 bytes @ 0xF
 	ds   1
 	global	ReadPasswordFromEEPROM@index
 ReadPasswordFromEEPROM@index:	; 1 bytes @ 0x10
@@ -1482,8 +1501,8 @@ ___fttol@lval:	; 4 bytes @ 0x15
 writeDataToEEPROM@i:	; 2 bytes @ 0x17
 	ds   2
 ??_createResponse:	; 1 bytes @ 0x19
-	global	createResponse@ORDER_CODE
-createResponse@ORDER_CODE:	; 1 bytes @ 0x19
+	global	createResponse@CODE
+createResponse@CODE:	; 1 bytes @ 0x19
 	global	___fttol@exp1
 ___fttol@exp1:	; 1 bytes @ 0x19
 	ds   1
@@ -1497,13 +1516,13 @@ UART_Init@temp:	; 3 bytes @ 0x1A
 ;!    Strings     0
 ;!    Constant    0
 ;!    Data        14
-;!    BSS         178
+;!    BSS         180
 ;!    Persistent  0
 ;!    Stack       0
 ;!
 ;!Auto Spaces:
 ;!    Space          Size  Autos    Used
-;!    COMRAM           94     29      67
+;!    COMRAM           94     29      69
 ;!    BANK0           160      0     154
 ;!    BANK1           256      0       0
 ;!    BANK2           256      0       0
@@ -1592,15 +1611,16 @@ UART_Init@temp:	; 3 bytes @ 0x1A
 ;! ---------------------------------------------------------------------------------
 ;! (Depth) Function   	        Calls       Base Space   Used Autos Params    Refs
 ;! ---------------------------------------------------------------------------------
-;! (0) _main                                                 0     0      0    2354
+;! (0) _main                                                 0     0      0    2515
 ;!                          _I2C2_Init
 ;!             _ReadPasswordFromEEPROM
 ;!                          _UART_Init
 ;!                     _createResponse
 ;! ---------------------------------------------------------------------------------
-;! (1) _createResponse                                       1     1      0    1799
+;! (1) _createResponse                                       1     1      0    1960
 ;!                                             25 COMRAM     1     1      0
 ;!                 _createPingResponse
+;!                  _isPasswordMatched
 ;!                       _sendResponse
 ;!                  _writeDataToEEPROM
 ;!              _writePasswordToEEPROM
@@ -1633,12 +1653,15 @@ UART_Init@temp:	; 3 bytes @ 0x1A
 ;! (3) _EEPROM_Write                                         4     3      1     348
 ;!                                             11 COMRAM     4     3      1
 ;! ---------------------------------------------------------------------------------
-;! (2) _sendResponse                                         3     3      0     137
-;!                                             12 COMRAM     3     3      0
+;! (2) _sendResponse                                         4     4      0     159
+;!                                             12 COMRAM     4     4      0
 ;!                  _UART_TransmitChar
 ;! ---------------------------------------------------------------------------------
 ;! (3) _UART_TransmitChar                                    1     1      0      22
 ;!                                             11 COMRAM     1     1      0
+;! ---------------------------------------------------------------------------------
+;! (2) _isPasswordMatched                                    5     5      0     117
+;!                                             11 COMRAM     5     5      0
 ;! ---------------------------------------------------------------------------------
 ;! (2) _createPingResponse                                   0     0      0       0
 ;! ---------------------------------------------------------------------------------
@@ -1682,6 +1705,7 @@ UART_Init@temp:	; 3 bytes @ 0x1A
 ;!     ___fttol
 ;!   _createResponse
 ;!     _createPingResponse
+;!     _isPasswordMatched
 ;!     _sendResponse
 ;!       _UART_TransmitChar
 ;!     _writeDataToEEPROM
@@ -1718,7 +1742,7 @@ UART_Init@temp:	; 3 bytes @ 0x1A
 ;!BITBANK0            A0      0       0       3        0.0%
 ;!BANK0               A0      0      9A       4       96.2%
 ;!BITCOMRAM           5E      0       0       0        0.0%
-;!COMRAM              5E     1D      43       1       71.3%
+;!COMRAM              5E     1D      45       1       73.4%
 ;!BITBIGSFRlh         59      0       0      24        0.0%
 ;!BITBIGSFRhlhhhh     1E      0       0      16        0.0%
 ;!BITBIGSFRhlhhhl     15      0       0      18        0.0%
@@ -1737,15 +1761,15 @@ UART_Init@temp:	; 3 bytes @ 0x1A
 ;!SFR                  0      0       0     200        0.0%
 ;!STACK                0      0       0       2        0.0%
 ;!NULL                 0      0       0       0        0.0%
-;!ABS                  0      0      DD      26        0.0%
-;!DATA                 0      0      DD      28        0.0%
+;!ABS                  0      0      DF      26        0.0%
+;!DATA                 0      0      DF      28        0.0%
 ;!CODE                 0      0       0       0        0.0%
 
 	global	_main
 
 ;; *************** function _main *****************
 ;; Defined at:
-;;		line 668 in file "main.c"
+;;		line 716 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;		None
 ;; Auto vars:     Size  Location     Type
@@ -1753,7 +1777,7 @@ UART_Init@temp:	; 3 bytes @ 0x1A
 ;; Return value:  Size  Location     Type
 ;;                  1    wreg      void 
 ;; Registers used:
-;;		wreg, fsr2l, fsr2h, status,2, status,0, cstack
+;;		wreg, fsr1l, fsr1h, fsr2l, fsr2h, status,2, status,0, cstack
 ;; Tracked objects:
 ;;		On entry : 0/0
 ;;		On exit  : 0/0
@@ -1776,61 +1800,61 @@ UART_Init@temp:	; 3 bytes @ 0x1A
 ;;
 psect	text0,class=CODE,space=0,reloc=2,group=0
 	file	"main.c"
-	line	668
+	line	716
 global __ptext0
 __ptext0:
 psect	text0
 	file	"main.c"
-	line	668
+	line	716
 	
 _main:
 ;incstack = 0
 	callstack 25
-	line	671
+	line	719
 	
-l1758:
+l1890:
 	movlw	low(070h)
 	movwf	((c:4051))^0f00h,c	;volatile
-	line	672
+	line	720
 	movlw	low(0C0h)
 	movwf	((c:3995))^0f00h,c	;volatile
-	line	687
+	line	735
 	
-l1760:
+l1892:
 	call	_UART_Init	;wreg free
-	line	688
+	line	736
 	
-l1762:
+l1894:
 	call	_I2C2_Init	;wreg free
-	line	689
+	line	737
 	
-l1764:; BSR set to: 15
+l1896:; BSR set to: 15
 
 	call	_ReadPasswordFromEEPROM	;wreg free
-	line	693
+	line	741
 	
-l1766:
+l1898:
 	movf	((c:_interrupt_flag))^00h,c,w
 	btfsc	status,2
-	goto	u781
-	goto	u780
-u781:
-	goto	l1766
-u780:
-	line	695
+	goto	u941
+	goto	u940
+u941:
+	goto	l1898
+u940:
+	line	743
 	
-l1768:
+l1900:
 	call	_createResponse	;wreg free
-	line	696
+	line	744
 	
-l1770:
+l1902:
 	movlw	low(0)
 	movwf	((c:_interrupt_flag))^00h,c
-	goto	l1766
+	goto	l1898
 	global	start
 	goto	start
 	callstack 0
-	line	699
+	line	747
 GLOBAL	__end_of_main
 	__end_of_main:
 	signat	_main,89
@@ -1838,15 +1862,15 @@ GLOBAL	__end_of_main
 
 ;; *************** function _createResponse *****************
 ;; Defined at:
-;;		line 314 in file "main.c"
+;;		line 329 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;		None
 ;; Auto vars:     Size  Location     Type
-;;  ORDER_CODE      1   25[COMRAM] unsigned char 
+;;  CODE            1   25[COMRAM] unsigned char 
 ;; Return value:  Size  Location     Type
 ;;                  1    wreg      void 
 ;; Registers used:
-;;		wreg, fsr2l, fsr2h, status,2, status,0, cstack
+;;		wreg, fsr1l, fsr1h, fsr2l, fsr2h, status,2, status,0, cstack
 ;; Tracked objects:
 ;;		On entry : 0/F
 ;;		On exit  : 0/0
@@ -1861,6 +1885,7 @@ GLOBAL	__end_of_main
 ;; Hardware stack levels required when called: 5
 ;; This function calls:
 ;;		_createPingResponse
+;;		_isPasswordMatched
 ;;		_sendResponse
 ;;		_writeDataToEEPROM
 ;;		_writePasswordToEEPROM
@@ -1869,94 +1894,162 @@ GLOBAL	__end_of_main
 ;; This function uses a non-reentrant model
 ;;
 psect	text1,class=CODE,space=0,reloc=2,group=0
-	line	314
+	line	329
 global __ptext1
 __ptext1:
 psect	text1
 	file	"main.c"
-	line	314
+	line	329
 	
 _createResponse:
 ;incstack = 0
 	callstack 25
-	line	316
+	line	331
 	
-l1652:
-	movff	0+(_request_unit+01h),(c:createResponse@ORDER_CODE)
-	line	322
+l1770:
+	movff	0+(_request_unit+01h),(c:createResponse@CODE)
+	line	335
 	
-l1654:
+l1772:
+	movf	((c:_isPasswordSet))^00h,c,w
+	btfss	status,2
+	goto	u751
+	goto	u750
+u751:
+	goto	l1776
+u750:
+	line	336
+	
+l1774:
+	movlw	low(01h)
+	movwf	((c:_isExceptionRaised))^00h,c
+	line	337
+	movlw	low(03h)
+	movwf	((c:_exception_code))^00h,c
+	line	341
+	
+l1776:
 		movlw	33
 	movlb	0	; () banked
 	xorwf	((_request_unit))&0ffh,w
 	btfss	status,2
-	goto	u631
-	goto	u630
+	goto	u761
+	goto	u760
 
-u631:
-	goto	l133
-u630:
-	goto	l1666
-	line	328
+u761:
+	goto	l147
+u760:
+	line	343
 	
-l1658:; BSR set to: 0
+l1778:; BSR set to: 0
+
+	movf	((c:_isExceptionRaised))^00h,c,w
+	btfsc	status,2
+	goto	u771
+	goto	u770
+u771:
+	goto	l1794
+u770:
+	
+l1780:; BSR set to: 0
+
+		movlw	241
+	xorwf	((c:createResponse@CODE))^00h,c,w
+	btfss	status,2
+	goto	u781
+	goto	u780
+
+u781:
+	goto	l1796
+u780:
+	goto	l1794
+	line	348
+	
+l1782:; BSR set to: 0
 
 	call	_createPingResponse	;wreg free
-	line	329
-	goto	l1668
-	line	331
+	line	349
+	goto	l1796
+	line	351
 	
-l1660:; BSR set to: 0
+l1784:; BSR set to: 0
 
 	call	_writeDataToEEPROM	;wreg free
-	line	332
-	goto	l1668
-	line	340
+	line	352
+	goto	l1796
+	line	360
 	
-l1662:; BSR set to: 0
+l1786:; BSR set to: 0
 
 	call	_writePasswordToEEPROM	;wreg free
-	line	341
-	goto	l1668
-	line	325
+	line	361
+	goto	l1796
+	line	363
 	
-l1666:; BSR set to: 0
+l1788:; BSR set to: 0
 
-	movf	((c:createResponse@ORDER_CODE))^00h,c,w
+	call	_isPasswordMatched	;wreg free
+	iorlw	0
+	btfss	status,2
+	goto	u791
+	goto	u790
+u791:
+	goto	l1796
+u790:
+	line	365
+	
+l1790:; BSR set to: 0
+
+	movlw	low(01h)
+	movwf	((c:_isExceptionRaised))^00h,c
+	line	366
+	movlw	low(04h)
+	movwf	((c:_exception_code))^00h,c
+	goto	l1796
+	line	345
+	
+l1794:; BSR set to: 0
+
+	movf	((c:createResponse@CODE))^00h,c,w
 	; Switch size 1, requested type "simple"
-; Number of cases is 6, Range of values is 1 to 241
+; Number of cases is 7, Range of values is 1 to 242
 ; switch strategies available:
 ; Name         Instructions Cycles
-; simple_byte           19    10 (average)
+; simple_byte           22    12 (average)
 ;	Chosen strategy is simple_byte
 
 	xorlw	1^0	; case 1
 	skipnz
-	goto	l1660
+	goto	l1784
 	xorlw	2^1	; case 2
 	skipnz
-	goto	l1668
+	goto	l1796
 	xorlw	3^2	; case 3
 	skipnz
-	goto	l1668
-	xorlw	4^3	; case 4
+	goto	l1796
+	xorlw	17^3	; case 17
 	skipnz
-	goto	l1668
-	xorlw	17^4	; case 17
+	goto	l1782
+	xorlw	240^17	; case 240
 	skipnz
-	goto	l1658
-	xorlw	241^17	; case 241
+	goto	l1796
+	xorlw	241^240	; case 241
 	skipnz
-	goto	l1662
-	goto	l1668
+	goto	l1786
+	xorlw	242^241	; case 242
+	skipnz
+	goto	l1788
+	goto	l1796
 
-	line	347
+	line	375
 	
-l1668:
-	call	_sendResponse	;wreg free
-	line	349
+l1796:
+	movf	((c:_isExceptionRaised))^00h,c,w
 	
-l133:
+	call	_sendResponse
+	line	377
+	
+l147:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_createResponse
@@ -1966,7 +2059,7 @@ GLOBAL	__end_of_createResponse
 
 ;; *************** function _writePasswordToEEPROM *****************
 ;; Defined at:
-;;		line 440 in file "main.c"
+;;		line 468 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;		None
 ;; Auto vars:     Size  Location     Type
@@ -2000,34 +2093,34 @@ GLOBAL	__end_of_createResponse
 ;; This function uses a non-reentrant model
 ;;
 psect	text2,class=CODE,space=0,reloc=2,group=0
-	line	440
+	line	468
 global __ptext2
 __ptext2:
 psect	text2
 	file	"main.c"
-	line	440
+	line	468
 	
 _writePasswordToEEPROM:
 ;incstack = 0
 	callstack 26
-	line	441
+	line	469
 	
-l1502:
-	line	442
+l1576:
+	line	470
 	movlw	low(0)
 	movwf	((c:writePasswordToEEPROM@index))^00h,c
-	line	444
+	line	472
 	movlw	low(0)
 	movwf	((c:writePasswordToEEPROM@last_byte_addr))^00h,c
-	line	445
+	line	473
 	movlw	low(0)
 	movwf	((c:writePasswordToEEPROM@last_byte_data))^00h,c
-	line	447
+	line	475
 	movlw	low(0)
 	movwf	((c:writePasswordToEEPROM@pic_eeprom_addr))^00h,c
-	line	449
+	line	477
 	
-l1504:
+l1578:
 	movlb	0	; () banked
 	movf	(0+(_request_unit+02h))&0ffh,w
 	addlw	low(_requestBuffer)
@@ -2035,29 +2128,29 @@ l1504:
 	clrf	fsr2h
 	movf	indf2,w
 	movwf	((c:writePasswordToEEPROM@payload_length))^00h,c
-	line	457
+	line	485
 	
-l1506:; BSR set to: 0
+l1580:; BSR set to: 0
 
 		movlw	09h-1
 	cpfsgt	((c:writePasswordToEEPROM@payload_length))^00h,c
-	goto	u501
-	goto	u500
+	goto	u581
+	goto	u580
 
-u501:
-	goto	l1512
-u500:
-	line	458
+u581:
+	goto	l1586
+u580:
+	line	486
 	
-l1508:; BSR set to: 0
+l1582:; BSR set to: 0
 
 	movlw	(0FFh)&0ffh
 	
 	call	_UART_TransmitChar
-	goto	l147
-	line	464
+	goto	l161
+	line	492
 	
-l1512:; BSR set to: 0
+l1586:; BSR set to: 0
 
 	asmopt push
 asmopt off
@@ -2066,26 +2159,26 @@ movwf	(??_writePasswordToEEPROM+0+0+1)^00h,c
 movlw	43
 movwf	(??_writePasswordToEEPROM+0+0)^00h,c
 	movlw	0
-u797:
+u957:
 decfsz	wreg,f
-	bra	u797
+	bra	u957
 	decfsz	(??_writePasswordToEEPROM+0+0)^00h,c,f
-	bra	u797
+	bra	u957
 	decfsz	(??_writePasswordToEEPROM+0+0+1)^00h,c,f
-	bra	u797
+	bra	u957
 	nop2
 asmopt pop
 
-	line	465
+	line	493
 	
-l1514:
+l1588:
 	movff	(c:writePasswordToEEPROM@payload_length),(c:EEPROM_Write@eep_data)
 	movlw	(0)&0ffh
 	
 	call	_EEPROM_Write
-	line	466
+	line	494
 	
-l1516:
+l1590:
 	asmopt push
 asmopt off
 movlw  82
@@ -2093,29 +2186,29 @@ movwf	(??_writePasswordToEEPROM+0+0+1)^00h,c
 movlw	43
 movwf	(??_writePasswordToEEPROM+0+0)^00h,c
 	movlw	0
-u807:
+u967:
 decfsz	wreg,f
-	bra	u807
+	bra	u967
 	decfsz	(??_writePasswordToEEPROM+0+0)^00h,c,f
-	bra	u807
+	bra	u967
 	decfsz	(??_writePasswordToEEPROM+0+0+1)^00h,c,f
-	bra	u807
+	bra	u967
 	nop2
 asmopt pop
 
-	line	469
+	line	497
 	
-l1518:
+l1592:
 	incf	((c:writePasswordToEEPROM@pic_eeprom_addr))^00h,c
-	line	472
+	line	500
 	
-l1520:
+l1594:
 	movlw	low(0)
 	movwf	((c:writePasswordToEEPROM@index))^00h,c
-	goto	l1532
-	line	473
+	goto	l1606
+	line	501
 	
-l1522:
+l1596:
 	asmopt push
 asmopt off
 movlw  41
@@ -2123,19 +2216,19 @@ movwf	(??_writePasswordToEEPROM+0+0+1)^00h,c
 movlw	150
 movwf	(??_writePasswordToEEPROM+0+0)^00h,c
 	movlw	127
-u817:
+u977:
 decfsz	wreg,f
-	bra	u817
+	bra	u977
 	decfsz	(??_writePasswordToEEPROM+0+0)^00h,c,f
-	bra	u817
+	bra	u977
 	decfsz	(??_writePasswordToEEPROM+0+0+1)^00h,c,f
-	bra	u817
+	bra	u977
 	nop
 asmopt pop
 
-	line	474
+	line	502
 	
-l1524:
+l1598:
 	movf	((c:writePasswordToEEPROM@index))^00h,c,w
 	addlw	low(_request_unit+04h)
 	movwf	fsr2l
@@ -2146,9 +2239,9 @@ l1524:
 	addwf	((c:writePasswordToEEPROM@index))^00h,c,w
 	
 	call	_EEPROM_Write
-	line	475
+	line	503
 	
-l1526:
+l1600:
 	asmopt push
 asmopt off
 movlw  41
@@ -2156,40 +2249,40 @@ movwf	(??_writePasswordToEEPROM+0+0+1)^00h,c
 movlw	150
 movwf	(??_writePasswordToEEPROM+0+0)^00h,c
 	movlw	127
-u827:
+u987:
 decfsz	wreg,f
-	bra	u827
+	bra	u987
 	decfsz	(??_writePasswordToEEPROM+0+0)^00h,c,f
-	bra	u827
+	bra	u987
 	decfsz	(??_writePasswordToEEPROM+0+0+1)^00h,c,f
-	bra	u827
+	bra	u987
 	nop
 asmopt pop
 
-	line	477
+	line	505
 	
-l1528:
+l1602:
 	movf	((c:writePasswordToEEPROM@pic_eeprom_addr))^00h,c,w
 	addwf	((c:writePasswordToEEPROM@index))^00h,c,w
 	movwf	((c:writePasswordToEEPROM@last_byte_addr))^00h,c
-	line	472
+	line	500
 	
-l1530:
+l1604:
 	incf	((c:writePasswordToEEPROM@index))^00h,c
 	
-l1532:
+l1606:
 		movf	((c:writePasswordToEEPROM@payload_length))^00h,c,w
 	subwf	((c:writePasswordToEEPROM@index))^00h,c,w
 	btfss	status,0
-	goto	u511
-	goto	u510
+	goto	u591
+	goto	u590
 
-u511:
-	goto	l1522
-u510:
-	line	480
+u591:
+	goto	l1596
+u590:
+	line	508
 	
-l1534:
+l1608:
 	asmopt push
 asmopt off
 movlw  9
@@ -2197,26 +2290,26 @@ movwf	(??_writePasswordToEEPROM+0+0+1)^00h,c
 movlw	30
 movwf	(??_writePasswordToEEPROM+0+0)^00h,c
 	movlw	228
-u837:
+u997:
 decfsz	wreg,f
-	bra	u837
+	bra	u997
 	decfsz	(??_writePasswordToEEPROM+0+0)^00h,c,f
-	bra	u837
+	bra	u997
 	decfsz	(??_writePasswordToEEPROM+0+0+1)^00h,c,f
-	bra	u837
+	bra	u997
 	nop2
 asmopt pop
 
-	line	481
+	line	509
 	
-l1536:
+l1610:
 	movf	((c:writePasswordToEEPROM@last_byte_addr))^00h,c,w
 	
 	call	_EEPROM_Read
 	movwf	((c:writePasswordToEEPROM@last_byte_data))^00h,c
-	line	482
+	line	510
 	
-l1538:
+l1612:
 	asmopt push
 asmopt off
 movlw  9
@@ -2224,41 +2317,46 @@ movwf	(??_writePasswordToEEPROM+0+0+1)^00h,c
 movlw	30
 movwf	(??_writePasswordToEEPROM+0+0)^00h,c
 	movlw	228
-u847:
+u1007:
 decfsz	wreg,f
-	bra	u847
+	bra	u1007
 	decfsz	(??_writePasswordToEEPROM+0+0)^00h,c,f
-	bra	u847
+	bra	u1007
 	decfsz	(??_writePasswordToEEPROM+0+0+1)^00h,c,f
-	bra	u847
+	bra	u1007
 	nop2
 asmopt pop
 
-	line	485
+	line	512
 	
-l1540:
+l1614:
+	movlw	low(0)
+	movwf	((c:_isExceptionRaised))^00h,c
+	line	516
+	
+l1616:
 	movff	(_request_unit),(c:_responseBuffer)
-	line	486
+	line	517
 	
-l1542:
+l1618:
 	movff	0+(_request_unit+01h),0+((c:_responseBuffer)+01h)
-	line	487
+	line	518
 	
-l1544:
+l1620:
 	movff	(c:writePasswordToEEPROM@last_byte_data),0+((c:_responseBuffer)+02h)
-	line	488
+	line	519
 	
-l1546:
+l1622:
 	movlw	low(0)
 	movwf	(0+((c:_responseBuffer)+03h))^00h,c
-	line	489
+	line	520
 	
-l1548:
+l1624:
 	movlw	low(0)
 	movwf	(0+((c:_responseBuffer)+04h))^00h,c
-	line	491
+	line	522
 	
-l147:
+l161:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_writePasswordToEEPROM
@@ -2268,7 +2366,7 @@ GLOBAL	__end_of_writePasswordToEEPROM
 
 ;; *************** function _writeDataToEEPROM *****************
 ;; Defined at:
-;;		line 370 in file "main.c"
+;;		line 398 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;		None
 ;; Auto vars:     Size  Location     Type
@@ -2303,40 +2401,40 @@ GLOBAL	__end_of_writePasswordToEEPROM
 ;; This function uses a non-reentrant model
 ;;
 psect	text3,class=CODE,space=0,reloc=2,group=0
-	line	370
+	line	398
 global __ptext3
 __ptext3:
 psect	text3
 	file	"main.c"
-	line	370
+	line	398
 	
 _writeDataToEEPROM:
 ;incstack = 0
 	callstack 25
-	line	373
+	line	401
 	
-l1446:
-	line	374
+l1520:
+	line	402
 	movlw	low(0)
 	movwf	((c:writeDataToEEPROM@at24_eep_addr_H))^00h,c
-	line	375
+	line	403
 	movlw	low(0)
 	movwf	((c:writeDataToEEPROM@at24_eep_addr_L))^00h,c
-	line	376
+	line	404
 	movlw	high(0)
 	movwf	((c:writeDataToEEPROM@at24_eeprom_addr_start+1))^00h,c
 	movlw	low(0)
 	movwf	((c:writeDataToEEPROM@at24_eeprom_addr_start))^00h,c
-	line	382
+	line	410
 	
-l1448:
+l1522:
 	movlw	(0Ah)&0ffh
 	
 	call	_EEPROM_Read
 	movwf	((c:writeDataToEEPROM@at24_eep_addr_H))^00h,c
-	line	383
+	line	411
 	
-l1450:
+l1524:
 	asmopt push
 asmopt off
 movlw  41
@@ -2344,26 +2442,26 @@ movwf	(??_writeDataToEEPROM+0+0+1)^00h,c
 movlw	150
 movwf	(??_writeDataToEEPROM+0+0)^00h,c
 	movlw	127
-u857:
+u1017:
 decfsz	wreg,f
-	bra	u857
+	bra	u1017
 	decfsz	(??_writeDataToEEPROM+0+0)^00h,c,f
-	bra	u857
+	bra	u1017
 	decfsz	(??_writeDataToEEPROM+0+0+1)^00h,c,f
-	bra	u857
+	bra	u1017
 	nop
 asmopt pop
 
-	line	384
+	line	412
 	
-l1452:
+l1526:
 	movlw	(0Bh)&0ffh
 	
 	call	_EEPROM_Read
 	movwf	((c:writeDataToEEPROM@at24_eep_addr_L))^00h,c
-	line	388
+	line	416
 	
-l1454:
+l1528:
 	movf	((c:writeDataToEEPROM@at24_eep_addr_L))^00h,c,w
 	movff	(c:writeDataToEEPROM@at24_eep_addr_H),??_writeDataToEEPROM+0+0
 	clrf	(??_writeDataToEEPROM+0+0+1)^00h,c
@@ -2373,34 +2471,34 @@ l1454:
 	movwf	((c:_at24_eeprom_address))^00h,c
 	movf	(??_writeDataToEEPROM+0+1)^00h,c,w
 	movwf	1+((c:_at24_eeprom_address))^00h,c
-	line	391
+	line	419
 	
-l1456:
+l1530:
 		incf	((c:_at24_eeprom_address))^00h,c,w
-	bnz	u461
+	bnz	u541
 	incf	((c:_at24_eeprom_address+1))^00h,c,w
 	btfss	status,2
-	goto	u461
-	goto	u460
+	goto	u541
+	goto	u540
 
-u461:
-	goto	l1460
-u460:
-	line	392
+u541:
+	goto	l1534
+u540:
+	line	420
 	
-l1458:
+l1532:
 	movlw	high(0)
 	movwf	((c:_at24_eeprom_address+1))^00h,c
 	movlw	low(0)
 	movwf	((c:_at24_eeprom_address))^00h,c
-	line	395
+	line	423
 	
-l1460:
+l1534:
 	movff	(c:_at24_eeprom_address),(c:writeDataToEEPROM@at24_eeprom_addr_start)
 	movff	(c:_at24_eeprom_address+1),(c:writeDataToEEPROM@at24_eeprom_addr_start+1)
-	line	398
+	line	426
 	
-l1462:
+l1536:
 	movlb	0	; () banked
 	movf	(0+(_request_unit+02h))&0ffh,w
 	addlw	low(_requestBuffer)
@@ -2411,9 +2509,9 @@ l1462:
 	movf	((??_writeDataToEEPROM+0+0))^00h,c,w
 	movwf	((c:writeDataToEEPROM@payload_length))^00h,c
 	clrf	((c:writeDataToEEPROM@payload_length+1))^00h,c
-	line	401
+	line	429
 	
-l1464:; BSR set to: 0
+l1538:; BSR set to: 0
 
 	movff	(c:_at24_eeprom_address),(c:writeByteAT24_EEPROM@address)
 	movff	(c:_at24_eeprom_address+1),(c:writeByteAT24_EEPROM@address+1)
@@ -2424,37 +2522,37 @@ l1464:; BSR set to: 0
 	movf	indf2,w
 	movwf	((c:writeByteAT24_EEPROM@data))^00h,c
 	call	_writeByteAT24_EEPROM	;wreg free
-	line	402
+	line	430
 	
-l1466:
+l1540:
 	infsnz	((c:_at24_eeprom_address))^00h,c
 	incf	((c:_at24_eeprom_address+1))^00h,c
-	line	404
+	line	432
 	
-l1468:
+l1542:
 	asmopt push
 asmopt off
 movlw	208
 movwf	(??_writeDataToEEPROM+0+0)^00h,c
 	movlw	202
-u867:
+u1027:
 decfsz	wreg,f
-	bra	u867
+	bra	u1027
 	decfsz	(??_writeDataToEEPROM+0+0)^00h,c,f
-	bra	u867
+	bra	u1027
 asmopt pop
 
-	line	407
+	line	435
 	
-l1470:
+l1544:
 	movlw	high(0)
 	movwf	((c:writeDataToEEPROM@i+1))^00h,c
 	movlw	low(0)
 	movwf	((c:writeDataToEEPROM@i))^00h,c
-	goto	l1478
-	line	408
+	goto	l1552
+	line	436
 	
-l1472:
+l1546:
 	movf	((c:writeDataToEEPROM@i))^00h,c,w
 	addwf	((c:_at24_eeprom_address))^00h,c,w
 	movwf	((c:writeByteAT24_EEPROM@address))^00h,c
@@ -2468,50 +2566,50 @@ l1472:
 	movf	indf2,w
 	movwf	((c:writeByteAT24_EEPROM@data))^00h,c
 	call	_writeByteAT24_EEPROM	;wreg free
-	line	409
+	line	437
 	
-l1474:
+l1548:
 	asmopt push
 asmopt off
 movlw	208
 movwf	(??_writeDataToEEPROM+0+0)^00h,c
 	movlw	202
-u877:
+u1037:
 decfsz	wreg,f
-	bra	u877
+	bra	u1037
 	decfsz	(??_writeDataToEEPROM+0+0)^00h,c,f
-	bra	u877
+	bra	u1037
 asmopt pop
 
-	line	407
+	line	435
 	
-l1476:
+l1550:
 	infsnz	((c:writeDataToEEPROM@i))^00h,c
 	incf	((c:writeDataToEEPROM@i+1))^00h,c
 	
-l1478:
+l1552:
 		movf	((c:writeDataToEEPROM@payload_length))^00h,c,w
 	subwf	((c:writeDataToEEPROM@i))^00h,c,w
 	movf	((c:writeDataToEEPROM@payload_length+1))^00h,c,w
 	subwfb	((c:writeDataToEEPROM@i+1))^00h,c,w
 	btfss	status,0
-	goto	u471
-	goto	u470
+	goto	u551
+	goto	u550
 
-u471:
-	goto	l1472
-u470:
-	line	413
+u551:
+	goto	l1546
+u550:
+	line	441
 	
-l1480:
+l1554:
 	movf	((c:writeDataToEEPROM@payload_length))^00h,c,w
 	addwf	((c:_at24_eeprom_address))^00h,c
 	movf	((c:writeDataToEEPROM@payload_length+1))^00h,c,w
 	addwfc	((c:_at24_eeprom_address+1))^00h,c
 
-	line	419
+	line	447
 	
-l1482:
+l1556:
 	asmopt push
 asmopt off
 movlw  82
@@ -2519,26 +2617,26 @@ movwf	(??_writeDataToEEPROM+0+0+1)^00h,c
 movlw	43
 movwf	(??_writeDataToEEPROM+0+0)^00h,c
 	movlw	0
-u887:
+u1047:
 decfsz	wreg,f
-	bra	u887
+	bra	u1047
 	decfsz	(??_writeDataToEEPROM+0+0)^00h,c,f
-	bra	u887
+	bra	u1047
 	decfsz	(??_writeDataToEEPROM+0+0+1)^00h,c,f
-	bra	u887
+	bra	u1047
 	nop2
 asmopt pop
 
-	line	421
+	line	449
 	
-l1484:
+l1558:
 	movff	0+((c:_at24_eeprom_address)+01h),(c:EEPROM_Write@eep_data)
 	movlw	(0Ah)&0ffh
 	
 	call	_EEPROM_Write
-	line	422
+	line	450
 	
-l1486:
+l1560:
 	asmopt push
 asmopt off
 movlw  82
@@ -2546,26 +2644,26 @@ movwf	(??_writeDataToEEPROM+0+0+1)^00h,c
 movlw	43
 movwf	(??_writeDataToEEPROM+0+0)^00h,c
 	movlw	0
-u897:
+u1057:
 decfsz	wreg,f
-	bra	u897
+	bra	u1057
 	decfsz	(??_writeDataToEEPROM+0+0)^00h,c,f
-	bra	u897
+	bra	u1057
 	decfsz	(??_writeDataToEEPROM+0+0+1)^00h,c,f
-	bra	u897
+	bra	u1057
 	nop2
 asmopt pop
 
-	line	423
+	line	451
 	
-l1488:
+l1562:
 	movff	(c:_at24_eeprom_address),(c:EEPROM_Write@eep_data)
 	movlw	(0Bh)&0ffh
 	
 	call	_EEPROM_Write
-	line	424
+	line	452
 	
-l1490:
+l1564:
 	asmopt push
 asmopt off
 movlw  82
@@ -2573,49 +2671,49 @@ movwf	(??_writeDataToEEPROM+0+0+1)^00h,c
 movlw	43
 movwf	(??_writeDataToEEPROM+0+0)^00h,c
 	movlw	0
-u907:
+u1067:
 decfsz	wreg,f
-	bra	u907
+	bra	u1067
 	decfsz	(??_writeDataToEEPROM+0+0)^00h,c,f
-	bra	u907
+	bra	u1067
 	decfsz	(??_writeDataToEEPROM+0+0+1)^00h,c,f
-	bra	u907
+	bra	u1067
 	nop2
 asmopt pop
 
-	line	427
+	line	455
 	
-l1492:
+l1566:
 	movff	(_request_unit),(c:_responseBuffer)
-	line	428
+	line	456
 	
-l1494:
+l1568:
 	movff	0+(_request_unit+01h),0+((c:_responseBuffer)+01h)
-	line	429
+	line	457
 	
-l1496:
+l1570:
 	movff	0+((c:writeDataToEEPROM@at24_eeprom_addr_start)+01h),0+((c:_responseBuffer)+02h)
-	line	430
+	line	458
 	
-l1498:
+l1572:
 	movff	(c:writeDataToEEPROM@at24_eeprom_addr_start),0+((c:_responseBuffer)+03h)
-	line	431
+	line	459
 	
-l1500:
+l1574:
 	movf	((c:_checkAck))^00h,c,w
 	btfsc	status,2
-	goto	u481
-	goto	u480
-u481:
+	goto	u561
+	goto	u560
+u561:
 	movlw	1
-	goto	u490
-u480:
+	goto	u570
+u560:
 	movlw	0
-u490:
+u570:
 	movwf	(0+((c:_responseBuffer)+04h))^00h,c
-	line	432
+	line	460
 	
-l143:
+l157:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_writeDataToEEPROM
@@ -2625,7 +2723,7 @@ GLOBAL	__end_of_writeDataToEEPROM
 
 ;; *************** function _writeByteAT24_EEPROM *****************
 ;; Defined at:
-;;		line 498 in file "main.c"
+;;		line 529 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;  address         2   12[COMRAM] unsigned int 
 ;;  data            1   14[COMRAM] unsigned char 
@@ -2656,50 +2754,50 @@ GLOBAL	__end_of_writeDataToEEPROM
 ;; This function uses a non-reentrant model
 ;;
 psect	text4,class=CODE,space=0,reloc=2,group=0
-	line	498
+	line	529
 global __ptext4
 __ptext4:
 psect	text4
 	file	"main.c"
-	line	498
+	line	529
 	
 _writeByteAT24_EEPROM:
 ;incstack = 0
 	callstack 25
-	line	500
+	line	531
 	
-l1410:
+l1484:
 	call	_I2C2_Start	;wreg free
-	line	501
+	line	532
 	
-l1412:
+l1486:
 	movlw	(0A0h)&0ffh
 	
 	call	_I2C2_Send
 	movwf	((c:_checkAck))^00h,c
-	line	502
+	line	533
 	
-l1414:
+l1488:
 	movf	(0+((c:writeByteAT24_EEPROM@address)+01h))^00h,c,w
 	
 	call	_I2C2_Send
-	line	503
+	line	534
 	
-l1416:
+l1490:
 	movf	((c:writeByteAT24_EEPROM@address))^00h,c,w
 	
 	call	_I2C2_Send
-	line	504
+	line	535
 	
-l1418:
+l1492:
 	movf	((c:writeByteAT24_EEPROM@data))^00h,c,w
 	
 	call	_I2C2_Send
-	line	505
+	line	536
 	call	_I2C2_Stop	;wreg free
-	line	506
+	line	537
 	
-l153:
+l167:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_writeByteAT24_EEPROM
@@ -2750,24 +2848,24 @@ _I2C2_Stop:
 	callstack 25
 	line	83
 	
-l1394:
+l1468:
 	bsf	((c:4037))^0f00h,c,2	;volatile
 	line	84
 	
-l229:
+l245:
 	btfss	((c:3998))^0f00h,c,3	;volatile
-	goto	u431
-	goto	u430
-u431:
-	goto	l229
-u430:
+	goto	u511
+	goto	u510
+u511:
+	goto	l245
+u510:
 	
-l231:
+l247:
 	line	85
 	bcf	((c:3998))^0f00h,c,3	;volatile
 	line	86
 	
-l232:
+l248:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_I2C2_Stop
@@ -2817,24 +2915,24 @@ _I2C2_Start:
 	callstack 25
 	line	52
 	
-l1390:
+l1464:
 	bsf	((c:4037))^0f00h,c,0	;volatile
 	line	53
 	
-l217:
+l233:
 	btfss	((c:3998))^0f00h,c,3	;volatile
-	goto	u401
-	goto	u400
-u401:
-	goto	l217
-u400:
+	goto	u481
+	goto	u480
+u481:
+	goto	l233
+u480:
 	
-l219:
+l235:
 	line	54
 	bcf	((c:3998))^0f00h,c,3	;volatile
 	line	55
 	
-l220:
+l236:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_I2C2_Start
@@ -2885,34 +2983,34 @@ _I2C2_Send:
 	movwf	((c:I2C2_Send@BYTE))^00h,c
 	line	132
 	
-l1392:
+l1466:
 	movff	(c:I2C2_Send@BYTE),(c:4041)	;volatile
 	line	133
 	
-l247:
+l263:
 	btfss	((c:3998))^0f00h,c,3	;volatile
-	goto	u411
-	goto	u410
-u411:
-	goto	l247
-u410:
+	goto	u491
+	goto	u490
+u491:
+	goto	l263
+u490:
 	
-l249:
+l265:
 	line	134
 	bcf	((c:3998))^0f00h,c,3	;volatile
 	line	135
 	btfsc	((c:4037))^0f00h,c,6	;volatile
-	goto	u421
-	goto	u420
-u421:
+	goto	u501
+	goto	u500
+u501:
 	movlw	1
-	goto	u426
-u420:
+	goto	u506
+u500:
 	movlw	0
-u426:
+u506:
 	line	136
 	
-l250:
+l266:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_I2C2_Send
@@ -2922,7 +3020,7 @@ GLOBAL	__end_of_I2C2_Send
 
 ;; *************** function _EEPROM_Write *****************
 ;; Defined at:
-;;		line 549 in file "main.c"
+;;		line 594 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;  addr            1    wreg     unsigned char 
 ;;  eep_data        1   11[COMRAM] unsigned char 
@@ -2953,20 +3051,20 @@ GLOBAL	__end_of_I2C2_Send
 ;;
 psect	text8,class=CODE,space=0,reloc=2,group=0
 	file	"main.c"
-	line	549
+	line	594
 global __ptext8
 __ptext8:
 psect	text8
 	file	"main.c"
-	line	549
+	line	594
 	
 _EEPROM_Write:
 ;incstack = 0
 	callstack 26
 	movwf	((c:EEPROM_Write@addr))^00h,c
-	line	550
+	line	595
 	
-l1420:
+l1494:
 	asmopt push
 asmopt off
 movlw  82
@@ -2974,74 +3072,74 @@ movwf	(??_EEPROM_Write+0+0+1)^00h,c
 movlw	43
 movwf	(??_EEPROM_Write+0+0)^00h,c
 	movlw	0
-u917:
+u1077:
 decfsz	wreg,f
-	bra	u917
+	bra	u1077
 	decfsz	(??_EEPROM_Write+0+0)^00h,c,f
-	bra	u917
+	bra	u1077
 	decfsz	(??_EEPROM_Write+0+0+1)^00h,c,f
-	bra	u917
+	bra	u1077
 	nop2
 asmopt pop
 
-	line	552
+	line	597
 	
-l1422:
+l1496:
 	movff	(c:EEPROM_Write@addr),(c:4009)	;volatile
-	line	553
+	line	598
 	
-l1424:
+l1498:
 	movff	(c:EEPROM_Write@eep_data),(c:4008)	;volatile
-	line	555
+	line	600
 	
-l1426:
+l1500:
 	bcf	((c:4006))^0f00h,c,7	;volsfr
-	line	556
+	line	601
 	
-l1428:
+l1502:
 	bcf	((c:4006))^0f00h,c,6	;volsfr
-	line	557
+	line	602
 	
-l1430:
+l1504:
 	bsf	((c:4006))^0f00h,c,2	;volsfr
-	line	559
+	line	604
 	
-l1432:
+l1506:
 	bcf	((c:4082))^0f00h,c,7	;volatile
-	line	562
+	line	607
 	
-l1434:
+l1508:
 	movlw	low(055h)
 	movwf	((c:4007))^0f00h,c	;volsfr
-	line	563
+	line	608
 	
-l1436:
+l1510:
 	movlw	low(0AAh)
 	movwf	((c:4007))^0f00h,c	;volsfr
-	line	564
+	line	609
 	
-l1438:
+l1512:
 	bsf	((c:4006))^0f00h,c,1	;volsfr
-	line	566
+	line	611
 	
-l1440:
+l1514:
 	bsf	((c:4082))^0f00h,c,7	;volatile
-	line	569
+	line	614
 	
-l164:
+l180:
 	btfss	((c:4001))^0f00h,c,4	;volatile
-	goto	u451
-	goto	u450
-u451:
-	goto	l164
-u450:
+	goto	u531
+	goto	u530
+u531:
+	goto	l180
+u530:
 	
-l166:
-	line	571
+l182:
+	line	616
 	bcf	((c:4001))^0f00h,c,4	;volatile
-	line	572
+	line	617
 	
-l167:
+l183:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_EEPROM_Write
@@ -3051,11 +3149,12 @@ GLOBAL	__end_of_EEPROM_Write
 
 ;; *************** function _sendResponse *****************
 ;; Defined at:
-;;		line 514 in file "main.c"
+;;		line 545 in file "main.c"
 ;; Parameters:    Size  Location     Type
-;;		None
+;;  isExceptionO    1    wreg     unsigned char 
 ;; Auto vars:     Size  Location     Type
-;;  index           2   13[COMRAM] unsigned int 
+;;  isExceptionO    1   13[COMRAM] unsigned char 
+;;  index           2   14[COMRAM] unsigned int 
 ;; Return value:  Size  Location     Type
 ;;                  1    wreg      void 
 ;; Registers used:
@@ -3066,10 +3165,10 @@ GLOBAL	__end_of_EEPROM_Write
 ;;		Unchanged: 0/0
 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5
 ;;      Params:         0       0       0       0       0       0       0
-;;      Locals:         2       0       0       0       0       0       0
+;;      Locals:         3       0       0       0       0       0       0
 ;;      Temps:          1       0       0       0       0       0       0
-;;      Totals:         3       0       0       0       0       0       0
-;;Total ram usage:        3 bytes
+;;      Totals:         4       0       0       0       0       0       0
+;;Total ram usage:        4 bytes
 ;; Hardware stack levels used: 1
 ;; Hardware stack levels required when called: 3
 ;; This function calls:
@@ -3079,69 +3178,82 @@ GLOBAL	__end_of_EEPROM_Write
 ;; This function uses a non-reentrant model
 ;;
 psect	text9,class=CODE,space=0,reloc=2,group=0
-	line	514
+	line	545
 global __ptext9
 __ptext9:
 psect	text9
 	file	"main.c"
-	line	514
+	line	545
 	
 _sendResponse:
 ;incstack = 0
 	callstack 26
-	line	516
+	movwf	((c:sendResponse@isExceptionOccurred))^00h,c
+	line	547
 	
-l1550:
-	line	519
+l1650:
+	line	550
 	
-l1552:
+l1652:
 	movlw	(03Ah)&0ffh
 	
 	call	_UART_TransmitChar
-	line	520
+	line	551
 	
-l1554:
+l1654:
 	asmopt push
 asmopt off
 movlw	208
 movwf	(??_sendResponse+0+0)^00h,c
 	movlw	202
-u927:
+u1087:
 decfsz	wreg,f
-	bra	u927
+	bra	u1087
 	decfsz	(??_sendResponse+0+0)^00h,c,f
-	bra	u927
+	bra	u1087
 asmopt pop
 
-	line	521
+	line	552
 	
-l1556:
+l1656:
 	movlw	(023h)&0ffh
 	
 	call	_UART_TransmitChar
-	line	522
+	line	553
 	
-l1558:
+l1658:
 	asmopt push
 asmopt off
 movlw	208
 movwf	(??_sendResponse+0+0)^00h,c
 	movlw	202
-u937:
+u1097:
 decfsz	wreg,f
-	bra	u937
+	bra	u1097
 	decfsz	(??_sendResponse+0+0)^00h,c,f
-	bra	u937
+	bra	u1097
 asmopt pop
 
-	line	524
+	line	555
+	
+l1660:
+	movf	((c:sendResponse@isExceptionOccurred))^00h,c,w
+	btfss	status,2
+	goto	u631
+	goto	u630
+u631:
+	goto	l1676
+u630:
+	line	556
+	
+l1662:
 	movlw	high(0)
 	movwf	((c:sendResponse@index+1))^00h,c
 	movlw	low(0)
 	movwf	((c:sendResponse@index))^00h,c
-	line	526
+	line	558
 	
-l1564:
+l1668:
 	movf	((c:sendResponse@index))^00h,c,w
 	addlw	low(_responseBuffer)
 	movwf	fsr2l
@@ -3149,115 +3261,187 @@ l1564:
 	movf	indf2,w
 	
 	call	_UART_TransmitChar
-	line	527
+	line	559
 	
-l1566:
+l1670:
 	asmopt push
 asmopt off
 movlw	208
 movwf	(??_sendResponse+0+0)^00h,c
 	movlw	202
-u947:
+u1107:
 decfsz	wreg,f
-	bra	u947
+	bra	u1107
 	decfsz	(??_sendResponse+0+0)^00h,c,f
-	bra	u947
+	bra	u1107
 asmopt pop
 
-	line	524
+	line	556
 	
-l1568:
+l1672:
 	infsnz	((c:sendResponse@index))^00h,c
 	incf	((c:sendResponse@index+1))^00h,c
 	
-l1570:
+l1674:
 		movf	((c:sendResponse@index+1))^00h,c,w
-	bnz	u520
+	bnz	u640
 	movlw	10
 	subwf	 ((c:sendResponse@index))^00h,c,w
 	btfss	status,0
-	goto	u521
-	goto	u520
+	goto	u641
+	goto	u640
 
-u521:
-	goto	l1564
-u520:
-	line	531
+u641:
+	goto	l1668
+u640:
+	goto	l1690
+	line	563
 	
-l1572:
-	movlw	(0Dh)&0ffh
+l1676:
+	movlw	(021h)&0ffh
 	
 	call	_UART_TransmitChar
-	line	532
+	line	564
 	
-l1574:
+l1678:
 	asmopt push
 asmopt off
 movlw	208
 movwf	(??_sendResponse+0+0)^00h,c
 	movlw	202
-u957:
+u1117:
 decfsz	wreg,f
-	bra	u957
+	bra	u1117
 	decfsz	(??_sendResponse+0+0)^00h,c,f
-	bra	u957
+	bra	u1117
 asmopt pop
 
-	line	533
+	line	565
 	
-l1576:
+l1680:
+	movlw	(0FFh)&0ffh
+	
+	call	_UART_TransmitChar
+	line	566
+	asmopt push
+asmopt off
+movlw	208
+movwf	(??_sendResponse+0+0)^00h,c
+	movlw	202
+u1127:
+decfsz	wreg,f
+	bra	u1127
+	decfsz	(??_sendResponse+0+0)^00h,c,f
+	bra	u1127
+asmopt pop
+
+	line	567
+	
+l1682:
+	movf	((c:_exception_code))^00h,c,w
+	
+	call	_UART_TransmitChar
+	line	568
+	
+l1684:
+	asmopt push
+asmopt off
+movlw	208
+movwf	(??_sendResponse+0+0)^00h,c
+	movlw	202
+u1137:
+decfsz	wreg,f
+	bra	u1137
+	decfsz	(??_sendResponse+0+0)^00h,c,f
+	bra	u1137
+asmopt pop
+
+	line	571
+	
+l1686:
+	movlw	low(0)
+	movwf	((c:_isExceptionRaised))^00h,c
+	line	572
+	
+l1688:
+	movlw	low(0)
+	movwf	((c:_exception_code))^00h,c
+	line	576
+	
+l1690:
+	movlw	(0Dh)&0ffh
+	
+	call	_UART_TransmitChar
+	line	577
+	
+l1692:
+	asmopt push
+asmopt off
+movlw	208
+movwf	(??_sendResponse+0+0)^00h,c
+	movlw	202
+u1147:
+decfsz	wreg,f
+	bra	u1147
+	decfsz	(??_sendResponse+0+0)^00h,c,f
+	bra	u1147
+asmopt pop
+
+	line	578
+	
+l1694:
 	movlw	(0Ah)&0ffh
 	
 	call	_UART_TransmitChar
-	line	537
+	line	582
 	
-l1578:
+l1696:
 	movlw	high(032h)
 	movwf	((c:sendResponse@index+1))^00h,c
 	movlw	low(032h)
 	movwf	((c:sendResponse@index))^00h,c
-	line	538
-	goto	l1584
-	line	539
+	line	583
+	goto	l1702
+	line	584
 	
-l1580:
+l1698:
 	movf	((c:sendResponse@index))^00h,c,w
 	sublw	low(_requestBuffer+032h)
 	movwf	fsr2l
 	clrf	fsr2h
 	movlw	low(0FFh)
 	movwf	indf2
-	line	540
+	line	585
 	
-l1582:
+l1700:
 	decf	((c:sendResponse@index))^00h,c
 	btfss	status,0
 	decf	((c:sendResponse@index+1))^00h,c
-	line	538
+	line	583
 	
-l1584:
+l1702:
 	movf	((c:sendResponse@index))^00h,c,w
 iorwf	((c:sendResponse@index+1))^00h,c,w
 	btfss	status,2
-	goto	u531
-	goto	u530
+	goto	u651
+	goto	u650
 
-u531:
-	goto	l1580
-u530:
-	line	542
+u651:
+	goto	l1698
+u650:
+	line	587
 	
-l161:
+l177:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_sendResponse
 	__end_of_sendResponse:
-	signat	_sendResponse,89
+	signat	_sendResponse,4217
 	global	_UART_TransmitChar
 
 ;; *************** function _UART_TransmitChar *****************
 ;; Defined at:
-;;		line 175 in file "main.c"
+;;		line 191 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;  data            1    wreg     unsigned char 
 ;; Auto vars:     Size  Location     Type
@@ -3286,45 +3470,194 @@ GLOBAL	__end_of_sendResponse
 ;; This function uses a non-reentrant model
 ;;
 psect	text10,class=CODE,space=0,reloc=2,group=0
-	line	175
+	line	191
 global __ptext10
 __ptext10:
 psect	text10
 	file	"main.c"
-	line	175
+	line	191
 	
 _UART_TransmitChar:
 ;incstack = 0
 	callstack 26
 	movwf	((c:UART_TransmitChar@data))^00h,c
-	line	177
+	line	193
 	
-l1396:
+l1470:
 	
-l94:
+l100:
 	btfss	((c:3998))^0f00h,c,4	;volatile
-	goto	u441
-	goto	u440
-u441:
-	goto	l94
-u440:
-	line	178
+	goto	u521
+	goto	u520
+u521:
+	goto	l100
+u520:
+	line	194
 	
-l1398:
+l1472:
 	movff	(c:UART_TransmitChar@data),(c:4013)	;volatile
-	line	179
+	line	195
 	
-l97:
+l103:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_UART_TransmitChar
 	__end_of_UART_TransmitChar:
 	signat	_UART_TransmitChar,4217
+	global	_isPasswordMatched
+
+;; *************** function _isPasswordMatched *****************
+;; Defined at:
+;;		line 690 in file "main.c"
+;; Parameters:    Size  Location     Type
+;;		None
+;; Auto vars:     Size  Location     Type
+;;  index           1   15[COMRAM] unsigned char 
+;;  matchFlag       1   14[COMRAM] unsigned char 
+;;  payload_leng    1   13[COMRAM] unsigned char 
+;; Return value:  Size  Location     Type
+;;                  1    wreg      unsigned char 
+;; Registers used:
+;;		wreg, fsr1l, fsr1h, fsr2l, fsr2h, status,2, status,0
+;; Tracked objects:
+;;		On entry : 0/0
+;;		On exit  : 3F/0
+;;		Unchanged: 0/0
+;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5
+;;      Params:         0       0       0       0       0       0       0
+;;      Locals:         3       0       0       0       0       0       0
+;;      Temps:          2       0       0       0       0       0       0
+;;      Totals:         5       0       0       0       0       0       0
+;;Total ram usage:        5 bytes
+;; Hardware stack levels used: 1
+;; Hardware stack levels required when called: 2
+;; This function calls:
+;;		Nothing
+;; This function is called by:
+;;		_createResponse
+;; This function uses a non-reentrant model
+;;
+psect	text11,class=CODE,space=0,reloc=2,group=0
+	line	690
+global __ptext11
+__ptext11:
+psect	text11
+	file	"main.c"
+	line	690
+	
+_isPasswordMatched:
+;incstack = 0
+	callstack 27
+	line	691
+	
+l1626:
+	line	692
+	movlw	low(0)
+	movwf	((c:isPasswordMatched@index))^00h,c
+	line	693
+	movlw	low(01h)
+	movwf	((c:isPasswordMatched@matchFlag))^00h,c
+	line	696
+	
+l1628:
+	movlb	0	; () banked
+	movf	(0+(_request_unit+02h))&0ffh,w
+	addlw	low(_requestBuffer)
+	movwf	fsr2l
+	clrf	fsr2h
+	movf	indf2,w
+	movwf	((c:isPasswordMatched@payload_length))^00h,c
+	line	699
+	
+l1630:; BSR set to: 0
+
+	movf	((c:isPasswordMatched@payload_length))^00h,c,w
+xorwf	(0+((c:_master)+08h))^00h,c,w
+	btfsc	status,2
+	goto	u601
+	goto	u600
+
+u601:
+	goto	l1636
+u600:
+	line	701
+	
+l1632:; BSR set to: 0
+
+	movlw	(0)&0ffh
+	goto	l198
+	line	705
+	
+l1636:; BSR set to: 0
+
+	movlw	low(0)
+	movwf	((c:isPasswordMatched@index))^00h,c
+	goto	l1644
+	line	706
+	
+l1638:; BSR set to: 0
+
+	movf	((c:isPasswordMatched@index))^00h,c,w
+	addlw	low(_request_unit+04h)
+	movwf	fsr2l
+	clrf	fsr2h
+	movf	((c:isPasswordMatched@index))^00h,c,w
+	addlw	low(_master)
+	movwf	fsr1l
+	clrf	fsr1h
+	movf	postinc2,w
+xorwf	postinc1,w
+	btfsc	status,2
+	goto	u611
+	goto	u610
+
+u611:
+	goto	l1642
+u610:
+	line	707
+	
+l1640:; BSR set to: 0
+
+	movlw	low(0)
+	movwf	((c:isPasswordMatched@matchFlag))^00h,c
+	line	708
+	goto	l1646
+	line	705
+	
+l1642:; BSR set to: 0
+
+	incf	((c:isPasswordMatched@index))^00h,c
+	
+l1644:; BSR set to: 0
+
+		movf	(0+((c:_master)+08h))^00h,c,w
+	subwf	((c:isPasswordMatched@index))^00h,c,w
+	btfss	status,0
+	goto	u621
+	goto	u620
+
+u621:
+	goto	l1638
+u620:
+	line	712
+	
+l1646:; BSR set to: 0
+
+	movf	((c:isPasswordMatched@matchFlag))^00h,c,w
+	line	713
+	
+l198:; BSR set to: 0
+
+	return	;funcret
+	callstack 0
+GLOBAL	__end_of_isPasswordMatched
+	__end_of_isPasswordMatched:
+	signat	_isPasswordMatched,89
 	global	_createPingResponse
 
 ;; *************** function _createPingResponse *****************
 ;; Defined at:
-;;		line 357 in file "main.c"
+;;		line 385 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;		None
 ;; Auto vars:     Size  Location     Type
@@ -3351,34 +3684,35 @@ GLOBAL	__end_of_UART_TransmitChar
 ;;		_createResponse
 ;; This function uses a non-reentrant model
 ;;
-psect	text11,class=CODE,space=0,reloc=2,group=0
-	line	357
-global __ptext11
-__ptext11:
-psect	text11
+psect	text12,class=CODE,space=0,reloc=2,group=0
+	line	385
+global __ptext12
+__ptext12:
+psect	text12
 	file	"main.c"
-	line	357
+	line	385
 	
-_createPingResponse:
+_createPingResponse:; BSR set to: 0
+
 ;incstack = 0
 	callstack 27
-	line	359
+	line	387
 	
-l1442:
+l1516:
 	movff	(_request_unit),(c:_responseBuffer)
-	line	360
+	line	388
 	movff	0+(_request_unit+01h),0+((c:_responseBuffer)+01h)
-	line	361
+	line	389
 	
-l1444:
+l1518:
 	movlw	low(0)
 	movwf	(0+((c:_responseBuffer)+02h))^00h,c
-	line	362
+	line	390
 	movlw	low(0)
 	movwf	(0+((c:_responseBuffer)+03h))^00h,c
-	line	363
+	line	391
 	
-l136:
+l150:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_createPingResponse
@@ -3388,7 +3722,7 @@ GLOBAL	__end_of_createPingResponse
 
 ;; *************** function _UART_Init *****************
 ;; Defined at:
-;;		line 105 in file "main.c"
+;;		line 121 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;		None
 ;; Auto vars:     Size  Location     Type
@@ -3415,42 +3749,42 @@ GLOBAL	__end_of_createPingResponse
 ;;		_main
 ;; This function uses a non-reentrant model
 ;;
-psect	text12,class=CODE,space=0,reloc=2,group=0
-	line	105
-global __ptext12
-__ptext12:
-psect	text12
+psect	text13,class=CODE,space=0,reloc=2,group=0
+	line	121
+global __ptext13
+__ptext13:
+psect	text13
 	file	"main.c"
-	line	105
+	line	121
 	
 _UART_Init:
 ;incstack = 0
 	callstack 27
-	line	109
+	line	125
 	
-l1632:
+l1750:
 	bcf	c:(31910/8),(31910)&7	;volatile
-	line	110
+	line	126
 	bsf	c:(31911/8),(31911)&7	;volatile
-	line	111
+	line	127
 	movlb	15	; () banked
 	bcf	((3898))&0ffh,7	;volatile
-	line	114
+	line	130
 	bsf	((c:4082))^0f00h,c,7	;volatile
-	line	115
+	line	131
 	bsf	((c:4082))^0f00h,c,6	;volatile
-	line	116
+	line	132
 	bsf	((c:3997))^0f00h,c,5	;volatile
-	line	119
+	line	135
 	
-l1634:; BSR set to: 15
+l1752:; BSR set to: 15
 
 	movlw	low(020h)
 	movwf	((c:4012))^0f00h,c	;volatile
-	line	120
+	line	136
 	movlw	low(090h)
 	movwf	((c:4011))^0f00h,c	;volatile
-	line	123
+	line	139
 	movlw	low(float24(103.16666666666667))
 	movwf	((c:UART_Init@temp))^00h,c
 	movlw	high(float24(103.16666666666667))
@@ -3458,9 +3792,9 @@ l1634:; BSR set to: 15
 	movlw	low highword(float24(103.16666666666667))
 	movwf	((c:UART_Init@temp+2))^00h,c
 
-	line	124
+	line	140
 	
-l1636:; BSR set to: 15
+l1754:; BSR set to: 15
 
 	movff	(c:UART_Init@temp),(c:___fttol@f1)
 	movff	(c:UART_Init@temp+1),(c:___fttol@f1+1)
@@ -3468,9 +3802,9 @@ l1636:; BSR set to: 15
 	call	___fttol	;wreg free
 	movf	(0+?___fttol)^00h,c,w
 	movwf	((c:4015))^0f00h,c	;volatile
-	line	168
+	line	184
 	
-l91:
+l97:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_UART_Init
@@ -3509,12 +3843,12 @@ GLOBAL	__end_of_UART_Init
 ;;		_UART_Init
 ;; This function uses a non-reentrant model
 ;;
-psect	text13,class=CODE,space=0,reloc=2,group=1
+psect	text14,class=CODE,space=0,reloc=2,group=1
 	file	"C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\fttol.c"
 	line	44
-global __ptext13
-__ptext13:
-psect	text13
+global __ptext14
+__ptext14:
+psect	text14
 	file	"C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\fttol.c"
 	line	44
 	
@@ -3523,28 +3857,28 @@ ___fttol:
 	callstack 27
 	line	49
 	
-l1586:; BSR set to: 15
+l1704:; BSR set to: 15
 
 	movff	(c:___fttol@f1+2),??___fttol+0+0
 	clrf	(??___fttol+0+0+1)^00h,c
 	clrf	(??___fttol+0+0+2)^00h,c
 	rlcf	((c:___fttol@f1+1))^00h,c,w
 	rlcf	(??___fttol+0+0)^00h,c
-	bnc	u541
+	bnc	u661
 	bsf	(??___fttol+0+0+1)^00h,c,0
-u541:
+u661:
 	movf	(??___fttol+0+0)^00h,c,w
 	movwf	((c:___fttol@exp1))^00h,c
 	movf	((c:___fttol@exp1))^00h,c,w
 	btfss	status,2
-	goto	u551
-	goto	u550
-u551:
-	goto	l1592
-u550:
+	goto	u671
+	goto	u670
+u671:
+	goto	l1710
+u670:
 	line	50
 	
-l1588:
+l1706:
 	movlw	low(0)
 	movwf	((c:?___fttol))^00h,c
 	movlw	high(0)
@@ -3553,10 +3887,10 @@ l1588:
 	movwf	((c:?___fttol+2))^00h,c
 	movlw	high highword(0)
 	movwf	((c:?___fttol+3))^00h,c
-	goto	l633
+	goto	l649
 	line	51
 	
-l1592:; BSR set to: 15
+l1710:; BSR set to: 15
 
 	movlw	(017h)&0ffh
 	movwf	(??___fttol+0+0)^00h,c
@@ -3565,24 +3899,24 @@ l1592:; BSR set to: 15
 	movff	(c:___fttol@f1+2),??___fttol+1+0+2
 	incf	((??___fttol+0+0))^00h,c,w
 	movwf	(??___fttol+4+0)^00h,c
-	goto	u560
-u565:
+	goto	u680
+u685:
 	bcf	status,0
 	rrcf	(??___fttol+1+2)^00h,c
 	rrcf	(??___fttol+1+1)^00h,c
 	rrcf	(??___fttol+1+0)^00h,c
-u560:
+u680:
 	decfsz	(??___fttol+4+0)^00h,c
-	goto	u565
+	goto	u685
 	movf	(??___fttol+1+0)^00h,c,w
 	movwf	((c:___fttol@sign1))^00h,c
 	line	52
 	
-l1594:
+l1712:
 	bsf	(0+(15/8)+(c:___fttol@f1))^00h,c,(15)&7
 	line	53
 	
-l1596:
+l1714:
 	movlw	low(0FFFFh)
 	andwf	((c:___fttol@f1))^00h,c
 	movlw	high(0FFFFh)
@@ -3592,7 +3926,7 @@ l1596:
 
 	line	54
 	
-l1598:
+l1716:
 	movf	((c:___fttol@f1))^00h,c,w
 	movwf	((c:___fttol@lval))^00h,c
 	movf	((c:___fttol@f1+1))^00h,c,w
@@ -3605,36 +3939,36 @@ l1598:
 	
 	line	55
 	
-l1600:
+l1718:
 	movlw	(08Eh)&0ffh
 	subwf	((c:___fttol@exp1))^00h,c
 	line	56
 	
-l1602:
+l1720:
 	btfsc	((c:___fttol@exp1))^00h,c,7
-	goto	u570
-	goto	u571
+	goto	u690
+	goto	u691
 
-u571:
-	goto	l1614
-u570:
+u691:
+	goto	l1732
+u690:
 	line	57
 	
-l1604:
+l1722:
 		movf	((c:___fttol@exp1))^00h,c,w
 	xorlw	80h
 	addlw	-(80h^-15)
 	btfsc	status,0
-	goto	u581
-	goto	u580
+	goto	u701
+	goto	u700
 
-u581:
-	goto	l1610
-u580:
-	goto	l1588
+u701:
+	goto	l1728
+u700:
+	goto	l1706
 	line	60
 	
-l1610:
+l1728:
 	bcf	status,0
 	rrcf	((c:___fttol@lval+3))^00h,c
 	rrcf	((c:___fttol@lval+2))^00h,c
@@ -3642,26 +3976,26 @@ l1610:
 	rrcf	((c:___fttol@lval))^00h,c
 	line	61
 	
-l1612:
+l1730:
 	incfsz	((c:___fttol@exp1))^00h,c
 	
-	goto	l1610
-	goto	l1624
+	goto	l1728
+	goto	l1742
 	line	63
 	
-l1614:
+l1732:
 		movlw	018h-1
 	cpfsgt	((c:___fttol@exp1))^00h,c
-	goto	u591
-	goto	u590
+	goto	u711
+	goto	u710
 
-u591:
-	goto	l1622
-u590:
-	goto	l1588
+u711:
+	goto	l1740
+u710:
+	goto	l1706
 	line	66
 	
-l1620:
+l1738:
 	bcf	status,0
 	rlcf	((c:___fttol@lval))^00h,c
 	rlcf	((c:___fttol@lval+1))^00h,c
@@ -3671,27 +4005,27 @@ l1620:
 	decf	((c:___fttol@exp1))^00h,c
 	line	65
 	
-l1622:
+l1740:
 	movf	((c:___fttol@exp1))^00h,c,w
 	btfss	status,2
-	goto	u601
-	goto	u600
-u601:
-	goto	l1620
-u600:
+	goto	u721
+	goto	u720
+u721:
+	goto	l1738
+u720:
 	line	70
 	
-l1624:
+l1742:
 	movf	((c:___fttol@sign1))^00h,c,w
 	btfsc	status,2
-	goto	u611
-	goto	u610
-u611:
-	goto	l1628
-u610:
+	goto	u731
+	goto	u730
+u731:
+	goto	l1746
+u730:
 	line	71
 	
-l1626:
+l1744:
 	comf	((c:___fttol@lval+3))^00h,c
 	comf	((c:___fttol@lval+2))^00h,c
 	comf	((c:___fttol@lval+1))^00h,c
@@ -3702,14 +4036,14 @@ l1626:
 	addwfc	((c:___fttol@lval+3))^00h,c
 	line	72
 	
-l1628:
+l1746:
 	movff	(c:___fttol@lval),(c:?___fttol)
 	movff	(c:___fttol@lval+1),(c:?___fttol+1)
 	movff	(c:___fttol@lval+2),(c:?___fttol+2)
 	movff	(c:___fttol@lval+3),(c:?___fttol+3)
 	line	73
 	
-l633:
+l649:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of___fttol
@@ -3719,7 +4053,7 @@ GLOBAL	__end_of___fttol
 
 ;; *************** function _ReadPasswordFromEEPROM *****************
 ;; Defined at:
-;;		line 611 in file "main.c"
+;;		line 656 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;		None
 ;; Auto vars:     Size  Location     Type
@@ -3748,28 +4082,28 @@ GLOBAL	__end_of___fttol
 ;;		_main
 ;; This function uses a non-reentrant model
 ;;
-psect	text14,class=CODE,space=0,reloc=2,group=0
+psect	text15,class=CODE,space=0,reloc=2,group=0
 	file	"main.c"
-	line	611
-global __ptext14
-__ptext14:
-psect	text14
+	line	656
+global __ptext15
+__ptext15:
+psect	text15
 	file	"main.c"
-	line	611
+	line	656
 	
 _ReadPasswordFromEEPROM:
 ;incstack = 0
 	callstack 27
-	line	612
+	line	657
 	
-l1670:; BSR set to: 15
+l1798:; BSR set to: 15
 
-	line	613
+	line	658
 	movlw	low(0)
 	movwf	((c:ReadPasswordFromEEPROM@password_addr))^00h,c
-	line	616
+	line	661
 	
-l1672:; BSR set to: 15
+l1800:; BSR set to: 15
 
 	asmopt push
 asmopt off
@@ -3778,26 +4112,26 @@ movwf	(??_ReadPasswordFromEEPROM+0+0+1)^00h,c
 movlw	150
 movwf	(??_ReadPasswordFromEEPROM+0+0)^00h,c
 	movlw	127
-u967:
+u1157:
 decfsz	wreg,f
-	bra	u967
+	bra	u1157
 	decfsz	(??_ReadPasswordFromEEPROM+0+0)^00h,c,f
-	bra	u967
+	bra	u1157
 	decfsz	(??_ReadPasswordFromEEPROM+0+0+1)^00h,c,f
-	bra	u967
+	bra	u1157
 	nop
 asmopt pop
 
-	line	617
+	line	662
 	
-l1674:
+l1802:
 	movlw	(0)&0ffh
 	
 	call	_EEPROM_Read
 	movwf	((c:ReadPasswordFromEEPROM@password_length))^00h,c
-	line	618
+	line	663
 	
-l1676:
+l1804:
 	asmopt push
 asmopt off
 movlw  41
@@ -3805,40 +4139,40 @@ movwf	(??_ReadPasswordFromEEPROM+0+0+1)^00h,c
 movlw	150
 movwf	(??_ReadPasswordFromEEPROM+0+0)^00h,c
 	movlw	127
-u977:
+u1167:
 decfsz	wreg,f
-	bra	u977
+	bra	u1167
 	decfsz	(??_ReadPasswordFromEEPROM+0+0)^00h,c,f
-	bra	u977
+	bra	u1167
 	decfsz	(??_ReadPasswordFromEEPROM+0+0+1)^00h,c,f
-	bra	u977
+	bra	u1167
 	nop
 asmopt pop
 
-	line	619
+	line	664
 	
-l1678:
+l1806:
 	incf	((c:ReadPasswordFromEEPROM@password_addr))^00h,c
-	line	621
+	line	666
 	
-l1680:
+l1808:
 		incf	((c:ReadPasswordFromEEPROM@password_length))^00h,c,w
 	btfsc	status,2
-	goto	u641
-	goto	u640
+	goto	u801
+	goto	u800
 
-u641:
-	goto	l1694
-u640:
-	line	623
+u801:
+	goto	l1824
+u800:
+	line	668
 	
-l1682:
+l1810:
 	movlw	low(0)
 	movwf	((c:ReadPasswordFromEEPROM@index))^00h,c
-	goto	l1692
-	line	624
+	goto	l1820
+	line	669
 	
-l1684:
+l1812:
 	asmopt push
 asmopt off
 movlw  41
@@ -3846,19 +4180,19 @@ movwf	(??_ReadPasswordFromEEPROM+0+0+1)^00h,c
 movlw	150
 movwf	(??_ReadPasswordFromEEPROM+0+0)^00h,c
 	movlw	127
-u987:
+u1177:
 decfsz	wreg,f
-	bra	u987
+	bra	u1177
 	decfsz	(??_ReadPasswordFromEEPROM+0+0)^00h,c,f
-	bra	u987
+	bra	u1177
 	decfsz	(??_ReadPasswordFromEEPROM+0+0+1)^00h,c,f
-	bra	u987
+	bra	u1177
 	nop
 asmopt pop
 
-	line	625
+	line	670
 	
-l1686:
+l1814:
 	movf	((c:ReadPasswordFromEEPROM@index))^00h,c,w
 	addlw	low(_master)
 	movwf	fsr2l
@@ -3869,9 +4203,9 @@ l1686:
 	call	_EEPROM_Read
 	movwf	indf2,c
 
-	line	626
+	line	671
 	
-l1688:
+l1816:
 	asmopt push
 asmopt off
 movlw  41
@@ -3879,44 +4213,53 @@ movwf	(??_ReadPasswordFromEEPROM+0+0+1)^00h,c
 movlw	150
 movwf	(??_ReadPasswordFromEEPROM+0+0)^00h,c
 	movlw	127
-u997:
+u1187:
 decfsz	wreg,f
-	bra	u997
+	bra	u1187
 	decfsz	(??_ReadPasswordFromEEPROM+0+0)^00h,c,f
-	bra	u997
+	bra	u1187
 	decfsz	(??_ReadPasswordFromEEPROM+0+0+1)^00h,c,f
-	bra	u997
+	bra	u1187
 	nop
 asmopt pop
 
-	line	623
+	line	668
 	
-l1690:
+l1818:
 	incf	((c:ReadPasswordFromEEPROM@index))^00h,c
 	
-l1692:
+l1820:
 		movf	((c:ReadPasswordFromEEPROM@password_length))^00h,c,w
 	subwf	((c:ReadPasswordFromEEPROM@index))^00h,c,w
 	btfss	status,0
-	goto	u651
-	goto	u650
+	goto	u811
+	goto	u810
 
-u651:
-	goto	l1684
-u650:
-	goto	l1696
-	line	629
+u811:
+	goto	l1812
+u810:
+	line	674
 	
-l1694:
+l1822:
+	movlw	low(0)
+	movwf	((c:_isExceptionRaised))^00h,c
+	line	675
+	movlw	low(0)
+	movwf	((c:_exception_code))^00h,c
+	line	676
+	goto	l1826
+	line	677
+	
+l1824:
 	movlw	low(0)
 	movwf	((c:_isPasswordSet))^00h,c
-	line	633
+	line	681
 	
-l1696:
+l1826:
 	movff	(c:ReadPasswordFromEEPROM@password_length),0+((c:_master)+08h)
-	line	634
+	line	682
 	
-l178:
+l194:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_ReadPasswordFromEEPROM
@@ -3926,7 +4269,7 @@ GLOBAL	__end_of_ReadPasswordFromEEPROM
 
 ;; *************** function _EEPROM_Read *****************
 ;; Defined at:
-;;		line 579 in file "main.c"
+;;		line 624 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;  addr            1    wreg     unsigned char 
 ;; Auto vars:     Size  Location     Type
@@ -3955,37 +4298,37 @@ GLOBAL	__end_of_ReadPasswordFromEEPROM
 ;;		_ReadPasswordFromEEPROM
 ;; This function uses a non-reentrant model
 ;;
-psect	text15,class=CODE,space=0,reloc=2,group=0
-	line	579
-global __ptext15
-__ptext15:
-psect	text15
+psect	text16,class=CODE,space=0,reloc=2,group=0
+	line	624
+global __ptext16
+__ptext16:
+psect	text16
 	file	"main.c"
-	line	579
+	line	624
 	
 _EEPROM_Read:
 ;incstack = 0
 	callstack 26
 	movwf	((c:EEPROM_Read@addr))^00h,c
-	line	580
+	line	625
 	
-l1400:
+l1474:
 	movff	(c:EEPROM_Read@addr),(c:4009)	;volatile
-	line	581
+	line	626
 	
-l1402:
+l1476:
 	bcf	((c:4006))^0f00h,c,7	;volsfr
-	line	582
+	line	627
 	
-l1404:
+l1478:
 	bsf	((c:4006))^0f00h,c,0	;volsfr
-	line	584
+	line	629
 	
-l1406:
+l1480:
 	movf	((c:4008))^0f00h,c,w	;volatile
-	line	585
+	line	630
 	
-l170:
+l186:
 	return	;funcret
 	callstack 0
 GLOBAL	__end_of_EEPROM_Read
@@ -4022,12 +4365,12 @@ GLOBAL	__end_of_EEPROM_Read
 ;;		_main
 ;; This function uses a non-reentrant model
 ;;
-psect	text16,class=CODE,space=0,reloc=2,group=0
+psect	text17,class=CODE,space=0,reloc=2,group=0
 	file	"i2c.c"
 	line	20
-global __ptext16
-__ptext16:
-psect	text16
+global __ptext17
+__ptext17:
+psect	text17
 	file	"i2c.c"
 	line	20
 	
@@ -4036,7 +4379,7 @@ _I2C2_Init:
 	callstack 28
 	line	21
 	
-l1312:
+l1384:
 	bsf	((c:3988))^0f00h,c,4	;volatile
 	line	22
 	bsf	((c:3988))^0f00h,c,3	;volatile
@@ -4047,7 +4390,7 @@ l1312:
 	bcf	((3898))&0ffh,4	;volatile
 	line	28
 	
-l1314:; BSR set to: 15
+l1386:; BSR set to: 15
 
 	movlw	low(080h)
 	movwf	((c:4039))^0f00h,c	;volatile
@@ -4059,7 +4402,7 @@ l1314:; BSR set to: 15
 	movwf	((c:4040))^0f00h,c	;volatile
 	line	39
 	
-l214:; BSR set to: 15
+l230:; BSR set to: 15
 
 	return	;funcret
 	callstack 0
@@ -4070,7 +4413,7 @@ GLOBAL	__end_of_I2C2_Init
 
 ;; *************** function _isr *****************
 ;; Defined at:
-;;		line 187 in file "main.c"
+;;		line 203 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;		None
 ;; Auto vars:     Size  Location     Type
@@ -4104,7 +4447,7 @@ global __pintcode
 __pintcode:
 psect	intcode
 	file	"main.c"
-	line	187
+	line	203
 	
 _isr:; BSR set to: 15
 
@@ -4115,160 +4458,165 @@ _isr:; BSR set to: 15
 	movff	fsr1h+0,??_isr+1
 	movff	fsr2l+0,??_isr+2
 	movff	fsr2h+0,??_isr+3
-	line	190
+	line	206
 	
-i2l1698:
+i2l1828:
 	btfss	((c:3998))^0f00h,c,5	;volatile
-	goto	i2u66_41
-	goto	i2u66_40
-i2u66_41:
-	goto	i2l114
-i2u66_40:
-	line	192
+	goto	i2u82_41
+	goto	i2u82_40
+i2u82_41:
+	goto	i2l122
+i2u82_40:
+	line	208
 	
-i2l1700:
+i2l1830:
 	movff	(c:4014),(c:isr@receivedChar)	;volatile
-	line	193
+	line	209
 	bcf	((c:3997))^0f00h,c,5	;volatile
-	line	198
+	line	214
 	
-i2l1702:
+i2l1832:
 	movlb	0	; () banked
 	movf	(0+(_receiveData+033h))&0ffh,w
 	btfss	status,2
-	goto	i2u67_41
-	goto	i2u67_40
-i2u67_41:
-	goto	i2l1716
-i2u67_40:
-	line	202
+	goto	i2u83_41
+	goto	i2u83_40
+i2u83_41:
+	goto	i2l1848
+i2u83_40:
+	line	218
 	
-i2l1704:; BSR set to: 0
+i2l1834:; BSR set to: 0
 
 		movlw	58
 	xorwf	((c:isr@receivedChar))^00h,c,w
 	btfss	status,2
-	goto	i2u68_41
-	goto	i2u68_40
+	goto	i2u84_41
+	goto	i2u84_40
 
-i2u68_41:
-	goto	i2l104
-i2u68_40:
+i2u84_41:
+	goto	i2l1840
+i2u84_40:
 	
-i2l1706:; BSR set to: 0
+i2l1836:; BSR set to: 0
 
 	movf	((c:_start_sequence_flag))^00h,c,w
 	btfss	status,2
-	goto	i2u69_41
-	goto	i2u69_40
-i2u69_41:
-	goto	i2l104
-i2u69_40:
-	line	205
+	goto	i2u85_41
+	goto	i2u85_40
+i2u85_41:
+	goto	i2l1840
+i2u85_40:
+	line	221
 	
-i2l1708:; BSR set to: 0
+i2l1838:; BSR set to: 0
 
-	movlw	(01h)&0ffh
-	xorwf	((c:_start_sequence_flag))^00h,c
-	line	206
+	movlw	low(01h)
+	movwf	((c:_start_sequence_flag))^00h,c
+	line	222
+	goto	i2l1888
 	
-i2l104:; BSR set to: 0
+i2l1840:; BSR set to: 0
 
-	line	209
 		movlw	35
 	xorwf	((c:isr@receivedChar))^00h,c,w
 	btfss	status,2
-	goto	i2u70_41
-	goto	i2u70_40
+	goto	i2u86_41
+	goto	i2u86_40
 
-i2u70_41:
-	goto	i2l1756
-i2u70_40:
+i2u86_41:
+	goto	i2l1846
+i2u86_40:
 	
-i2l1710:; BSR set to: 0
+i2l1842:; BSR set to: 0
 
 		decf	((c:_start_sequence_flag))^00h,c,w
 	btfss	status,2
-	goto	i2u71_41
-	goto	i2u71_40
+	goto	i2u87_41
+	goto	i2u87_40
 
-i2u71_41:
-	goto	i2l1756
-i2u71_40:
-	line	212
+i2u87_41:
+	goto	i2l1846
+i2u87_40:
+	line	225
 	
-i2l1712:; BSR set to: 0
+i2l1844:; BSR set to: 0
 
 	movlw	low(01h)
 	movwf	(0+(_receiveData+033h))&0ffh
-	line	213
+	line	226
 	movlw	low(0)
 	movwf	(0+(_receiveData+032h))&0ffh
-	line	216
+	line	229
+	movlw	low(0)
+	movwf	((c:_start_sequence_flag))^00h,c
+	line	230
+	goto	i2l1888
+	line	231
 	
-i2l1714:; BSR set to: 0
+i2l1846:; BSR set to: 0
 
-	movlw	(01h)&0ffh
-	xorwf	((c:_start_sequence_flag))^00h,c
-	goto	i2l1756
-	line	223
+	movlw	low(0)
+	movwf	((c:_start_sequence_flag))^00h,c
+	goto	i2l1888
+	line	238
 	
-i2l1716:; BSR set to: 0
+i2l1848:; BSR set to: 0
 
 		movlw	13
 	xorwf	((c:isr@receivedChar))^00h,c,w
 	btfss	status,2
-	goto	i2u72_41
-	goto	i2u72_40
+	goto	i2u88_41
+	goto	i2u88_40
 
-i2u72_41:
-	goto	i2l1722
-i2u72_40:
+i2u88_41:
+	goto	i2l1854
+i2u88_40:
 	
-i2l1718:; BSR set to: 0
+i2l1850:; BSR set to: 0
 
 	movf	((c:_end_sequence_flag))^00h,c,w
 	btfss	status,2
-	goto	i2u73_41
-	goto	i2u73_40
-i2u73_41:
-	goto	i2l1722
-i2u73_40:
-	line	225
+	goto	i2u89_41
+	goto	i2u89_40
+i2u89_41:
+	goto	i2l1854
+i2u89_40:
+	line	240
 	
-i2l1720:; BSR set to: 0
+i2l1852:; BSR set to: 0
 
 	movlw	low(01h)
 	movwf	((c:_end_sequence_flag))^00h,c
-	line	226
-	goto	i2l1756
-	line	227
+	line	241
+	goto	i2l1888
+	line	242
 	
-i2l1722:; BSR set to: 0
+i2l1854:; BSR set to: 0
 
 		movlw	10
 	xorwf	((c:isr@receivedChar))^00h,c,w
 	btfss	status,2
-	goto	i2u74_41
-	goto	i2u74_40
+	goto	i2u90_41
+	goto	i2u90_40
 
-i2u74_41:
-	goto	i2l1740
-i2u74_40:
+i2u90_41:
+	goto	i2l1872
+i2u90_40:
 	
-i2l1724:; BSR set to: 0
+i2l1856:; BSR set to: 0
 
 		decf	((c:_end_sequence_flag))^00h,c,w
 	btfss	status,2
-	goto	i2u75_41
-	goto	i2u75_40
+	goto	i2u91_41
+	goto	i2u91_40
 
-i2u75_41:
-	goto	i2l1740
-i2u75_40:
-	line	231
+i2u91_41:
+	goto	i2l1872
+i2u91_40:
+	line	246
 	
-i2l1726:; BSR set to: 0
+i2l1858:; BSR set to: 0
 
 	movf	(0+(_receiveData+032h))&0ffh,w
 	addlw	low(_requestBuffer)
@@ -4276,73 +4624,73 @@ i2l1726:; BSR set to: 0
 	clrf	fsr2h
 	clrf	indf2
 	
-i2l1728:; BSR set to: 0
+i2l1860:; BSR set to: 0
 
 	incf	(0+(_receiveData+032h))&0ffh
-	line	234
+	line	249
 	
-i2l1730:; BSR set to: 0
+i2l1862:; BSR set to: 0
 
 	call	_processRequest	;wreg free
-	line	237
+	line	252
 	
-i2l1732:; BSR set to: 0
+i2l1864:; BSR set to: 0
 
 	movlw	low(0)
 	movwf	(0+(_receiveData+032h))&0ffh
-	line	238
+	line	253
 	
-i2l1734:; BSR set to: 0
+i2l1866:; BSR set to: 0
 
 	movlw	low(0)
 	movwf	(0+(_receiveData+033h))&0ffh
-	line	239
+	line	254
 	
-i2l1736:; BSR set to: 0
+i2l1868:; BSR set to: 0
 
 	movlw	low(01h)
 	movwf	((c:_interrupt_flag))^00h,c
-	line	242
+	line	257
 	
-i2l1738:; BSR set to: 0
+i2l1870:; BSR set to: 0
 
 	movlw	low(0)
 	movwf	((c:_end_sequence_flag))^00h,c
-	line	244
-	goto	i2l1756
-	line	250
+	line	259
+	goto	i2l1888
+	line	265
 	
-i2l1740:; BSR set to: 0
+i2l1872:; BSR set to: 0
 
 		movlw	032h-0
 	cpfslt	(0+(_receiveData+032h))&0ffh
-	goto	i2u76_41
-	goto	i2u76_40
+	goto	i2u92_41
+	goto	i2u92_40
 
-i2u76_41:
-	goto	i2l1754
-i2u76_40:
-	line	252
+i2u92_41:
+	goto	i2l1886
+i2u92_40:
+	line	267
 	
-i2l1742:; BSR set to: 0
+i2l1874:; BSR set to: 0
 
 		decf	((c:_end_sequence_flag))^00h,c,w
 	btfss	status,2
-	goto	i2u77_41
-	goto	i2u77_40
+	goto	i2u93_41
+	goto	i2u93_40
 
-i2u77_41:
-	goto	i2l1750
-i2u77_40:
-	line	255
+i2u93_41:
+	goto	i2l1882
+i2u93_40:
+	line	270
 	
-i2l1744:; BSR set to: 0
+i2l1876:; BSR set to: 0
 
 	movlw	low(0)
 	movwf	((c:_end_sequence_flag))^00h,c
-	line	258
+	line	273
 	
-i2l1746:; BSR set to: 0
+i2l1878:; BSR set to: 0
 
 	movf	(0+(_receiveData+032h))&0ffh,w
 	addlw	low(_requestBuffer)
@@ -4351,12 +4699,12 @@ i2l1746:; BSR set to: 0
 	movlw	low(0Dh)
 	movwf	indf2
 	
-i2l1748:; BSR set to: 0
+i2l1880:; BSR set to: 0
 
 	incf	(0+(_receiveData+032h))&0ffh
-	line	261
+	line	276
 	
-i2l1750:; BSR set to: 0
+i2l1882:; BSR set to: 0
 
 	movf	(0+(_receiveData+032h))&0ffh,w
 	addlw	low(_requestBuffer)
@@ -4365,25 +4713,25 @@ i2l1750:; BSR set to: 0
 	movff	(c:isr@receivedChar),indf2
 
 	
-i2l1752:; BSR set to: 0
+i2l1884:; BSR set to: 0
 
 	incf	(0+(_receiveData+032h))&0ffh
-	line	262
-	goto	i2l1756
-	line	266
+	line	277
+	goto	i2l1888
+	line	281
 	
-i2l1754:; BSR set to: 0
+i2l1886:; BSR set to: 0
 
 	movlw	low(0)
 	movwf	(0+(_receiveData+032h))&0ffh
-	line	275
+	line	290
 	
-i2l1756:; BSR set to: 0
+i2l1888:; BSR set to: 0
 
 	bsf	((c:3997))^0f00h,c,5	;volatile
-	line	277
+	line	292
 	
-i2l114:
+i2l122:
 	movff	??_isr+3,fsr2h+0
 	movff	??_isr+2,fsr2l+0
 	movff	??_isr+1,fsr1h+0
@@ -4398,7 +4746,7 @@ GLOBAL	__end_of_isr
 
 ;; *************** function _processRequest *****************
 ;; Defined at:
-;;		line 284 in file "main.c"
+;;		line 299 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;		None
 ;; Auto vars:     Size  Location     Type
@@ -4426,50 +4774,50 @@ GLOBAL	__end_of_isr
 ;;		_isr
 ;; This function uses a non-reentrant model
 ;;
-psect	text18,class=CODE,space=0,reloc=2,group=0
-	line	284
-global __ptext18
-__ptext18:
-psect	text18
+psect	text19,class=CODE,space=0,reloc=2,group=0
+	line	299
+global __ptext19
+__ptext19:
+psect	text19
 	file	"main.c"
-	line	284
+	line	299
 	
 _processRequest:
 ;incstack = 0
 	callstack 25
-	line	286
+	line	301
 	
-i2l1638:; BSR set to: 0
+i2l1756:; BSR set to: 0
 
-	line	287
+	line	302
 	movlw	high(0)
 	movwf	((c:processRequest@length_index+1))^00h,c
 	movlw	low(0)
 	movwf	((c:processRequest@length_index))^00h,c
-	line	288
+	line	303
 	movlw	high(0)
 	movwf	((c:processRequest@i+1))^00h,c
 	movlw	low(0)
 	movwf	((c:processRequest@i))^00h,c
-	line	290
+	line	305
 	
-i2l1640:; BSR set to: 0
+i2l1758:; BSR set to: 0
 
 	movff	(_requestBuffer),(_request_unit)
-	line	291
+	line	306
 	
-i2l1642:; BSR set to: 0
+i2l1760:; BSR set to: 0
 
 	movff	0+(_requestBuffer+01h),0+(_request_unit+01h)
-	line	294
+	line	309
 	movlw	high(0)
 	movwf	((c:processRequest@buffer_index+1))^00h,c
 	movlw	low(0)
 	movwf	((c:processRequest@buffer_index))^00h,c
-	goto	i2l1650
-	line	295
+	goto	i2l1768
+	line	310
 	
-i2l1644:; BSR set to: 0
+i2l1762:; BSR set to: 0
 
 	movf	((c:processRequest@buffer_index))^00h,c,w
 	addlw	low(_requestBuffer+02h)
@@ -4480,9 +4828,9 @@ i2l1644:; BSR set to: 0
 	movwf	fsr1l
 	clrf	fsr1h
 	movff	indf2,indf1
-	line	298
+	line	313
 	
-i2l1646:; BSR set to: 0
+i2l1764:; BSR set to: 0
 
 	movlw	low(02h)
 	addwf	((c:processRequest@buffer_index))^00h,c,w
@@ -4490,14 +4838,14 @@ i2l1646:; BSR set to: 0
 	movlw	high(02h)
 	addwfc	((c:processRequest@buffer_index+1))^00h,c,w
 	movwf	1+((c:processRequest@length_index))^00h,c
-	line	294
+	line	309
 	
-i2l1648:; BSR set to: 0
+i2l1766:; BSR set to: 0
 
 	infsnz	((c:processRequest@buffer_index))^00h,c
 	incf	((c:processRequest@buffer_index+1))^00h,c
 	
-i2l1650:; BSR set to: 0
+i2l1768:; BSR set to: 0
 
 	movf	((c:processRequest@buffer_index))^00h,c,w
 	addlw	low(_requestBuffer+02h)
@@ -4505,20 +4853,20 @@ i2l1650:; BSR set to: 0
 	clrf	fsr2h
 	movf	indf2,w
 	btfss	status,2
-	goto	i2u62_41
-	goto	i2u62_40
-i2u62_41:
-	goto	i2l1644
-i2u62_40:
+	goto	i2u74_41
+	goto	i2u74_40
+i2u74_41:
+	goto	i2l1762
+i2u74_40:
 	
-i2l119:; BSR set to: 0
+i2l127:; BSR set to: 0
 
-	line	302
+	line	317
 	movff	(c:processRequest@length_index),0+(_request_unit+02h)
 	movff	(c:processRequest@length_index+1),1+(_request_unit+02h)
-	line	307
+	line	322
 	
-i2l120:; BSR set to: 0
+i2l128:; BSR set to: 0
 
 	return	;funcret
 	callstack 0

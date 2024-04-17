@@ -34,6 +34,8 @@ unsigned char end_sequence_flag = 0x00;
 unsigned short at24_eeprom_address = 0x0000;
 unsigned char checkAck = 0x01;
 unsigned char isPasswordSet = 0x01;
+unsigned char isExceptionRaised = 0x00; //exception flag
+unsigned char exception_code = 0x00;
 
 enum ORDER_CODES
 {
@@ -41,8 +43,9 @@ enum ORDER_CODES
 	WRITE_MEM = 0x01,
 	READ_MEM = 0x02,
 	UPDATE_MEM = 0x03,
-	DELETE_MEM = 0x04,
-	SET_PASSWORD = 0xF1
+	DELETE_MEM = 0xF0,
+	SET_PASSWORD = 0xF1,
+	AUTH_CHECK = 0xF2
 };
 
 enum PIC_EEPROM_CONFIG
@@ -53,6 +56,18 @@ enum PIC_EEPROM_CONFIG
 	ADDRESS_POINTER_L = 0x0B
 };
 //address pointer will store address of next location where data will be stored on at24lc256
+//pointer has both low and high byte, because word address in AT24LC256 is 16bit
+
+enum EXCEPTION_CODES
+{
+	ILLEGAL_ORDER_CODE = 0x01,
+	ILLEGAL_DEVICE_CODE = 0x02,
+
+	MASTER_PASSWORD_NOT_SET = 0x03,
+	AUTH_FAILED = 0x04 
+};
+//exception codes are used in responses, when operation fails on the device, we have to notify master. 
+
 
 // struct to hold variables related to receiving packets
 typedef struct
@@ -93,9 +108,10 @@ void writeDataToEEPROM();
 void writePasswordToEEPROM();
 void writeByteAT24_EEPROM(unsigned int, unsigned char);
 void ReadPasswordFromEEPROM();
+unsigned char isPasswordMatched();
 void EEPROM_Write(unsigned char addr, unsigned char eep_data);
 unsigned char EEPROM_Read(unsigned char addr);
-void sendResponse(void);
+void sendResponse(unsigned char exception_occurred);
 
 /*
  *@desc: initialise uart, set appropriate registers regarding UART on PIC18F25K22
@@ -202,18 +218,17 @@ void __interrupt() isr(void)
 			if ((receivedChar == PACKET_START_MARKER_LOWER) && (start_sequence_flag == 0x00))
 			{
 				// set start_sequence_flag and wait for lower byte
-				start_sequence_flag ^= 1;
-			}
-
-			// check if the received character is upper byte of start sequence
-			if ((receivedChar == PACKET_START_MARKER_UPPER) && (start_sequence_flag == 0x01))
+				start_sequence_flag = 0x01;
+			}else if ((receivedChar == PACKET_START_MARKER_UPPER) && (start_sequence_flag == 0x01)) //check whether received char is start sequence upper byte.
 			{
 				// we got a start sequence
 				receiveData.receiving = 0x01;
 				receiveData.index = 0;
 
 				// clear start sequence flag
-				start_sequence_flag ^= 1;
+				start_sequence_flag = 0x00;
+			}else{ // if it's a random character, just clear start_sequence flag
+				start_sequence_flag = 0x00;
 			}
 		}
 		else
@@ -313,38 +328,51 @@ void processRequest()
  */
 void createResponse()
 {
-	unsigned char ORDER_CODE = request_unit.ORDER_CODE;
+	unsigned char CODE = request_unit.ORDER_CODE;
 
-
-	//@todo: we have to start raising exception responses, if password is set or not, or if password doesn't match with this device.
+	//we have to start raising exception responses
+	//check for if password is set or not
+	if(!isPasswordSet){
+		isExceptionRaised = 0x01;
+		exception_code = MASTER_PASSWORD_NOT_SET;
+	}
 
 	//if device code matches with our device code, then only perform operations or send response. 
 	if (request_unit.DEVICE_ADDR == DEVICE_CODE)
 	{
-		// if request matches our device code, only then this device will respond.
-		switch (ORDER_CODE)
-		{
-		case PING: // ping request from master
-			createPingResponse();
-			break;
-		case WRITE_MEM:
-			writeDataToEEPROM();
-			break;
-		case READ_MEM:
-			break;
-		case UPDATE_MEM:
-			break;
-		case DELETE_MEM:
-			break;
-                case SET_PASSWORD:
-			writePasswordToEEPROM(); //stores the master password 
-			break;
-		default: // invalid function code
-			break;
-		}
+		if((!isExceptionRaised) || (CODE == SET_PASSWORD)){ //check for exception raise flag, if flag is raised, don't perform normal operations.
+			// if request matches our device code, only then this device will respond.
+			switch (CODE)
+			{
+			case PING: // ping request from master
+				createPingResponse();
+				break;	
+			case WRITE_MEM:
+				writeDataToEEPROM();
+				break;
+			case READ_MEM:
+				break;
+			case UPDATE_MEM:
+				break;
+			case DELETE_MEM:
+				break;
+                	case SET_PASSWORD:
+				writePasswordToEEPROM(); //stores the master password 
+				break;
+			case AUTH_CHECK:
+				if(!isPasswordMatched()) //if authentication fails
+				{
+				   isExceptionRaised = 0x01; //set exception raise flag, as exception occurred.
+				   exception_code = AUTH_FAILED;    //0x04 represents failed authentication
+				}
+				break;
+			default: // invalid function code
+				break;
+			}
+		}	
 
 		// send response bytes one by one
-		sendResponse();
+		sendResponse(isExceptionRaised);
 	}
 }
 
@@ -444,9 +472,9 @@ void writePasswordToEEPROM(){
 	unsigned char last_byte_addr = 0x00;
 	unsigned char last_byte_data = 0x00;
 
-	pic_eeprom_addr = PASSWORD_ADDR_START;	
+	pic_eeprom_addr = PASSWORD_ADDR_START;	//Now, PASSWORD_ADDR_START is 0x00
 
-	payload_length = requestBuffer[request_unit.payload_length_index];
+	payload_length = requestBuffer[request_unit.payload_length_index]; 
 	
 	//maximum password length allowed is 8bytes
 	//we reserved 9 addresses for password, range is 0x00 - 0x08.
@@ -481,6 +509,9 @@ void writePasswordToEEPROM(){
 	last_byte_data = EEPROM_Read(last_byte_addr);
 	__delay_ms(100);
 
+	isExceptionRaised = 0x00;
+	isPasswordSet == 0x01;
+
 	// update response buffer
         responseBuffer[0] = request_unit.DEVICE_ADDR;
         responseBuffer[1] = request_unit.ORDER_CODE;
@@ -511,7 +542,7 @@ void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
  *@params: none
  *@return: none
  */
-void sendResponse()
+void sendResponse(unsigned char isExceptionOccurred)
 {
 	unsigned int index = 0;
 
@@ -521,10 +552,24 @@ void sendResponse()
 	UART_TransmitChar(0x23); // send LOW Byte of start sequence
 	__delay_ms(10);
 
-	for (index = 0; index < RESPONSE_PACKET_SIZE; index++)
-	{
-		UART_TransmitChar(responseBuffer[index]);
+	if(!isExceptionOccurred){
+		for (index = 0; index < RESPONSE_PACKET_SIZE; index++)
+		{
+			UART_TransmitChar(responseBuffer[index]);
+			__delay_ms(10);
+		}
+	}else{
+		//exception occurred
+		UART_TransmitChar(DEVICE_CODE); //send device code
 		__delay_ms(10);
+		UART_TransmitChar(0xFF); //order code is 0xFF, that means exception occurred
+		__delay_ms(10);
+		UART_TransmitChar(exception_code); //send exception code, so that master can understand what happened.
+		__delay_ms(10);
+
+
+		isExceptionRaised = 0x00; //clear exception raised flag
+		exception_code = 0x00; //clear exception code
 	}
 
 	// send end sequence
@@ -625,6 +670,9 @@ void ReadPasswordFromEEPROM(){
 			master.PASSWORD_CACHE[index] = EEPROM_Read(password_addr + index); //store each password byte in cache buffer
 			__delay_ms(500);
 		}
+
+		isExceptionRaised = 0x00; //reset exception raise flag
+		exception_code = 0x00;    //clear exception code variable 
 	}else{
 		isPasswordSet = 0x00; //clear the password set flag, this means user needs to set master password to interact with this device
 	}

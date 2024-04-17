@@ -23,16 +23,26 @@ let payload = {};
 let SEQUENCE_LEN = 2;
 let PACKET_START_SEQUENCE = ['3A', '23'];
 let PACKET_END_SEQUENCE = ['0D', '0A'];
+let RESPONSE_DATA = [];
+let end_sequence_flag = 0;
 
 
 const menu = Object.freeze({
     PING: '11',
-    WRITE: '01',
-    READ: '02',
-    UPDATE: '03',
-    DELETE: 'F0',
-    CHANGE_PASSWORD : 'F1',
+    WRITE_MEM: '01',
+    READ_MEM: '02',
+    UPDATE_MEM: '03',
+    DELETE_MEM: 'F0',
+    SET_PASSWORD : 'F1',
+    AUTH_CHECK : 'F2',
     EXIT: 'X'
+});
+
+const exception = Object.freeze({
+	ILLEGAL_ORDER_CODE : '1',
+	ILLEGAL_DEVICE_CODE : '2',
+	MASTER_PASSWORD_NOT_SET : '3',
+	AUTH_FAILED : '4'
 });
 
 // Create a parser instance
@@ -42,20 +52,64 @@ const parser = new ByteLengthParser({ length: 1 });
 function displayData(data) {
     console.log(chalk.red('║                         ' + decimalToHex(data[0]) + '                           ║'));
     console.log(chalk.white('╚═════════════════════════════════════════════════════╝'));
+
+    RESPONSE_DATA.push(decimalToHex(data[0]));
 }
 
 parser.on('data', (data) => {
     clearTimeout(responseTimeoutId); //clear response timeout
     clearTimeout(responseDataEndId); //clear response data end timeout
+    
     //display data
     displayData(data);
 
-    responseDataEndId = setTimeout(() => {
+
+    if((decimalToHex(data[0]) == 'D') && (end_sequence_flag === 0)){
+	end_sequence_flag = 1;
+    }else if((decimalToHex(data[0]) == 'A') && (end_sequence_flag === 1)){
+	checkResponse();
         showMenu();
 
-        clearTimeout(responseDataEndId);
-    }, 4000);
+	end_sequence_flag = 0; //clear end sequence flag
+    }else{
+	//suppose, if we only get low byte, but not the high byte
+	if(end_sequence_flag == 1){
+		end_sequence_flag = 0;
+	}
+    }
+		
+
 });
+
+function checkResponse(){
+	if(RESPONSE_DATA[3] == 'FF'){
+		console.log(chalk.bgRed(`${checkExceptionCode(RESPONSE_DATA[4])}`));
+	}
+	RESPONSE_DATA = [];
+}
+
+function checkExceptionCode(code){
+	let exception_msg = '';
+	
+	switch(code){
+	    case exception.ILLEGAL_ORDER_CODE:
+		exception_msg = 'Please send correct operation code';
+		break;
+	    case exception.ILLEGAL_DEVICE_CODE:
+		exception_msg = 'Please check device code again';
+		break;
+	    case exception.MASTER_PASSWORD_NOT_SET:
+		exception_msg = 'Please set master password for your device';
+		break;
+	    case exception.AUTH_FAILED:
+		exception_msg = 'Password not matched, try again...';
+		break;
+	    default:
+		break;
+	}
+
+	return exception_msg;
+}
 
 function decimalToHex(decimalNum) {
     const hexChars = "0123456789ABCDEF"; // Hexadecimal characters
@@ -138,11 +192,12 @@ async function showMenu() {
     let menuString = `
     Operation Codes
     ${menu.PING} : PING
-    ${menu.WRITE} : WRITE
-    ${menu.READ} : READ
-    ${menu.UPDATE} : UPDATE
-    ${menu.DELETE} : FORMAT DISK (ADMIN ACCESS)
-    ${menu.CHANGE_PASSWORD} : CHANGE PASSWORD
+    ${menu.WRITE_MEM} : WRITE
+    ${menu.READ_MEM} : READ
+    ${menu.UPDATE_MEM} : UPDATE
+    ${menu.DELETE_MEM} : FORMAT DISK (ADMIN ACCESS)
+    ${menu.SET_PASSWORD} : SET MASTER PASSWORD
+    ${menu.AUTH_CHECK} : AUTH TEST
     ${menu.EXIT} : EXIT
     `;
 
@@ -179,21 +234,25 @@ async function performOperation() {
     let errorFlag = false;
     let payload_data = {}; //it will contain, an array,and its respective length.
 
+    console.log(OPERATION_CODE);
     switch(OPERATION_CODE){
         case menu.PING:
             payload_data = createPingData();
             break;
-        case menu.WRITE:
+        case menu.WRITE_MEM:
             payload_data = createWriteData();
             break;
-        case menu.READ:
+        case menu.READ_MEM:
             break;
-        case menu.UPDATE:
+        case menu.UPDATE_MEM:
             break;
-        case menu.DELETE:
+        case menu.DELETE_MEM:
             break;
-        case menu.CHANGE_PASSWORD: //set master password for eeprom
-            payload_data = createCPData();
+        case menu.SET_PASSWORD: //set master password for eeprom
+            payload_data = createPasswordData();
+            break;
+        case menu.AUTH_CHECK:
+            payload_data = createAUTHData();
             break;
         default:
             console.log(chalk.bgRed("INVALID OPERATION CODE"));
@@ -236,7 +295,26 @@ function createWriteData(){
     return payload;
 }
 
-function createCPData(){
+function createPasswordData(){
+    let hexString = 'Adi$1'; //random password sample
+    let hexArr = [];
+
+    //write a code to prompt user to enter string from command line
+
+    //stringtoHex will return an array of hex bytes
+    //for example : "Hello, World!" - ['48', '65', '6C', '6C', '6F', '2C', '20', '57', '6F', '72', '6C', '64', '21']
+    hexArr = stringtoHex(hexString); 
+
+    //generate payload
+    payload = {
+        data : hexArr,
+        len : hexArr.length
+    }
+
+    return payload;
+}
+
+function createAUTHData(){
     let hexString = 'Adi$1'; //random password sample
     let hexArr = [];
 
@@ -281,7 +359,7 @@ async function sendRequest(payload_obj){
     }
     
 
-    responseTimeoutId = setTimeout(handleTimeout, 2000);
+    responseTimeoutId = setTimeout(handleTimeout, 10000);
 }
 
 
