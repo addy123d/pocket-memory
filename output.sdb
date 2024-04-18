@@ -10,14 +10,7 @@ PASSWORD_ADDR_END 8
 ADDRESS_POINTER_H 10
 ADDRESS_POINTER_L 11
 ]
-"336
-[e E5844 EXCEPTION_CODES `uc
-ILLEGAL_ORDER_CODE 1
-ILLEGAL_DEVICE_CODE 2
-MASTER_PASSWORD_NOT_SET 3
-AUTH_FAILED 4
-]
-"342
+"307
 [e E5831 ORDER_CODES `uc
 PING 17
 WRITE_MEM 1
@@ -26,6 +19,13 @@ UPDATE_MEM 3
 DELETE_MEM 240
 SET_PASSWORD 241
 AUTH_CHECK 242
+]
+"345
+[e E5844 EXCEPTION_CODES `uc
+ILLEGAL_ORDER_CODE 1
+ILLEGAL_DEVICE_CODE 2
+MASTER_PASSWORD_NOT_SET 3
+AUTH_FAILED 4
 ]
 "62 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\float.c
 [v ___ftpack __ftpack `(f  1 e 3 0 ]
@@ -59,35 +59,41 @@ AUTH_CHECK 242
 [v _I2C2_Stop I2C2_Stop `(v  1 e 1 0 ]
 "131
 [v _I2C2_Send I2C2_Send `(uc  1 e 1 0 ]
-"119 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"147
+[v _I2C2_Read I2C2_Read `(uc  1 e 1 0 ]
+"121 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _UART_Init UART_Init `(v  1 e 1 0 ]
-"186
+"188
 [v _UART_TransmitChar UART_TransmitChar `(v  1 e 1 0 ]
-"198
+"200
 [v _isr isr `IIH(v  1 e 1 0 ]
-"296
+"298
 [v _processRequest processRequest `(v  1 e 1 0 ]
-"327
+"336
 [v _createResponse createResponse `(v  1 e 1 0 ]
-"385
+"396
 [v _createPingResponse createPingResponse `(v  1 e 1 0 ]
-"398
+"409
 [v _writeDataToEEPROM writeDataToEEPROM `(v  1 e 1 0 ]
-"465
-[v _writePasswordToEEPROM writePasswordToEEPROM `(v  1 e 1 0 ]
-"528
+"476
+[v _writeMasterPasswordToEEPROM writeMasterPasswordToEEPROM `(v  1 e 1 0 ]
+"539
 [v _writeByteAT24_EEPROM writeByteAT24_EEPROM `(v  1 e 1 0 ]
-"543
+"554
+[v _readByteAT24_EEPROM readByteAT24_EEPROM `(uc  1 e 1 0 ]
+"576
 [v _sendResponse sendResponse `(v  1 e 1 0 ]
-"594
+"634
 [v _EEPROM_Write EEPROM_Write `(v  1 e 1 0 ]
-"626
+"666
 [v _EEPROM_Read EEPROM_Read `(uc  1 e 1 0 ]
-"659
+"699
 [v _ReadMasterPasswordFromEEPROM ReadMasterPasswordFromEEPROM `(v  1 e 1 0 ]
-"698
+"737
+[v _ReadCredentials ReadCredentials `(v  1 e 1 0 ]
+"800
 [v _isPasswordMatched isPasswordMatched `(uc  1 e 1 0 ]
-"727
+"829
 [v _main main `(v  1 e 1 0 ]
 [s S43 . 1 `uc 1 . 1 0 :2:0 
 `uc 1 ANSC2 1 0 :1:2 
@@ -100,7 +106,7 @@ AUTH_CHECK 242
 "163 C:\Program Files\Microchip\xc8\v2.46\pic\include\proc\pic18f25k22.h
 [u S51 . 1 `S43 1 . 1 0 ]
 [v _ANSELCbits ANSELCbits `VES51  1 e 1 @3898 ]
-[s S451 . 1 `uc 1 TRISC0 1 0 :1:0 
+[s S472 . 1 `uc 1 TRISC0 1 0 :1:0 
 `uc 1 TRISC1 1 0 :1:1 
 `uc 1 TRISC2 1 0 :1:2 
 `uc 1 TRISC3 1 0 :1:3 
@@ -110,7 +116,7 @@ AUTH_CHECK 242
 `uc 1 TRISC7 1 0 :1:7 
 ]
 "8056
-[s S460 . 1 `uc 1 RC0 1 0 :1:0 
+[s S481 . 1 `uc 1 RC0 1 0 :1:0 
 `uc 1 RC1 1 0 :1:1 
 `uc 1 RC2 1 0 :1:2 
 `uc 1 RC3 1 0 :1:3 
@@ -119,8 +125,8 @@ AUTH_CHECK 242
 `uc 1 RC6 1 0 :1:6 
 `uc 1 RC7 1 0 :1:7 
 ]
-[u S469 . 1 `S451 1 . 1 0 `S460 1 . 1 0 ]
-[v _TRISCbits TRISCbits `VES469  1 e 1 @3988 ]
+[u S490 . 1 `S472 1 . 1 0 `S481 1 . 1 0 ]
+[v _TRISCbits TRISCbits `VES490  1 e 1 @3988 ]
 "8267
 [v _OSCTUNE OSCTUNE `VEuc  1 e 1 @3995 ]
 [s S111 . 1 `uc 1 TMR1IE 1 0 :1:0 
@@ -155,7 +161,7 @@ AUTH_CHECK 242
 ]
 [u S157 . 1 `S144 1 . 1 0 `S152 1 . 1 0 ]
 [v _PIR1bits PIR1bits `VES157  1 e 1 @3998 ]
-[s S281 . 1 `uc 1 CCP2IF 1 0 :1:0 
+[s S289 . 1 `uc 1 CCP2IF 1 0 :1:0 
 `uc 1 TMR3IF 1 0 :1:1 
 `uc 1 HLVDIF 1 0 :1:2 
 `uc 1 BCL1IF 1 0 :1:3 
@@ -165,16 +171,16 @@ AUTH_CHECK 242
 `uc 1 OSCFIF 1 0 :1:7 
 ]
 "8960
-[s S290 . 1 `uc 1 . 1 0 :2:0 
+[s S298 . 1 `uc 1 . 1 0 :2:0 
 `uc 1 LVDIF 1 0 :1:2 
 `uc 1 BCLIF 1 0 :1:3 
 ]
-[s S294 . 1 `uc 1 . 1 0 :6:0 
+[s S302 . 1 `uc 1 . 1 0 :6:0 
 `uc 1 CMIF 1 0 :1:6 
 ]
-[u S297 . 1 `S281 1 . 1 0 `S290 1 . 1 0 `S294 1 . 1 0 ]
-[v _PIR2bits PIR2bits `VES297  1 e 1 @4001 ]
-[s S252 . 1 `uc 1 RD 1 0 :1:0 
+[u S305 . 1 `S289 1 . 1 0 `S298 1 . 1 0 `S302 1 . 1 0 ]
+[v _PIR2bits PIR2bits `VES305  1 e 1 @4001 ]
+[s S260 . 1 `uc 1 RD 1 0 :1:0 
 `uc 1 WR 1 0 :1:1 
 `uc 1 WREN 1 0 :1:2 
 `uc 1 WRERR 1 0 :1:3 
@@ -184,11 +190,11 @@ AUTH_CHECK 242
 `uc 1 EEPGD 1 0 :1:7 
 ]
 "9393
-[s S261 . 1 `uc 1 . 1 0 :6:0 
+[s S269 . 1 `uc 1 . 1 0 :6:0 
 `uc 1 EEFS 1 0 :1:6 
 ]
-[u S264 . 1 `S252 1 . 1 0 `S261 1 . 1 0 ]
-[v _EECON1bits EECON1bits `VES264  1 e 1 @4006 ]
+[u S272 . 1 `S260 1 . 1 0 `S269 1 . 1 0 ]
+[v _EECON1bits EECON1bits `VES272  1 e 1 @4006 ]
 "9438
 [v _EECON2 EECON2 `VEuc  1 e 1 @4007 ]
 "9458
@@ -205,7 +211,7 @@ AUTH_CHECK 242
 [v _RCREG RCREG `VEuc  1 e 1 @4014 ]
 "10535
 [v _SPBRG1 SPBRG1 `VEuc  1 e 1 @4015 ]
-[s S505 . 1 `uc 1 SEN 1 0 :1:0 
+[s S526 . 1 `uc 1 SEN 1 0 :1:0 
 `uc 1 RSEN 1 0 :1:1 
 `uc 1 PEN 1 0 :1:2 
 `uc 1 RCEN 1 0 :1:3 
@@ -215,7 +221,7 @@ AUTH_CHECK 242
 `uc 1 GCEN 1 0 :1:7 
 ]
 "13000
-[s S514 . 1 `uc 1 SEN1 1 0 :1:0 
+[s S535 . 1 `uc 1 SEN1 1 0 :1:0 
 `uc 1 ADMSK1 1 0 :1:1 
 `uc 1 ADMSK2 1 0 :1:2 
 `uc 1 ADMSK3 1 0 :1:3 
@@ -224,22 +230,22 @@ AUTH_CHECK 242
 `uc 1 ACKSTAT1 1 0 :1:6 
 `uc 1 GCEN1 1 0 :1:7 
 ]
-[s S523 . 1 `uc 1 . 1 0 :1:0 
+[s S544 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 ADMSK11 1 0 :1:1 
 `uc 1 ADMSK21 1 0 :1:2 
 `uc 1 ADMSK31 1 0 :1:3 
 `uc 1 ADMSK4 1 0 :1:4 
 `uc 1 ADMSK5 1 0 :1:5 
 ]
-[s S530 . 1 `uc 1 . 1 0 :1:0 
+[s S551 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 RSEN1 1 0 :1:1 
 `uc 1 PEN1 1 0 :1:2 
 `uc 1 RCEN1 1 0 :1:3 
 `uc 1 ADMSK41 1 0 :1:4 
 `uc 1 ADMSK51 1 0 :1:5 
 ]
-[u S537 . 1 `S505 1 . 1 0 `S514 1 . 1 0 `S523 1 . 1 0 `S530 1 . 1 0 ]
-[v _SSP1CON2bits SSP1CON2bits `VES537  1 e 1 @4037 ]
+[u S558 . 1 `S526 1 . 1 0 `S535 1 . 1 0 `S544 1 . 1 0 `S551 1 . 1 0 ]
+[v _SSP1CON2bits SSP1CON2bits `VES558  1 e 1 @4037 ]
 "13306
 [v _SSP1CON1 SSP1CON1 `VEuc  1 e 1 @4038 ]
 "13544
@@ -284,7 +290,7 @@ AUTH_CHECK 242
 "29
 [v _requestBuffer requestBuffer `[50]uc  1 e 50 0 ]
 "30
-[v _responseBuffer responseBuffer `[10]uc  1 e 10 0 ]
+[v _responseBuffer responseBuffer `[30]uc  1 e 30 0 ]
 "31
 [v _start_sequence_flag start_sequence_flag `uc  1 e 1 0 ]
 "32
@@ -308,54 +314,121 @@ AUTH_CHECK 242
 [s S38 . 9 `[8]uc 1 PASSWORD_CACHE 8 0 `uc 1 cache_length 1 8 ]
 "96
 [v _master master `S38  1 e 9 0 ]
-"727
+"829
 [v _main main `(v  1 e 1 0 ]
 {
-"758
+"860
 } 0
-"327
+"336
 [v _createResponse createResponse `(v  1 e 1 0 ]
 {
-"329
-[v createResponse@CODE CODE `uc  1 a 1 25 ]
-"377
+"338
+[v createResponse@CODE CODE `uc  1 a 1 22 ]
+"388
 } 0
-"465
-[v _writePasswordToEEPROM writePasswordToEEPROM `(v  1 e 1 0 ]
+"476
+[v _writeMasterPasswordToEEPROM writeMasterPasswordToEEPROM `(v  1 e 1 0 ]
 {
-"468
-[v writePasswordToEEPROM@index index `uc  1 a 1 21 ]
-"469
-[v writePasswordToEEPROM@pic_eeprom_addr pic_eeprom_addr `uc  1 a 1 20 ]
-"467
-[v writePasswordToEEPROM@payload_length payload_length `uc  1 a 1 19 ]
-"471
-[v writePasswordToEEPROM@last_byte_data last_byte_data `uc  1 a 1 18 ]
-"470
-[v writePasswordToEEPROM@last_byte_addr last_byte_addr `uc  1 a 1 17 ]
-"521
+"479
+[v writeMasterPasswordToEEPROM@index index `uc  1 a 1 21 ]
+"480
+[v writeMasterPasswordToEEPROM@pic_eeprom_addr pic_eeprom_addr `uc  1 a 1 20 ]
+"478
+[v writeMasterPasswordToEEPROM@payload_length payload_length `uc  1 a 1 19 ]
+"482
+[v writeMasterPasswordToEEPROM@last_byte_data last_byte_data `uc  1 a 1 18 ]
+"481
+[v writeMasterPasswordToEEPROM@last_byte_addr last_byte_addr `uc  1 a 1 17 ]
+"532
 } 0
-"398
+"409
 [v _writeDataToEEPROM writeDataToEEPROM `(v  1 e 1 0 ]
 {
-"433
-[v writeDataToEEPROM@i i `us  1 a 2 23 ]
-"404
-[v writeDataToEEPROM@at24_eeprom_addr_start at24_eeprom_addr_start `us  1 a 2 21 ]
-"400
-[v writeDataToEEPROM@payload_length payload_length `us  1 a 2 19 ]
-"403
-[v writeDataToEEPROM@at24_eep_addr_L at24_eep_addr_L `uc  1 a 1 18 ]
-"402
-[v writeDataToEEPROM@at24_eep_addr_H at24_eep_addr_H `uc  1 a 1 17 ]
-"458
+"444
+[v writeDataToEEPROM@i i `us  1 a 2 6 ]
+"415
+[v writeDataToEEPROM@at24_eeprom_addr_start at24_eeprom_addr_start `us  1 a 2 4 ]
+"411
+[v writeDataToEEPROM@payload_length payload_length `us  1 a 2 2 ]
+"414
+[v writeDataToEEPROM@at24_eep_addr_L at24_eep_addr_L `uc  1 a 1 1 ]
+"413
+[v writeDataToEEPROM@at24_eep_addr_H at24_eep_addr_H `uc  1 a 1 0 ]
+"469
 } 0
-"528
+"539
 [v _writeByteAT24_EEPROM writeByteAT24_EEPROM `(v  1 e 1 0 ]
 {
 [v writeByteAT24_EEPROM@address address `ui  1 p 2 12 ]
 [v writeByteAT24_EEPROM@data data `uc  1 p 1 14 ]
-"536
+"547
+} 0
+"634
+[v _EEPROM_Write EEPROM_Write `(v  1 e 1 0 ]
+{
+[v EEPROM_Write@addr addr `uc  1 a 1 wreg ]
+[v EEPROM_Write@addr addr `uc  1 a 1 wreg ]
+[v EEPROM_Write@eep_data eep_data `uc  1 p 1 11 ]
+"636
+[v EEPROM_Write@addr addr `uc  1 a 1 14 ]
+"659
+} 0
+"576
+[v _sendResponse sendResponse `(v  1 e 1 0 ]
+{
+[v sendResponse@isExceptionOccurred isExceptionOccurred `uc  1 a 1 wreg ]
+"578
+[v sendResponse@index index `ui  1 a 2 14 ]
+"576
+[v sendResponse@isExceptionOccurred isExceptionOccurred `uc  1 a 1 wreg ]
+[v sendResponse@isExceptionOccurred isExceptionOccurred `uc  1 a 1 13 ]
+"627
+} 0
+"800
+[v _isPasswordMatched isPasswordMatched `(uc  1 e 1 0 ]
+{
+"803
+[v isPasswordMatched@index index `uc  1 a 1 15 ]
+"804
+[v isPasswordMatched@matchFlag matchFlag `uc  1 a 1 14 ]
+"802
+[v isPasswordMatched@payload_length payload_length `uc  1 a 1 13 ]
+"827
+} 0
+"396
+[v _createPingResponse createPingResponse `(v  1 e 1 0 ]
+{
+"402
+} 0
+"737
+[v _ReadCredentials ReadCredentials `(v  1 e 1 0 ]
+{
+"785
+[v ReadCredentials@i i `us  1 a 2 8 ]
+"746
+[v ReadCredentials@ADDR ADDR `[2]uc  1 a 2 5 ]
+"745
+[v ReadCredentials@credential_length credential_length `us  1 a 2 10 ]
+"747
+[v ReadCredentials@START_ADDR START_ADDR `us  1 a 2 3 ]
+"741
+[v ReadCredentials@index index `uc  1 a 1 7 ]
+"743
+[v ReadCredentials@response_index response_index `uc  1 a 1 2 ]
+"742
+[v ReadCredentials@last_char_index last_char_index `uc  1 a 1 1 ]
+"744
+[v ReadCredentials@payload_length payload_length `uc  1 a 1 0 ]
+"792
+} 0
+"554
+[v _readByteAT24_EEPROM readByteAT24_EEPROM `(uc  1 e 1 0 ]
+{
+"555
+[v readByteAT24_EEPROM@eeprom_data eeprom_data `uc  1 a 1 14 ]
+"554
+[v readByteAT24_EEPROM@address address `us  1 p 2 12 ]
+"568
 } 0
 "82 C:\Users\Helion-Electrical\Desktop\pocket-memory\i2c.c
 [v _I2C2_Stop I2C2_Stop `(v  1 e 1 0 ]
@@ -375,110 +448,78 @@ AUTH_CHECK 242
 [v I2C2_Send@BYTE BYTE `uc  1 a 1 11 ]
 "136
 } 0
-"594 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
-[v _EEPROM_Write EEPROM_Write `(v  1 e 1 0 ]
+"147
+[v _I2C2_Read I2C2_Read `(uc  1 e 1 0 ]
 {
-[v EEPROM_Write@addr addr `uc  1 a 1 wreg ]
-[v EEPROM_Write@addr addr `uc  1 a 1 wreg ]
-[v EEPROM_Write@eep_data eep_data `uc  1 p 1 11 ]
-"596
-[v EEPROM_Write@addr addr `uc  1 a 1 14 ]
-"619
+"152
 } 0
-"543
-[v _sendResponse sendResponse `(v  1 e 1 0 ]
-{
-[v sendResponse@isExceptionOccurred isExceptionOccurred `uc  1 a 1 wreg ]
-"545
-[v sendResponse@index index `ui  1 a 2 14 ]
-"543
-[v sendResponse@isExceptionOccurred isExceptionOccurred `uc  1 a 1 wreg ]
-[v sendResponse@isExceptionOccurred isExceptionOccurred `uc  1 a 1 13 ]
-"587
-} 0
-"186
+"188 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _UART_TransmitChar UART_TransmitChar `(v  1 e 1 0 ]
 {
 [v UART_TransmitChar@data data `uc  1 a 1 wreg ]
 [v UART_TransmitChar@data data `uc  1 a 1 wreg ]
 [v UART_TransmitChar@data data `uc  1 a 1 11 ]
-"191
+"193
 } 0
-"698
-[v _isPasswordMatched isPasswordMatched `(uc  1 e 1 0 ]
-{
-"701
-[v isPasswordMatched@index index `uc  1 a 1 15 ]
-"702
-[v isPasswordMatched@matchFlag matchFlag `uc  1 a 1 14 ]
-"700
-[v isPasswordMatched@payload_length payload_length `uc  1 a 1 13 ]
-"725
-} 0
-"385
-[v _createPingResponse createPingResponse `(v  1 e 1 0 ]
-{
-"391
-} 0
-"119
+"121
 [v _UART_Init UART_Init `(v  1 e 1 0 ]
 {
-"121
-[v UART_Init@temp temp `f  1 a 3 26 ]
-"179
+"123
+[v UART_Init@temp temp `f  1 a 3 20 ]
+"181
 } 0
 "44 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\fttol.c
 [v ___fttol __fttol `(l  1 e 4 0 ]
 {
 "47
-[v ___fttol@lval lval `ul  1 a 4 21 ]
+[v ___fttol@lval lval `ul  1 a 4 1 ]
 "46
-[v ___fttol@exp1 exp1 `uc  1 a 1 25 ]
-[v ___fttol@sign1 sign1 `uc  1 a 1 20 ]
+[v ___fttol@exp1 exp1 `uc  1 a 1 5 ]
+[v ___fttol@sign1 sign1 `uc  1 a 1 0 ]
 "44
 [v ___fttol@f1 f1 `f  1 p 3 11 ]
 "73
 } 0
-"659 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"699 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _ReadMasterPasswordFromEEPROM ReadMasterPasswordFromEEPROM `(v  1 e 1 0 ]
 {
-"673
+"713
 [v ReadMasterPasswordFromEEPROM@index index `uc  1 a 1 16 ]
-"661
+"701
 [v ReadMasterPasswordFromEEPROM@password_length password_length `uc  1 a 1 15 ]
-"662
+"702
 [v ReadMasterPasswordFromEEPROM@password_addr password_addr `uc  1 a 1 14 ]
-"690
+"730
 } 0
-"626
+"666
 [v _EEPROM_Read EEPROM_Read `(uc  1 e 1 0 ]
 {
 [v EEPROM_Read@addr addr `uc  1 a 1 wreg ]
 [v EEPROM_Read@addr addr `uc  1 a 1 wreg ]
-"628
+"668
 [v EEPROM_Read@addr addr `uc  1 a 1 11 ]
-"633
+"673
 } 0
 "20 C:\Users\Helion-Electrical\Desktop\pocket-memory\i2c.c
 [v _I2C2_Init I2C2_Init `(v  1 e 1 0 ]
 {
 "39
 } 0
-"198 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"200 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _isr isr `IIH(v  1 e 1 0 ]
 {
-"203
+"205
 [v isr@receivedChar receivedChar `uc  1 a 1 10 ]
-"289
+"291
 } 0
-"296
+"298
 [v _processRequest processRequest `(v  1 e 1 0 ]
 {
-"298
-[v processRequest@buffer_index buffer_index `ui  1 a 2 4 ]
-"299
-[v processRequest@length_index length_index `ui  1 a 2 2 ]
 "300
+[v processRequest@buffer_index buffer_index `ui  1 a 2 4 ]
+"301
+[v processRequest@length_index length_index `ui  1 a 2 2 ]
+"302
 [v processRequest@i i `ui  1 a 2 0 ]
-"320
+"329
 } 0

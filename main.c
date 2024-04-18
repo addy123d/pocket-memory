@@ -17,7 +17,7 @@
 #define EEPROM_ADDRESS 0x50
 #define DEVICE_CODE 0x21
 #define PACKET_SIZE 50
-#define RESPONSE_PACKET_SIZE 10
+#define RESPONSE_PACKET_SIZE 30
 #define PACKET_START_MARKER_LOWER 0x3A
 #define PACKET_START_MARKER_UPPER 0x23
 #define PACKET_END_MARKER_LOWER 0x0D
@@ -103,9 +103,11 @@ void processRequest(void);
 void createResponse(void);
 void createPingResponse(void);
 void writeDataToEEPROM();
-void writePasswordToEEPROM();
+void writeMasterPasswordToEEPROM();
 void writeByteAT24_EEPROM(unsigned int, unsigned char);
+unsigned char readByteAT24_EEPROM(unsigned short);
 void ReadMasterPasswordFromEEPROM();
+void ReadCredentials();
 unsigned char isPasswordMatched();
 void EEPROM_Write(unsigned char addr, unsigned char eep_data);
 unsigned char EEPROM_Read(unsigned char addr);
@@ -302,17 +304,24 @@ void processRequest()
 	request_unit.DEVICE_ADDR = requestBuffer[0]; // extract device code from buffer and store in struct variable
 	request_unit.ORDER_CODE = requestBuffer[1];	 // extract order code from buffer and store in struct variable
 
-	// extract credential data from buffer and store it in struct buffer
-	for (buffer_index = 0; requestBuffer[buffer_index + 2] != 0x00; buffer_index++)
-	{
-		request_unit.payload_data[buffer_index] = requestBuffer[buffer_index + 2];
+	if(request_unit.ORDER_CODE != READ_MEM){
+		// extract credential data from buffer and store it in struct buffer
+		for (buffer_index = 0; requestBuffer[buffer_index + 2] != 0x00; buffer_index++)
+		{
+			request_unit.payload_data[buffer_index] = requestBuffer[buffer_index + 2];
 
-		// increment index, until reaches at the end of data, we want location, where length of data is stored.
-		length_index = buffer_index + 2;
+			// increment index, until reaches at the end of data, we want location, where length of data is stored.
+			length_index = buffer_index + 2;
+		}
+
+		// store length location in struct as a global variable
+		request_unit.payload_length_index = length_index;
+	}else{
+
+		//only for read memory order code, because 0x00 condition.
+		request_unit.payload_data[0] = requestBuffer[2]; //word address low byte
+		request_unit.payload_data[1] = requestBuffer[3]; //word address high byte
 	}
-
-	// store length location in struct as a global variable
-	request_unit.payload_length_index = length_index;
 
 #ifdef DEBUG
 	UART_TransmitChar(requestBuffer[length_index]); // this will transmit length of data
@@ -351,13 +360,15 @@ void createResponse()
 				writeDataToEEPROM();
 				break;
 			case READ_MEM:
+				UART_TransmitChar(0x0F);
+				ReadCredentials();
 				break;
 			case UPDATE_MEM:
 				break;
 			case DELETE_MEM:
 				break;
 			case SET_PASSWORD:
-				writePasswordToEEPROM(); // stores the master password
+				writeMasterPasswordToEEPROM(); // stores the master password
 				break;
 			case AUTH_CHECK:
 				if (!isPasswordMatched()) // if authentication fails
@@ -442,19 +453,19 @@ void writeDataToEEPROM()
 	// for example, while storing length, address incremented by 1, so it became 0x0001.
 	//  now, 0x0001 + 0x000F -> 0x0010, this is the new location
 
-	__delay_ms(1000);
+	__delay_ms(500);
 	// write next address location on PIC-EEPROM
 	EEPROM_Write(ADDRESS_POINTER_H, ((at24_eeprom_address >> 8) & 0xFF)); // write word address HIGH Byte
-	__delay_ms(1000);													  // give some delay to conduct write operation
+	__delay_ms(500);													  // give some delay to conduct write operation
 	EEPROM_Write(ADDRESS_POINTER_L, (at24_eeprom_address & 0xFF));		  // write word address LOW Byte
-	__delay_ms(1000);
+	__delay_ms(500);
 
 	// update response buffer
 	responseBuffer[0] = request_unit.DEVICE_ADDR;
 	responseBuffer[1] = request_unit.ORDER_CODE;
 	responseBuffer[2] = (at24_eeprom_addr_start >> 8) & 0xFF; // START address high byte
 	responseBuffer[3] = at24_eeprom_addr_start & 0xFF;		  // START address low byte
-	responseBuffer[4] = (!checkAck) ? 0x01 : 0x00;
+	responseBuffer[4] = 0x00;
 }
 
 /*
@@ -462,7 +473,7 @@ void writeDataToEEPROM()
  *@params: none
  *@return: none
  */
-void writePasswordToEEPROM()
+void writeMasterPasswordToEEPROM()
 {
 	unsigned char payload_length = 0x00;
 	unsigned char index = 0x00;
@@ -536,6 +547,28 @@ void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
 }
 
 /*
+ *@desc: reads byte from eeprom
+ *@params: (unsigned short) address
+ *@return: (unsigned char) eeprom_data
+ */
+unsigned char readByteAT24_EEPROM(unsigned short address){
+	unsigned char eeprom_data = 0x00;
+
+	I2C2_Start(); //send start condition
+	I2C2_Send(EEPROM_ADDRESS << 1); //send slave address with write bit
+	I2C2_Send((address >> 8) & 0xFF); //word address high byte
+	I2C2_Send(address & 0xFF); //word address low byte
+
+	I2C2_Start(); //send start condition again
+	I2C2_Send((EEPROM_ADDRESS << 1) | 0x01); //send slave address with read bit
+	eeprom_data = I2C2_Read(); //read 8 bit data from the mentioned address
+	I2C2_Stop(); //send stop condition
+
+	return eeprom_data;	
+}
+
+
+/*
  *@desc: send response byte by byte
  *@params: none
  *@return: none
@@ -584,6 +617,13 @@ void sendResponse(unsigned char isExceptionOccurred)
 		requestBuffer[PACKET_SIZE - index] = 0xFF;
 		index--;
 	}
+
+	//flush response buffer
+	index = 0;
+	while(index < RESPONSE_PACKET_SIZE){
+		responseBuffer[index] = 0xFF;
+		index++;
+	} 
 }
 
 /*
@@ -593,7 +633,7 @@ void sendResponse(unsigned char isExceptionOccurred)
  */
 void EEPROM_Write(unsigned char addr, unsigned char eep_data)
 {
-	__delay_ms(1000);
+	__delay_ms(500);
 
 	EEADR = addr & 0xFF; // word address
 	EEDATA = eep_data;	 // holds the data.
@@ -690,11 +730,73 @@ void ReadMasterPasswordFromEEPROM()
 }
 
 /*
+ *@desc: reads payload data which is stored on AT24LC256
+ *@params: none
+ *@return: none
+ */
+void ReadCredentials(){
+	//extract starting address from read credential request
+	//payload length is all we know that it is 2 bytes, payload will contain high and low byte
+
+	unsigned char index = 0x00;
+	unsigned char last_char_index = 0x00;
+	unsigned char response_index = 0x00;
+	unsigned char payload_length = 0x02;
+	unsigned short credential_length = 0x00;
+	unsigned char ADDR[2];
+	unsigned short START_ADDR = 0x0000;
+
+	for(index = 0; index < payload_length; index++)
+	     ADDR[index] = request_unit.payload_data[index];
+
+
+	//ADDR[0] - LOW BYTE
+	//ADDR[1] - HIGH BYTE
+	//now we got the start address, as we know, we will get length of credential, extract that first
+	START_ADDR = (ADDR[1] << 8) | ADDR[0];
+
+	//address sent by user
+	UART_TransmitChar(ADDR[1]);
+	UART_TransmitChar(ADDR[0]);
+
+	__delay_ms(50);
+	//read credential length from eeprom
+	credential_length = (readByteAT24_EEPROM(START_ADDR)) & 0xFF;
+	__delay_ms(50);	
+
+	UART_TransmitChar((credential_length >> 8) & 0xFF);
+	UART_TransmitChar(credential_length & 0xFF);
+
+	START_ADDR += 1; //point to next location
+
+	if(credential_length == 0x00FF){
+		//this means it's an empty location, there is no credential stored with this starting address
+		UART_TransmitChar(0xFF);
+		return;
+	}
+	
+	//update response buffer first two bytes	
+	responseBuffer[0] = request_unit.DEVICE_ADDR;
+        responseBuffer[1] = request_unit.ORDER_CODE;
+
+	response_index += 2;
+
+	//store credentials in response buffer
+	for(unsigned short i = 0; i < credential_length; i++){
+		responseBuffer[response_index + i] = readByteAT24_EEPROM(START_ADDR + i);
+		last_char_index = response_index + i;
+	}
+
+	//end response buffer with null character
+	responseBuffer[last_char_index + 1] = 0x00; //end with null character
+}
+
+
+/*
  *@desc: matches user entered password with cache stored password
  *@params: none
  *@return: (unsigned char) matchFlag, will either 0x01 or 0x00, depends on the authentication
  */
-
 unsigned char isPasswordMatched()
 {
 	unsigned char payload_length = 0x00;

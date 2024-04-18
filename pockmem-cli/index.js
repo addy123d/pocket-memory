@@ -243,6 +243,7 @@ async function performOperation() {
             payload_data = createWriteData();
             break;
         case menu.READ_MEM:
+            payload_data = createReadData();
             break;
         case menu.UPDATE_MEM:
             break;
@@ -271,6 +272,18 @@ function createPingData(){
     payload = {
         data : pingData,
         len : pingData.length
+    }
+
+    return payload; //send dummy data, as it a ping request, data doesn't make sense.
+}
+
+function createReadData(){
+    let readData = ['00', '00'];
+
+    //generate payload
+    payload = {
+        data : readData,
+        len : readData.length
     }
 
     return payload; //send dummy data, as it a ping request, data doesn't make sense.
