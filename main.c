@@ -42,9 +42,9 @@ enum ORDER_CODES
 	WRITE_MEM = 0x01,
 	READ_MEM = 0x02,
 	UPDATE_MEM = 0x03,
-	DELETE_MEM = 0xF0,
-	SET_PASSWORD = 0xF1,
-	AUTH_CHECK = 0xF2
+	DELETE_MEM = 0x10,
+	SET_PASSWORD = 0x12,
+	AUTH_CHECK = 0x13
 };
 
 enum PIC_EEPROM_CONFIG
@@ -109,6 +109,7 @@ unsigned char readByteAT24_EEPROM(unsigned short);
 void ReadMasterPasswordFromEEPROM();
 void ReadCredentials();
 unsigned char isPasswordMatched();
+void FormatDrive();
 void EEPROM_Write(unsigned char addr, unsigned char eep_data);
 unsigned char EEPROM_Read(unsigned char addr);
 void sendResponse(unsigned char exception_occurred);
@@ -187,8 +188,7 @@ void UART_Init()
  */
 void UART_TransmitChar(uint8_t data)
 {
-	while (!PIR1bits.TX1IF)
-		;
+	while (!PIR1bits.TX1IF);
 	TXREG = data;
 }
 
@@ -304,6 +304,10 @@ void processRequest()
 	request_unit.DEVICE_ADDR = requestBuffer[0]; // extract device code from buffer and store in struct variable
 	request_unit.ORDER_CODE = requestBuffer[1];	 // extract order code from buffer and store in struct variable
 
+	//@Note: why there is a check for READ_MEM?
+	//as when request to read some payload from eeprom, it may contain 0x00, as address high byte or low byte
+	//but for other requests, 0x00 is treated as a null character, so it is going against that condition.
+	
 	if(request_unit.ORDER_CODE != READ_MEM){
 		// extract credential data from buffer and store it in struct buffer
 		for (buffer_index = 0; requestBuffer[buffer_index + 2] != 0x00; buffer_index++)
@@ -313,19 +317,18 @@ void processRequest()
 			// increment index, until reaches at the end of data, we want location, where length of data is stored.
 			length_index = buffer_index + 2;
 		}
-
+	
 		// store length location in struct as a global variable
 		request_unit.payload_length_index = length_index;
 	}else{
-
 		//only for read memory order code, because 0x00 condition.
 		request_unit.payload_data[0] = requestBuffer[2]; //word address low byte
 		request_unit.payload_data[1] = requestBuffer[3]; //word address high byte
 	}
-
-#ifdef DEBUG
-	UART_TransmitChar(requestBuffer[length_index]); // this will transmit length of data
-#endif
+	
+	#ifdef DEBUG
+		UART_TransmitChar(requestBuffer[length_index]); // this will transmit length of data
+	#endif
 }
 
 /*
@@ -360,12 +363,12 @@ void createResponse()
 				writeDataToEEPROM();
 				break;
 			case READ_MEM:
-				UART_TransmitChar(0x0F);
 				ReadCredentials();
 				break;
 			case UPDATE_MEM:
 				break;
 			case DELETE_MEM:
+				FormatDrive();
 				break;
 			case SET_PASSWORD:
 				writeMasterPasswordToEEPROM(); // stores the master password
@@ -464,8 +467,8 @@ void writeDataToEEPROM()
 	responseBuffer[0] = request_unit.DEVICE_ADDR;
 	responseBuffer[1] = request_unit.ORDER_CODE;
 	responseBuffer[2] = (at24_eeprom_addr_start >> 8) & 0xFF; // START address high byte
-	responseBuffer[3] = at24_eeprom_addr_start & 0xFF;		  // START address low byte
-	responseBuffer[4] = 0x00;
+	responseBuffer[3] = at24_eeprom_addr_start & 0xFF;        // START address low byte
+	responseBuffer[4] = 0xFF; 				  // Termination Character '0xFF' for write operations.
 }
 
 /*
@@ -527,8 +530,6 @@ void writeMasterPasswordToEEPROM()
 	responseBuffer[0] = request_unit.DEVICE_ADDR;
 	responseBuffer[1] = request_unit.ORDER_CODE;
 	responseBuffer[2] = last_byte_data;
-	responseBuffer[3] = 0x00; // START address low byte
-	responseBuffer[4] = 0x00;
 }
 
 /*
@@ -596,7 +597,7 @@ void sendResponse(unsigned char isExceptionOccurred)
 		// exception occurred
 		UART_TransmitChar(DEVICE_CODE); // send device code
 		__delay_ms(10);
-		UART_TransmitChar(0xFF); // order code is 0xFF, that means exception occurred
+		UART_TransmitChar(0xFE); // order code is 0xFE, that means exception occurred
 		__delay_ms(10);
 		UART_TransmitChar(exception_code); // send exception code, so that master can understand what happened.
 		__delay_ms(10);
@@ -749,23 +750,16 @@ void ReadCredentials(){
 	for(index = 0; index < payload_length; index++)
 	     ADDR[index] = request_unit.payload_data[index];
 
-
-	//ADDR[0] - LOW BYTE
-	//ADDR[1] - HIGH BYTE
+	//ADDR[0] - HIGH BYTE
+	//ADDR[1] - LOW BYTE
 	//now we got the start address, as we know, we will get length of credential, extract that first
-	START_ADDR = (ADDR[1] << 8) | ADDR[0];
-
-	//address sent by user
-	UART_TransmitChar(ADDR[1]);
-	UART_TransmitChar(ADDR[0]);
+	START_ADDR = (ADDR[0] << 8) | ADDR[1];
 
 	__delay_ms(50);
 	//read credential length from eeprom
 	credential_length = (readByteAT24_EEPROM(START_ADDR)) & 0xFF;
 	__delay_ms(50);	
 
-	UART_TransmitChar((credential_length >> 8) & 0xFF);
-	UART_TransmitChar(credential_length & 0xFF);
 
 	START_ADDR += 1; //point to next location
 
@@ -825,6 +819,28 @@ unsigned char isPasswordMatched()
 
 	return matchFlag;
 }
+
+/*
+ *@desc: formats AT24LC256, substitutes each byte by 0xFF
+ *@params: none
+ *@return: none
+ */
+void FormatDrive(){
+	unsigned short index = 0x0000;
+	unsigned char mask_data = 0xFF;	
+
+	//U sure brother ?
+	for(index = 0x0000; index <= EEPROM_CAPACITY; index++){
+		UART_TransmitChar((index >> 8) & 0xFF); //HIGH Byte
+		UART_TransmitChar(index & 0xFF); //LOW Byte
+		__delay_ms(10);
+		writeByteAT24_EEPROM(index, mask_data);	
+	}		
+
+	responseBuffer[0] = request_unit.DEVICE_ADDR;
+        responseBuffer[1] = request_unit.ORDER_CODE;
+}
+
 
 void main()
 {

@@ -73,10 +73,10 @@ Version 3.2 HI-TECH Software Intermediate Code
 [v _RCREG `Vuc ~T0 @X0 0 e@4014 ]
 "102 main.c
 [v _processRequest `(v ~T0 @X0 0 ef ]
-"307
-[c E5831 17 1 2 3 240 241 242 .. ]
+"311
+[c E5831 17 1 2 3 16 18 19 .. ]
 [n E5831 ORDER_CODES PING WRITE_MEM READ_MEM UPDATE_MEM DELETE_MEM SET_PASSWORD AUTH_CHECK  ]
-"345
+"348
 [c E5844 1 2 3 4 .. ]
 [n E5844 EXCEPTION_CODES ILLEGAL_ORDER_CODE ILLEGAL_DEVICE_CODE MASTER_PASSWORD_NOT_SET AUTH_FAILED  ]
 "104
@@ -85,13 +85,15 @@ Version 3.2 HI-TECH Software Intermediate Code
 [v _writeDataToEEPROM `(v ~T0 @X0 0 ef ]
 "110
 [v _ReadCredentials `(v ~T0 @X0 0 ef ]
+"112
+[v _FormatDrive `(v ~T0 @X0 0 ef ]
 "106
 [v _writeMasterPasswordToEEPROM `(v ~T0 @X0 0 ef ]
 "111
 [v _isPasswordMatched `(uc ~T0 @X0 0 ef ]
-"114
+"115
 [v _sendResponse `(v ~T0 @X0 0 ef1`uc ]
-"113
+"114
 [v _EEPROM_Read `(uc ~T0 @X0 0 ef1`uc ]
 [v F44 `(v ~T0 @X0 1 tf1`ul ]
 "20 C:\Program Files\Microchip\xc8\v2.46\pic\include\builtins.h
@@ -99,7 +101,7 @@ Version 3.2 HI-TECH Software Intermediate Code
 [p i __delay ]
 "107 main.c
 [v _writeByteAT24_EEPROM `(v ~T0 @X0 0 ef2`ui`uc ]
-"112
+"113
 [v _EEPROM_Write `(v ~T0 @X0 0 ef2`uc`uc ]
 "35 i2c.h
 [v _I2C2_Start `(v ~T0 @X0 0 ef ]
@@ -815,52 +817,50 @@ Version 3.2 HI-TECH Software Intermediate Code
 -> -> 9 `i `uc
 ..
 ]
-"121
-[v _UART_Init `(v ~T0 @X0 1 ef ]
 "122
+[v _UART_Init `(v ~T0 @X0 1 ef ]
+"123
 {
 [e :U _UART_Init ]
 [f ]
-"123
+"124
 [v _temp `f ~T0 @X0 1 a ]
-"125
-[e = _TRISC6 -> -> 0 `i `b ]
 "126
-[e = _TRISC7 -> -> 1 `i `b ]
+[e = _TRISC6 -> -> 0 `i `b ]
 "127
+[e = _TRISC7 -> -> 1 `i `b ]
+"128
 [e = . . _ANSELCbits 0 6 -> -> 0 `i `uc ]
-"129
-[e = . . _INTCONbits 1 7 -> -> 1 `i `uc ]
 "130
-[e = . . _INTCONbits 1 6 -> -> 1 `i `uc ]
+[e = . . _INTCONbits 1 7 -> -> 1 `i `uc ]
 "131
+[e = . . _INTCONbits 1 6 -> -> 1 `i `uc ]
+"132
 [e = . . _PIE1bits 0 5 -> -> 1 `i `uc ]
-"133
-[e = _TXSTA1 -> -> 32 `i `uc ]
 "134
+[e = _TXSTA1 -> -> 32 `i `uc ]
+"135
 [e = _RCSTA1 -> -> 144 `i `uc ]
-"137
-[e = _temp - / -> / -> 64000000 `l -> -> 64 `i `l `f -> -> 9600 `i `f -> -> 1 `i `f ]
 "138
+[e = _temp - / -> / -> 64000000 `l -> -> 64 `i `l `f -> -> 9600 `i `f -> -> 1 `i `f ]
+"139
 [e = _SPBRG1 -> -> _temp `i `uc ]
-"181
+"182
 [e :UE 825 ]
 }
-"188
-[v _UART_TransmitChar `(v ~T0 @X0 1 ef1`uc ]
 "189
+[v _UART_TransmitChar `(v ~T0 @X0 1 ef1`uc ]
+"190
 {
 [e :U _UART_TransmitChar ]
-"188
-[v _data `uc ~T0 @X0 1 r1 ]
 "189
-[f ]
+[v _data `uc ~T0 @X0 1 r1 ]
 "190
+[f ]
+"191
 [e $U 827  ]
 [e :U 828 ]
-"191
 [e :U 827 ]
-"190
 [e $ ! != -> . . _PIR1bits 0 4 `i -> -> -> 0 `i `Vuc `i 828  ]
 [e :U 829 ]
 "192
@@ -1024,135 +1024,135 @@ Version 3.2 HI-TECH Software Intermediate Code
 [e = . _request_unit 0 *U + &U _requestBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _requestBuffer `ui `ux ]
 "305
 [e = . _request_unit 1 *U + &U _requestBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _requestBuffer `ui `ux ]
-"307
+"311
 [e $ ! != -> . _request_unit 1 `i -> . `E5831 2 `i 846  ]
 {
-"309
+"313
 {
 [e = _buffer_index -> -> 0 `i `ui ]
 [e $U 850  ]
-"310
+"314
 [e :U 847 ]
 {
-"311
-[e = *U + &U . _request_unit 3 * -> _buffer_index `ux -> -> # *U &U . _request_unit 3 `ui `ux *U + &U _requestBuffer * -> + _buffer_index -> -> 2 `i `ui `ux -> -> # *U &U _requestBuffer `ui `ux ]
-"314
-[e = _length_index + _buffer_index -> -> 2 `i `ui ]
 "315
+[e = *U + &U . _request_unit 3 * -> _buffer_index `ux -> -> # *U &U . _request_unit 3 `ui `ux *U + &U _requestBuffer * -> + _buffer_index -> -> 2 `i `ui `ux -> -> # *U &U _requestBuffer `ui `ux ]
+"318
+[e = _length_index + _buffer_index -> -> 2 `i `ui ]
+"319
 }
-"309
+"313
 [e ++ _buffer_index -> -> 1 `i `ui ]
 [e :U 850 ]
 [e $ != -> *U + &U _requestBuffer * -> + _buffer_index -> -> 2 `i `ui `ux -> -> # *U &U _requestBuffer `ui `ux `i -> 0 `i 847  ]
 [e :U 848 ]
-"315
-}
-"318
-[e = . _request_unit 2 _length_index ]
 "319
+}
+"322
+[e = . _request_unit 2 _length_index ]
+"323
 }
 [e $U 851  ]
 [e :U 846 ]
 {
-"322
+"325
 [e = *U + &U . _request_unit 3 * -> -> -> 0 `i `ui `ux -> -> # *U &U . _request_unit 3 `ui `ux *U + &U _requestBuffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _requestBuffer `ui `ux ]
-"323
+"326
 [e = *U + &U . _request_unit 3 * -> -> -> 1 `i `ui `ux -> -> # *U &U . _request_unit 3 `ui `ux *U + &U _requestBuffer * -> -> -> 3 `i `ui `ux -> -> # *U &U _requestBuffer `ui `ux ]
-"324
+"327
 }
 [e :U 851 ]
-"329
+"332
 [e :UE 845 ]
 }
-"336
+"339
 [v _createResponse `(v ~T0 @X0 1 ef ]
-"337
+"340
 {
 [e :U _createResponse ]
 [f ]
-"338
+"341
 [v _CODE `uc ~T0 @X0 1 a ]
 [e = _CODE . _request_unit 1 ]
-"342
-[e $ ! ! != -> _isPasswordSet `i -> -> -> 0 `i `uc `i 853  ]
-"343
-{
-"344
-[e = _isExceptionRaised -> -> 1 `i `uc ]
 "345
-[e = _exception_code -> . `E5844 2 `uc ]
+[e $ ! ! != -> _isPasswordSet `i -> -> -> 0 `i `uc `i 853  ]
 "346
+{
+"347
+[e = _isExceptionRaised -> -> 1 `i `uc ]
+"348
+[e = _exception_code -> . `E5844 2 `uc ]
+"349
 }
 [e :U 853 ]
-"349
-[e $ ! == -> . _request_unit 0 `i -> 33 `i 854  ]
-"350
-{
-"351
-[e $ ! || ! != -> _isExceptionRaised `i -> -> -> 0 `i `uc `i == -> _CODE `i -> . `E5831 5 `i 855  ]
 "352
+[e $ ! == -> . _request_unit 0 `i -> 33 `i 854  ]
+"353
 {
 "354
-[e $U 857  ]
+[e $ ! || ! != -> _isExceptionRaised `i -> -> -> 0 `i `uc `i == -> _CODE `i -> . `E5831 5 `i 855  ]
 "355
 {
-"356
-[e :U 858 ]
 "357
-[e ( _createPingResponse ..  ]
+[e $U 857  ]
 "358
-[e $U 856  ]
+{
 "359
-[e :U 859 ]
+[e :U 858 ]
 "360
-[e ( _writeDataToEEPROM ..  ]
+[e ( _createPingResponse ..  ]
 "361
 [e $U 856  ]
 "362
-[e :U 860 ]
+[e :U 859 ]
 "363
-[e ( _UART_TransmitChar (1 -> -> 15 `i `uc ]
+[e ( _writeDataToEEPROM ..  ]
 "364
-[e ( _ReadCredentials ..  ]
-"365
 [e $U 856  ]
+"365
+[e :U 860 ]
 "366
-[e :U 861 ]
+[e ( _ReadCredentials ..  ]
 "367
 [e $U 856  ]
 "368
-[e :U 862 ]
+[e :U 861 ]
 "369
 [e $U 856  ]
 "370
-[e :U 863 ]
+[e :U 862 ]
 "371
-[e ( _writeMasterPasswordToEEPROM ..  ]
+[e ( _FormatDrive ..  ]
 "372
 [e $U 856  ]
 "373
-[e :U 864 ]
+[e :U 863 ]
 "374
-[e $ ! ! != -> ( _isPasswordMatched ..  `i -> -> -> 0 `i `uc `i 865  ]
+[e ( _writeMasterPasswordToEEPROM ..  ]
 "375
-{
+[e $U 856  ]
 "376
-[e = _isExceptionRaised -> -> 1 `i `uc ]
+[e :U 864 ]
 "377
-[e = _exception_code -> . `E5844 3 `uc ]
+[e $ ! ! != -> ( _isPasswordMatched ..  `i -> -> -> 0 `i `uc `i 865  ]
 "378
+{
+"379
+[e = _isExceptionRaised -> -> 1 `i `uc ]
+"380
+[e = _exception_code -> . `E5844 3 `uc ]
+"381
 }
 [e :U 865 ]
-"379
-[e $U 856  ]
-"380
-[e :U 866 ]
-"381
-[e $U 856  ]
 "382
+[e $U 856  ]
+"383
+[e :U 866 ]
+"384
+[e $U 856  ]
+"385
 }
 [e $U 856  ]
-"354
+"357
 [e :U 857 ]
 [e [\ _CODE , $ -> . `E5831 0 `uc 858
  , $ -> . `E5831 1 `uc 859
@@ -1162,713 +1162,742 @@ Version 3.2 HI-TECH Software Intermediate Code
  , $ -> . `E5831 5 `uc 863
  , $ -> . `E5831 6 `uc 864
  866 ]
-"382
+"385
 [e :U 856 ]
-"383
+"386
 }
 [e :U 855 ]
-"386
+"389
 [e ( _sendResponse (1 _isExceptionRaised ]
-"387
+"390
 }
 [e :U 854 ]
-"388
+"391
 [e :UE 852 ]
 }
-"396
+"399
 [v _createPingResponse `(v ~T0 @X0 1 ef ]
-"397
+"400
 {
 [e :U _createPingResponse ]
 [f ]
-"398
-[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
-"399
-[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
-"400
-[e = *U + &U _responseBuffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 0 `i `uc ]
 "401
-[e = *U + &U _responseBuffer * -> -> -> 3 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 0 `i `uc ]
+[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
 "402
+[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
+"403
+[e = *U + &U _responseBuffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 0 `i `uc ]
+"404
+[e = *U + &U _responseBuffer * -> -> -> 3 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 0 `i `uc ]
+"405
 [e :UE 867 ]
 }
-"409
+"412
 [v _writeDataToEEPROM `(v ~T0 @X0 1 ef ]
-"410
+"413
 {
 [e :U _writeDataToEEPROM ]
 [f ]
-"411
+"414
 [v _payload_length `us ~T0 @X0 1 a ]
-"412
+"415
 [v _eeprom_data `uc ~T0 @X0 1 a ]
 [e = _eeprom_data -> -> 0 `i `uc ]
-"413
+"416
 [v _at24_eep_addr_H `uc ~T0 @X0 1 a ]
 [e = _at24_eep_addr_H -> -> 0 `i `uc ]
-"414
+"417
 [v _at24_eep_addr_L `uc ~T0 @X0 1 a ]
 [e = _at24_eep_addr_L -> -> 0 `i `uc ]
-"415
+"418
 [v _at24_eeprom_addr_start `us ~T0 @X0 1 a ]
 [e = _at24_eeprom_addr_start -> -> 0 `i `us ]
-"420
+"423
 [e = _at24_eep_addr_H ( _EEPROM_Read (1 -> . `E5839 2 `uc ]
-"421
+"424
 [e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"422
-[e = _at24_eep_addr_L ( _EEPROM_Read (1 -> . `E5839 3 `uc ]
 "425
-[e = _at24_eeprom_address -> | << -> _at24_eep_addr_H `i -> 8 `i -> _at24_eep_addr_L `i `us ]
+[e = _at24_eep_addr_L ( _EEPROM_Read (1 -> . `E5839 3 `uc ]
 "428
+[e = _at24_eeprom_address -> | << -> _at24_eep_addr_H `i -> 8 `i -> _at24_eep_addr_L `i `us ]
+"431
 [e $ ! == -> _at24_eeprom_address `ui -> 65535 `ui 869  ]
-"429
+"432
 [e = _at24_eeprom_address -> -> 0 `i `us ]
 [e :U 869 ]
-"432
-[e = _at24_eeprom_addr_start _at24_eeprom_address ]
 "435
-[e = _payload_length -> & -> *U + &U _requestBuffer * -> . _request_unit 2 `ux -> -> # *U &U _requestBuffer `ui `ux `i -> 255 `i `us ]
+[e = _at24_eeprom_addr_start _at24_eeprom_address ]
 "438
-[e ( _writeByteAT24_EEPROM (2 , -> _at24_eeprom_address `ui *U + &U _requestBuffer * -> . _request_unit 2 `ux -> -> # *U &U _requestBuffer `ui `ux ]
-"439
-[e =+ _at24_eeprom_address -> -> 1 `i `us ]
+[e = _payload_length -> & -> *U + &U _requestBuffer * -> . _request_unit 2 `ux -> -> # *U &U _requestBuffer `ui `ux `i -> 255 `i `us ]
 "441
-[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+[e ( _writeByteAT24_EEPROM (2 , -> _at24_eeprom_address `ui *U + &U _requestBuffer * -> . _request_unit 2 `ux -> -> # *U &U _requestBuffer `ui `ux ]
+"442
+[e =+ _at24_eeprom_address -> -> 1 `i `us ]
 "444
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"447
 {
 [v _i `us ~T0 @X0 1 a ]
 [e = _i -> -> 0 `i `us ]
 [e $U 873  ]
-"445
+"448
 [e :U 870 ]
 {
-"446
+"449
 [e ( _writeByteAT24_EEPROM (2 , + -> _at24_eeprom_address `ui -> _i `ui *U + &U . _request_unit 3 * -> _i `ux -> -> # *U &U . _request_unit 3 `ui `ux ]
-"447
+"450
 [e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"448
+"451
 }
-"444
+"447
 [e ++ _i -> -> 1 `i `us ]
 [e :U 873 ]
 [e $ < -> _i `ui -> _payload_length `ui 870  ]
 [e :U 871 ]
-"448
-}
 "451
+}
+"454
 [e =+ _at24_eeprom_address _payload_length ]
-"456
-[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"458
-[e ( _EEPROM_Write (2 , -> . `E5839 2 `uc -> & >> -> _at24_eeprom_address `ui -> 8 `i -> -> 255 `i `ui `uc ]
 "459
 [e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"460
-[e ( _EEPROM_Write (2 , -> . `E5839 3 `uc -> & -> _at24_eeprom_address `ui -> -> 255 `i `ui `uc ]
 "461
+[e ( _EEPROM_Write (2 , -> . `E5839 2 `uc -> & >> -> _at24_eeprom_address `ui -> 8 `i -> -> 255 `i `ui `uc ]
+"462
 [e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"463
+[e ( _EEPROM_Write (2 , -> . `E5839 3 `uc -> & -> _at24_eeprom_address `ui -> -> 255 `i `ui `uc ]
 "464
-[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
-"465
-[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
-"466
-[e = *U + &U _responseBuffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> & >> -> _at24_eeprom_addr_start `ui -> 8 `i -> -> 255 `i `ui `uc ]
+[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "467
-[e = *U + &U _responseBuffer * -> -> -> 3 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> & -> _at24_eeprom_addr_start `ui -> -> 255 `i `ui `uc ]
+[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
 "468
-[e = *U + &U _responseBuffer * -> -> -> 4 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 0 `i `uc ]
+[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
 "469
+[e = *U + &U _responseBuffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> & >> -> _at24_eeprom_addr_start `ui -> 8 `i -> -> 255 `i `ui `uc ]
+"470
+[e = *U + &U _responseBuffer * -> -> -> 3 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> & -> _at24_eeprom_addr_start `ui -> -> 255 `i `ui `uc ]
+"471
+[e = *U + &U _responseBuffer * -> -> -> 4 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 255 `i `uc ]
+"472
 [e :UE 868 ]
 }
-"476
+"479
 [v _writeMasterPasswordToEEPROM `(v ~T0 @X0 1 ef ]
-"477
+"480
 {
 [e :U _writeMasterPasswordToEEPROM ]
 [f ]
-"478
+"481
 [v _payload_length `uc ~T0 @X0 1 a ]
 [e = _payload_length -> -> 0 `i `uc ]
-"479
+"482
 [v _index `uc ~T0 @X0 1 a ]
 [e = _index -> -> 0 `i `uc ]
-"480
+"483
 [v _pic_eeprom_addr `uc ~T0 @X0 1 a ]
-"481
+"484
 [v _last_byte_addr `uc ~T0 @X0 1 a ]
 [e = _last_byte_addr -> -> 0 `i `uc ]
-"482
+"485
 [v _last_byte_data `uc ~T0 @X0 1 a ]
 [e = _last_byte_data -> -> 0 `i `uc ]
-"484
+"487
 [e = _pic_eeprom_addr -> . `E5839 0 `uc ]
-"486
+"489
 [e = _payload_length *U + &U _requestBuffer * -> . _request_unit 2 `ux -> -> # *U &U _requestBuffer `ui `ux ]
-"494
+"497
 [e $ ! > -> _payload_length `i - -> . `E5839 1 `i -> . `E5839 0 `i 875  ]
-"495
-{
-"496
-[e ( _UART_TransmitChar (1 -> -> 255 `i `uc ]
 "498
-[e $UE 874  ]
+{
 "499
+[e ( _UART_TransmitChar (1 -> -> 255 `i `uc ]
+"501
+[e $UE 874  ]
+"502
 }
 [e :U 875 ]
-"502
+"505
 [e ( __delay (1 -> * -> -> 1000 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"503
+"506
 [e ( _EEPROM_Write (2 , _pic_eeprom_addr _payload_length ]
-"504
-[e ( __delay (1 -> * -> -> 1000 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "507
-[e ++ _pic_eeprom_addr -> -> 1 `i `uc ]
+[e ( __delay (1 -> * -> -> 1000 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "510
+[e ++ _pic_eeprom_addr -> -> 1 `i `uc ]
+"513
 {
 [e = _index -> -> 0 `i `uc ]
 [e $U 879  ]
-"511
+"514
 [e :U 876 ]
 {
-"512
-[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"513
-[e ( _EEPROM_Write (2 , -> + -> _pic_eeprom_addr `i -> _index `i `uc *U + &U . _request_unit 3 * -> _index `ux -> -> # *U &U . _request_unit 3 `ui `ux ]
-"514
+"515
 [e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "516
-[e = _last_byte_addr -> + -> _pic_eeprom_addr `i -> _index `i `uc ]
+[e ( _EEPROM_Write (2 , -> + -> _pic_eeprom_addr `i -> _index `i `uc *U + &U . _request_unit 3 * -> _index `ux -> -> # *U &U . _request_unit 3 `ui `ux ]
 "517
+[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"519
+[e = _last_byte_addr -> + -> _pic_eeprom_addr `i -> _index `i `uc ]
+"520
 }
-"510
+"513
 [e ++ _index -> -> 1 `i `uc ]
 [e :U 879 ]
 [e $ < -> _index `i -> _payload_length `i 876  ]
 [e :U 877 ]
-"517
-}
-"519
-[e ( __delay (1 -> * -> -> 100 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "520
-[e = _last_byte_data ( _EEPROM_Read (1 _last_byte_addr ]
-"521
+}
+"522
 [e ( __delay (1 -> * -> -> 100 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "523
-[e = _isExceptionRaised -> -> 0 `i `uc ]
+[e = _last_byte_data ( _EEPROM_Read (1 _last_byte_addr ]
 "524
-[e == -> _isPasswordSet `i -> 1 `i ]
+[e ( __delay (1 -> * -> -> 100 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"526
+[e = _isExceptionRaised -> -> 0 `i `uc ]
 "527
-[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
-"528
-[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
-"529
-[e = *U + &U _responseBuffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux _last_byte_data ]
+[e == -> _isPasswordSet `i -> 1 `i ]
 "530
-[e = *U + &U _responseBuffer * -> -> -> 3 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 0 `i `uc ]
+[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
 "531
-[e = *U + &U _responseBuffer * -> -> -> 4 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 0 `i `uc ]
+[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
 "532
+[e = *U + &U _responseBuffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux _last_byte_data ]
+"533
 [e :UE 874 ]
 }
-"539
-[v _writeByteAT24_EEPROM `(v ~T0 @X0 1 ef2`ui`uc ]
 "540
+[v _writeByteAT24_EEPROM `(v ~T0 @X0 1 ef2`ui`uc ]
+"541
 {
 [e :U _writeByteAT24_EEPROM ]
-"539
+"540
 [v _address `ui ~T0 @X0 1 r1 ]
 [v _data `uc ~T0 @X0 1 r2 ]
-"540
-[f ]
 "541
-[e ( _I2C2_Start ..  ]
+[f ]
 "542
-[e = _checkAck ( _I2C2_Send (1 -> << -> 80 `i -> 1 `i `uc ]
+[e ( _I2C2_Start ..  ]
 "543
-[e ( _I2C2_Send (1 -> & >> _address -> 8 `i -> -> 255 `i `ui `uc ]
+[e = _checkAck ( _I2C2_Send (1 -> << -> 80 `i -> 1 `i `uc ]
 "544
-[e ( _I2C2_Send (1 -> & _address -> -> 255 `i `ui `uc ]
+[e ( _I2C2_Send (1 -> & >> _address -> 8 `i -> -> 255 `i `ui `uc ]
 "545
-[e ( _I2C2_Send (1 _data ]
+[e ( _I2C2_Send (1 -> & _address -> -> 255 `i `ui `uc ]
 "546
-[e ( _I2C2_Stop ..  ]
+[e ( _I2C2_Send (1 _data ]
 "547
+[e ( _I2C2_Stop ..  ]
+"548
 [e :UE 880 ]
 }
-"554
+"555
 [v _readByteAT24_EEPROM `(uc ~T0 @X0 1 ef1`us ]
 {
 [e :U _readByteAT24_EEPROM ]
 [v _address `us ~T0 @X0 1 r1 ]
 [f ]
-"555
+"556
 [v _eeprom_data `uc ~T0 @X0 1 a ]
 [e = _eeprom_data -> -> 0 `i `uc ]
-"557
-[e ( _I2C2_Start ..  ]
 "558
-[e ( _I2C2_Send (1 -> << -> 80 `i -> 1 `i `uc ]
-"559
-[e ( _I2C2_Send (1 -> & >> -> _address `ui -> 8 `i -> -> 255 `i `ui `uc ]
-"560
-[e ( _I2C2_Send (1 -> & -> _address `ui -> -> 255 `i `ui `uc ]
-"562
 [e ( _I2C2_Start ..  ]
+"559
+[e ( _I2C2_Send (1 -> << -> 80 `i -> 1 `i `uc ]
+"560
+[e ( _I2C2_Send (1 -> & >> -> _address `ui -> 8 `i -> -> 255 `i `ui `uc ]
+"561
+[e ( _I2C2_Send (1 -> & -> _address `ui -> -> 255 `i `ui `uc ]
 "563
-[e ( _I2C2_Send (1 -> | << -> 80 `i -> 1 `i -> 1 `i `uc ]
+[e ( _I2C2_Start ..  ]
 "564
-[e = _eeprom_data ( _I2C2_Read ..  ]
+[e ( _I2C2_Send (1 -> | << -> 80 `i -> 1 `i -> 1 `i `uc ]
 "565
+[e = _eeprom_data ( _I2C2_Read ..  ]
+"566
 [e ( _I2C2_Stop ..  ]
-"567
+"568
 [e ) _eeprom_data ]
 [e $UE 881  ]
-"568
+"569
 [e :UE 881 ]
 }
-"576
-[v _sendResponse `(v ~T0 @X0 1 ef1`uc ]
 "577
+[v _sendResponse `(v ~T0 @X0 1 ef1`uc ]
+"578
 {
 [e :U _sendResponse ]
-"576
-[v _isExceptionOccurred `uc ~T0 @X0 1 r1 ]
 "577
-[f ]
+[v _isExceptionOccurred `uc ~T0 @X0 1 r1 ]
 "578
+[f ]
+"579
 [v _index `ui ~T0 @X0 1 a ]
 [e = _index -> -> 0 `i `ui ]
-"581
-[e ( _UART_TransmitChar (1 -> -> 58 `i `uc ]
 "582
-[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+[e ( _UART_TransmitChar (1 -> -> 58 `i `uc ]
 "583
-[e ( _UART_TransmitChar (1 -> -> 35 `i `uc ]
-"584
 [e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"586
-[e $ ! ! != -> _isExceptionOccurred `i -> -> -> 0 `i `uc `i 883  ]
+"584
+[e ( _UART_TransmitChar (1 -> -> 35 `i `uc ]
+"585
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "587
-{
+[e $ ! ! != -> _isExceptionOccurred `i -> -> -> 0 `i `uc `i 883  ]
 "588
+{
+"589
 {
 [e = _index -> -> 0 `i `ui ]
 [e $ < _index -> -> 30 `i `ui 884  ]
 [e $U 885  ]
-"589
+"590
 [e :U 884 ]
 {
-"590
-[e ( _UART_TransmitChar (1 *U + &U _responseBuffer * -> _index `ux -> -> # *U &U _responseBuffer `ui `ux ]
 "591
-[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+[e ( _UART_TransmitChar (1 *U + &U _responseBuffer * -> _index `ux -> -> # *U &U _responseBuffer `ui `ux ]
 "592
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"593
 }
-"588
+"589
 [e ++ _index -> -> 1 `i `ui ]
 [e $ < _index -> -> 30 `i `ui 884  ]
 [e :U 885 ]
-"592
-}
 "593
 }
-[e $U 887  ]
 "594
-[e :U 883 ]
+}
+[e $U 887  ]
 "595
+[e :U 883 ]
+"596
 {
-"597
-[e ( _UART_TransmitChar (1 -> -> 33 `i `uc ]
 "598
-[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+[e ( _UART_TransmitChar (1 -> -> 33 `i `uc ]
 "599
-[e ( _UART_TransmitChar (1 -> -> 255 `i `uc ]
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "600
-[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+[e ( _UART_TransmitChar (1 -> -> 254 `i `uc ]
 "601
-[e ( _UART_TransmitChar (1 _exception_code ]
-"602
 [e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"604
-[e = _isExceptionRaised -> -> 0 `i `uc ]
+"602
+[e ( _UART_TransmitChar (1 _exception_code ]
+"603
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "605
-[e = _exception_code -> -> 0 `i `uc ]
+[e = _isExceptionRaised -> -> 0 `i `uc ]
 "606
+[e = _exception_code -> -> 0 `i `uc ]
+"607
 }
 [e :U 887 ]
-"609
-[e ( _UART_TransmitChar (1 -> -> 13 `i `uc ]
 "610
-[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+[e ( _UART_TransmitChar (1 -> -> 13 `i `uc ]
 "611
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"612
 [e ( _UART_TransmitChar (1 -> -> 10 `i `uc ]
-"614
-[e = _index -> -> 50 `i `ui ]
 "615
+[e = _index -> -> 50 `i `ui ]
+"616
 [e $U 888  ]
 [e :U 889 ]
-"616
-{
 "617
-[e = *U + &U _requestBuffer * -> - -> -> 50 `i `ui _index `ux -> -> # *U &U _requestBuffer `ui `ux -> -> 255 `i `uc ]
+{
 "618
-[e -- _index -> -> 1 `i `ui ]
+[e = *U + &U _requestBuffer * -> - -> -> 50 `i `ui _index `ux -> -> # *U &U _requestBuffer `ui `ux -> -> 255 `i `uc ]
 "619
+[e -- _index -> -> 1 `i `ui ]
+"620
 }
 [e :U 888 ]
-"615
+"616
 [e $ > _index -> -> 0 `i `ui 889  ]
 [e :U 890 ]
-"622
-[e = _index -> -> 0 `i `ui ]
 "623
+[e = _index -> -> 0 `i `ui ]
+"624
 [e $U 891  ]
 [e :U 892 ]
 {
-"624
-[e = *U + &U _responseBuffer * -> _index `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 255 `i `uc ]
 "625
-[e ++ _index -> -> 1 `i `ui ]
+[e = *U + &U _responseBuffer * -> _index `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 255 `i `uc ]
 "626
+[e ++ _index -> -> 1 `i `ui ]
+"627
 }
 [e :U 891 ]
-"623
+"624
 [e $ < _index -> -> 30 `i `ui 892  ]
 [e :U 893 ]
-"627
+"628
 [e :UE 882 ]
 }
-"634
-[v _EEPROM_Write `(v ~T0 @X0 1 ef2`uc`uc ]
 "635
+[v _EEPROM_Write `(v ~T0 @X0 1 ef2`uc`uc ]
+"636
 {
 [e :U _EEPROM_Write ]
-"634
+"635
 [v _addr `uc ~T0 @X0 1 r1 ]
 [v _eep_data `uc ~T0 @X0 1 r2 ]
-"635
-[f ]
 "636
+[f ]
+"637
 [e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"638
-[e = _EEADR -> & -> _addr `i -> 255 `i `uc ]
 "639
+[e = _EEADR -> & -> _addr `i -> 255 `i `uc ]
+"640
 [e = _EEDATA _eep_data ]
-"641
-[e = . . _EECON1bits 0 7 -> -> 0 `i `uc ]
 "642
-[e = . . _EECON1bits 0 6 -> -> 0 `i `uc ]
+[e = . . _EECON1bits 0 7 -> -> 0 `i `uc ]
 "643
+[e = . . _EECON1bits 0 6 -> -> 0 `i `uc ]
+"644
 [e = . . _EECON1bits 0 2 -> -> 1 `i `uc ]
-"645
+"646
 [e = . . _INTCONbits 1 7 -> -> 0 `i `uc ]
-"648
-[e = _EECON2 -> -> 85 `i `uc ]
 "649
-[e = _EECON2 -> -> 170 `i `uc ]
+[e = _EECON2 -> -> 85 `i `uc ]
 "650
+[e = _EECON2 -> -> 170 `i `uc ]
+"651
 [e = . . _EECON1bits 0 1 -> -> 1 `i `uc ]
-"652
+"653
 [e = . . _INTCONbits 1 7 -> -> 1 `i `uc ]
-"655
+"656
 [e $U 895  ]
 [e :U 896 ]
-"656
+"657
 [e :U 895 ]
-"655
+"656
 [e $ == -> . . _PIR2bits 0 4 `i -> 0 `i 896  ]
 [e :U 897 ]
-"658
-[e = . . _PIR2bits 0 4 -> -> 0 `i `uc ]
 "659
+[e = . . _PIR2bits 0 4 -> -> 0 `i `uc ]
+"660
 [e :UE 894 ]
 }
-"666
-[v _EEPROM_Read `(uc ~T0 @X0 1 ef1`uc ]
 "667
+[v _EEPROM_Read `(uc ~T0 @X0 1 ef1`uc ]
+"668
 {
 [e :U _EEPROM_Read ]
-"666
-[v _addr `uc ~T0 @X0 1 r1 ]
 "667
-[f ]
+[v _addr `uc ~T0 @X0 1 r1 ]
 "668
-[e = _EEADR _addr ]
+[f ]
 "669
-[e = . . _EECON1bits 0 7 -> -> 0 `i `uc ]
+[e = _EEADR _addr ]
 "670
+[e = . . _EECON1bits 0 7 -> -> 0 `i `uc ]
+"671
 [e = . . _EECON1bits 0 0 -> -> 1 `i `uc ]
-"672
+"673
 [e ) _EEDATA ]
 [e $UE 898  ]
-"673
+"674
 [e :UE 898 ]
 }
-"699
-[v _ReadMasterPasswordFromEEPROM `(v ~T0 @X0 1 ef ]
 "700
+[v _ReadMasterPasswordFromEEPROM `(v ~T0 @X0 1 ef ]
+"701
 {
 [e :U _ReadMasterPasswordFromEEPROM ]
 [f ]
-"701
+"702
 [v _password_length `uc ~T0 @X0 1 a ]
 [e = _password_length -> -> 0 `i `uc ]
-"702
+"703
 [v _password_addr `uc ~T0 @X0 1 a ]
 [e = _password_addr -> . `E5839 0 `uc ]
-"705
-[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "706
-[e = _password_length ( _EEPROM_Read (1 _password_addr ]
-"707
 [e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"707
+[e = _password_length ( _EEPROM_Read (1 _password_addr ]
 "708
+[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"709
 [e =+ _password_addr -> -> 1 `i `uc ]
-"710
-[e $ ! != -> _password_length `i -> 255 `i 900  ]
 "711
+[e $ ! != -> _password_length `i -> 255 `i 900  ]
+"712
 {
-"713
+"714
 {
 [v _index `uc ~T0 @X0 1 a ]
 [e = _index -> -> 0 `i `uc ]
 [e $U 904  ]
-"714
+"715
 [e :U 901 ]
 {
-"715
-[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "716
-[e = *U + &U . _master 0 * -> _index `ux -> -> # *U &U . _master 0 `ui `ux ( _EEPROM_Read (1 -> + -> _password_addr `i -> _index `i `uc ]
-"717
 [e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"717
+[e = *U + &U . _master 0 * -> _index `ux -> -> # *U &U . _master 0 `ui `ux ( _EEPROM_Read (1 -> + -> _password_addr `i -> _index `i `uc ]
 "718
+[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"719
 }
-"713
+"714
 [e ++ _index -> -> 1 `i `uc ]
 [e :U 904 ]
 [e $ < -> _index `i -> _password_length `i 901  ]
 [e :U 902 ]
-"718
+"719
 }
-"720
-[e = _isExceptionRaised -> -> 0 `i `uc ]
 "721
-[e = _exception_code -> -> 0 `i `uc ]
+[e = _isExceptionRaised -> -> 0 `i `uc ]
 "722
+[e = _exception_code -> -> 0 `i `uc ]
+"723
 }
 [e $U 905  ]
-"723
-[e :U 900 ]
 "724
-{
+[e :U 900 ]
 "725
-[e = _isPasswordSet -> -> 0 `i `uc ]
+{
 "726
+[e = _isPasswordSet -> -> 0 `i `uc ]
+"727
 }
 [e :U 905 ]
-"729
-[e = . _master 1 _password_length ]
 "730
+[e = . _master 1 _password_length ]
+"731
 [e :UE 899 ]
 }
-"737
+"738
 [v _ReadCredentials `(v ~T0 @X0 1 ef ]
 {
 [e :U _ReadCredentials ]
 [f ]
-"741
+"742
 [v _index `uc ~T0 @X0 1 a ]
 [e = _index -> -> 0 `i `uc ]
-"742
+"743
 [v _last_char_index `uc ~T0 @X0 1 a ]
 [e = _last_char_index -> -> 0 `i `uc ]
-"743
+"744
 [v _response_index `uc ~T0 @X0 1 a ]
 [e = _response_index -> -> 0 `i `uc ]
-"744
+"745
 [v _payload_length `uc ~T0 @X0 1 a ]
 [e = _payload_length -> -> 2 `i `uc ]
-"745
+"746
 [v _credential_length `us ~T0 @X0 1 a ]
 [e = _credential_length -> -> 0 `i `us ]
-"746
-[v _ADDR `uc ~T0 @X0 -> 2 `i a ]
 "747
+[v _ADDR `uc ~T0 @X0 -> 2 `i a ]
+"748
 [v _START_ADDR `us ~T0 @X0 1 a ]
 [e = _START_ADDR -> -> 0 `i `us ]
-"749
+"750
 {
 [e = _index -> -> 0 `i `uc ]
 [e $U 910  ]
-"750
+"751
 [e :U 907 ]
 [e = *U + &U _ADDR * -> _index `ux -> -> # *U &U _ADDR `ui `ux *U + &U . _request_unit 3 * -> _index `ux -> -> # *U &U . _request_unit 3 `ui `ux ]
-"749
+"750
 [e ++ _index -> -> 1 `i `uc ]
 [e :U 910 ]
 [e $ < -> _index `i -> _payload_length `i 907  ]
 [e :U 908 ]
-"750
+"751
 }
 "756
-[e = _START_ADDR -> | << -> *U + &U _ADDR * -> -> -> 1 `i `ui `ux -> -> # *U &U _ADDR `ui `ux `i -> 8 `i -> *U + &U _ADDR * -> -> -> 0 `i `ui `ux -> -> # *U &U _ADDR `ui `ux `i `us ]
-"759
-[e ( _UART_TransmitChar (1 *U + &U _ADDR * -> -> -> 1 `i `ui `ux -> -> # *U &U _ADDR `ui `ux ]
+[e = _START_ADDR -> | << -> *U + &U _ADDR * -> -> -> 0 `i `ui `ux -> -> # *U &U _ADDR `ui `ux `i -> 8 `i -> *U + &U _ADDR * -> -> -> 1 `i `ui `ux -> -> # *U &U _ADDR `ui `ux `i `us ]
+"758
+[e ( __delay (1 -> * -> -> 50 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "760
-[e ( _UART_TransmitChar (1 *U + &U _ADDR * -> -> -> 0 `i `ui `ux -> -> # *U &U _ADDR `ui `ux ]
-"762
+[e = _credential_length -> & -> ( _readByteAT24_EEPROM (1 _START_ADDR `i -> 255 `i `us ]
+"761
 [e ( __delay (1 -> * -> -> 50 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "764
-[e = _credential_length -> & -> ( _readByteAT24_EEPROM (1 _START_ADDR `i -> 255 `i `us ]
-"765
-[e ( __delay (1 -> * -> -> 50 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"767
-[e ( _UART_TransmitChar (1 -> & >> -> _credential_length `ui -> 8 `i -> -> 255 `i `ui `uc ]
-"768
-[e ( _UART_TransmitChar (1 -> & -> _credential_length `ui -> -> 255 `i `ui `uc ]
-"770
 [e =+ _START_ADDR -> -> 1 `i `us ]
-"772
+"766
 [e $ ! == -> _credential_length `ui -> -> 255 `i `ui 911  ]
 {
-"774
+"768
 [e ( _UART_TransmitChar (1 -> -> 255 `i `uc ]
-"775
+"769
 [e $UE 906  ]
-"776
+"770
 }
 [e :U 911 ]
-"779
+"773
 [e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
-"780
+"774
 [e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
-"782
+"776
 [e =+ _response_index -> -> 2 `i `uc ]
-"785
+"779
 {
 [v _i `us ~T0 @X0 1 a ]
 [e = _i -> -> 0 `i `us ]
 [e $U 915  ]
 [e :U 912 ]
 {
-"786
+"780
 [e = *U + &U _responseBuffer * -> + -> _response_index `ui -> _i `ui `ux -> -> # *U &U _responseBuffer `ui `ux ( _readByteAT24_EEPROM (1 -> + -> _START_ADDR `ui -> _i `ui `us ]
-"787
+"781
 [e = _last_char_index -> + -> _response_index `ui -> _i `ui `uc ]
-"788
+"782
 }
-"785
+"779
 [e ++ _i -> -> 1 `i `us ]
 [e :U 915 ]
 [e $ < -> _i `ui -> _credential_length `ui 912  ]
 [e :U 913 ]
-"788
+"782
 }
-"791
+"785
 [e = *U + &U _responseBuffer * -> -> + -> _last_char_index `i -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux -> -> 0 `i `uc ]
-"792
+"786
 [e :UE 906 ]
 }
-"800
+"794
 [v _isPasswordMatched `(uc ~T0 @X0 1 ef ]
-"801
+"795
 {
 [e :U _isPasswordMatched ]
 [f ]
-"802
+"796
 [v _payload_length `uc ~T0 @X0 1 a ]
 [e = _payload_length -> -> 0 `i `uc ]
-"803
+"797
 [v _index `uc ~T0 @X0 1 a ]
 [e = _index -> -> 0 `i `uc ]
-"804
+"798
 [v _matchFlag `uc ~T0 @X0 1 a ]
 [e = _matchFlag -> -> 1 `i `uc ]
-"807
+"801
 [e = _payload_length *U + &U _requestBuffer * -> . _request_unit 2 `ux -> -> # *U &U _requestBuffer `ui `ux ]
-"810
+"804
 [e $ ! != -> _payload_length `i -> . _master 1 `i 917  ]
-"811
+"805
 {
-"813
+"807
 [e ) -> -> 0 `i `uc ]
 [e $UE 916  ]
-"814
+"808
 }
 [e :U 917 ]
-"817
+"811
 {
 [e = _index -> -> 0 `i `uc ]
 [e $U 921  ]
-"818
+"812
 [e :U 918 ]
 {
-"819
+"813
 [e $ ! != -> *U + &U . _master 0 * -> _index `ux -> -> # *U &U . _master 0 `ui `ux `i -> *U + &U . _request_unit 3 * -> _index `ux -> -> # *U &U . _request_unit 3 `ui `ux `i 922  ]
-"820
+"814
 {
-"821
+"815
 [e = _matchFlag -> -> 0 `i `uc ]
-"822
+"816
 [e $U 919  ]
-"823
+"817
 }
 [e :U 922 ]
-"824
+"818
 }
-"817
+"811
 [e ++ _index -> -> 1 `i `uc ]
 [e :U 921 ]
 [e $ < -> _index `i -> . _master 1 `i 918  ]
 [e :U 919 ]
-"824
+"818
 }
-"826
+"820
 [e ) _matchFlag ]
 [e $UE 916  ]
-"827
+"821
 [e :UE 916 ]
 }
-[v $root$_main `(v ~T0 @X0 0 e ]
+"828
+[v _FormatDrive `(v ~T0 @X0 1 ef ]
+{
+[e :U _FormatDrive ]
+[f ]
 "829
-[v _main `(v ~T0 @X0 1 ef ]
+[v _index `us ~T0 @X0 1 a ]
+[e = _index -> -> 0 `i `us ]
 "830
+[v _mask_data `uc ~T0 @X0 1 a ]
+[e = _mask_data -> -> 255 `i `uc ]
+"833
+{
+[e = _index -> -> 0 `i `us ]
+[e $ <= -> _index `ui -> -> 32767 `i `ui 924  ]
+[e $U 925  ]
+[e :U 924 ]
+{
+"834
+[e ( _UART_TransmitChar (1 -> & >> -> _index `ui -> 8 `i -> -> 255 `i `ui `uc ]
+"835
+[e ( _UART_TransmitChar (1 -> & -> _index `ui -> -> 255 `i `ui `uc ]
+"836
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"837
+[e ( _writeByteAT24_EEPROM (2 , -> _index `ui _mask_data ]
+"838
+}
+"833
+[e ++ _index -> -> 1 `i `us ]
+[e $ <= -> _index `ui -> -> 32767 `i `ui 924  ]
+[e :U 925 ]
+"838
+}
+"840
+[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
+"841
+[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
+"842
+[e :UE 923 ]
+}
+[v $root$_main `(v ~T0 @X0 0 e ]
+"845
+[v _main `(v ~T0 @X0 1 ef ]
+"846
 {
 [e :U _main ]
 [f ]
-"832
-[e = _OSCCON -> -> 112 `i `uc ]
-"833
-[e = _OSCTUNE -> -> 192 `i `uc ]
 "848
-[e ( _UART_Init ..  ]
+[e = _OSCCON -> -> 112 `i `uc ]
 "849
+[e = _OSCTUNE -> -> 192 `i `uc ]
+"864
+[e ( _UART_Init ..  ]
+"865
 [e ( _I2C2_Init ..  ]
-"850
+"866
 [e ( _ReadMasterPasswordFromEEPROM ..  ]
-"852
-[e :U 925 ]
-"853
+"868
+[e :U 929 ]
+"869
 {
-"854
-[e $ ! != -> _interrupt_flag `i -> -> -> 0 `i `uc `i 927  ]
-"855
+"870
+[e $ ! != -> _interrupt_flag `i -> -> -> 0 `i `uc `i 931  ]
+"871
 {
-"856
+"872
 [e ( _createResponse ..  ]
-"857
+"873
 [e = _interrupt_flag -> -> 0 `i `uc ]
-"858
+"874
 }
-[e :U 927 ]
-"859
+[e :U 931 ]
+"875
 }
-[e :U 924 ]
-"852
-[e $U 925  ]
-[e :U 926 ]
-"860
-[e :UE 923 ]
+[e :U 928 ]
+"868
+[e $U 929  ]
+[e :U 930 ]
+"876
+[e :UE 927 ]
 }
