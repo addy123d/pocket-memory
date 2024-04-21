@@ -9479,7 +9479,9 @@ enum EXCEPTION_CODES
 ILLEGAL_ORDER_CODE = 0x01,
 ILLEGAL_DEVICE_CODE = 0x02,
 MASTER_PASSWORD_NOT_SET = 0x03,
-AUTH_FAILED = 0x04
+AUTH_FAILED = 0x04,
+PASSWORD_LENGTH_EXCEED = 0x05,
+DEVICE_CODE_MISMATCH = 0x06
 };
 
 
@@ -9531,7 +9533,7 @@ void EEPROM_Write(unsigned char addr, unsigned char eep_data);
 unsigned char EEPROM_Read(unsigned char addr);
 void sendResponse(unsigned char exception_occurred);
 
-# 122
+# 124
 void UART_Init()
 {
 float temp;
@@ -9551,17 +9553,17 @@ RCSTA1 = 0x90;
 temp = (((float)(64000000 / 64) / (float)9600) - 1);
 SPBRG1 = (int)temp;
 
-# 182
+# 184
 }
 
-# 189
+# 191
 void UART_TransmitChar(uint8_t data)
 {
 while (!PIR1bits.TX1IF);
 TXREG = data;
 }
 
-# 200
+# 202
 void __interrupt() isr(void)
 {
 
@@ -9647,12 +9649,12 @@ receiveData.index = 0;
 }
 }
 
-# 289
+# 291
 PIE1bits.RC1IE = 1;
 }
 }
 
-# 298
+# 300
 void processRequest()
 {
 unsigned int buffer_index = 0;
@@ -9662,7 +9664,7 @@ unsigned int i = 0;
 request_unit.DEVICE_ADDR = requestBuffer[0];
 request_unit.ORDER_CODE = requestBuffer[1];
 
-# 311
+# 313
 if(request_unit.ORDER_CODE != READ_MEM){
 
 for (buffer_index = 0; requestBuffer[buffer_index + 2] != 0x00; buffer_index++)
@@ -9681,10 +9683,10 @@ request_unit.payload_data[0] = requestBuffer[2];
 request_unit.payload_data[1] = requestBuffer[3];
 }
 
-# 332
+# 334
 }
 
-# 339
+# 341
 void createResponse()
 {
 unsigned char CODE = request_unit.ORDER_CODE;
@@ -9733,13 +9735,17 @@ default:
 break;
 }
 }
+}else{
+
+isExceptionRaised = 0x01;
+exception_code = DEVICE_CODE_MISMATCH;
+}
 
 
 sendResponse(isExceptionRaised);
 }
-}
 
-# 399
+# 405
 void createPingResponse()
 {
 responseBuffer[0] = request_unit.DEVICE_ADDR;
@@ -9748,7 +9754,7 @@ responseBuffer[2] = 0x00;
 responseBuffer[3] = 0x00;
 }
 
-# 412
+# 418
 void writeDataToEEPROM()
 {
 unsigned short payload_length;
@@ -9811,7 +9817,7 @@ responseBuffer[3] = at24_eeprom_addr_start & 0xFF;
 responseBuffer[4] = 0xFF;
 }
 
-# 479
+# 485
 void writeMasterPasswordToEEPROM()
 {
 unsigned char payload_length = 0x00;
@@ -9824,10 +9830,12 @@ pic_eeprom_addr = PASSWORD_ADDR_START;
 
 payload_length = requestBuffer[request_unit.payload_length_index];
 
-# 497
+# 503
 if (payload_length > (PASSWORD_ADDR_END - PASSWORD_ADDR_START))
 {
-UART_TransmitChar(0xFF);
+isExceptionRaised = 0x01;
+exception_code = PASSWORD_LENGTH_EXCEED;
+
 
 return;
 }
@@ -9863,7 +9871,7 @@ responseBuffer[1] = request_unit.ORDER_CODE;
 responseBuffer[2] = last_byte_data;
 }
 
-# 540
+# 548
 void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
 {
 I2C2_Start();
@@ -9874,7 +9882,7 @@ I2C2_Send(data);
 I2C2_Stop();
 }
 
-# 555
+# 563
 unsigned char readByteAT24_EEPROM(unsigned short address){
 unsigned char eeprom_data = 0x00;
 
@@ -9891,7 +9899,7 @@ I2C2_Stop();
 return eeprom_data;
 }
 
-# 577
+# 585
 void sendResponse(unsigned char isExceptionOccurred)
 {
 unsigned int index = 0;
@@ -9945,7 +9953,7 @@ index++;
 }
 }
 
-# 635
+# 643
 void EEPROM_Write(unsigned char addr, unsigned char eep_data)
 {
 _delay((unsigned long)((500)*(64000000/4000.0)));
@@ -9973,7 +9981,7 @@ while (PIR2bits.EEIF == 0)
 PIR2bits.EEIF = 0;
 }
 
-# 667
+# 675
 unsigned char EEPROM_Read(unsigned char addr)
 {
 EEADR = addr;
@@ -9983,7 +9991,7 @@ EECON1bits.RD = 1;
 return EEDATA;
 }
 
-# 700
+# 708
 void ReadMasterPasswordFromEEPROM()
 {
 unsigned char password_length = 0x00;
@@ -10017,7 +10025,7 @@ isPasswordSet = 0x00;
 master.cache_length = password_length;
 }
 
-# 738
+# 746
 void ReadCredentials(){
 
 
@@ -10068,7 +10076,7 @@ last_char_index = response_index + i;
 responseBuffer[last_char_index + 1] = 0x00;
 }
 
-# 794
+# 802
 unsigned char isPasswordMatched()
 {
 unsigned char payload_length = 0x00;
@@ -10098,7 +10106,7 @@ break;
 return matchFlag;
 }
 
-# 828
+# 836
 void FormatDrive(){
 unsigned short index = 0x0000;
 unsigned char mask_data = 0xFF;
@@ -10122,7 +10130,7 @@ void main()
 OSCCON = 0x70;
 OSCTUNE = 0xC0;
 
-# 864
+# 872
 UART_Init();
 I2C2_Init();
 ReadMasterPasswordFromEEPROM();

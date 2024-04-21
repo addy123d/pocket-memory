@@ -62,7 +62,9 @@ enum EXCEPTION_CODES
 	ILLEGAL_ORDER_CODE = 0x01,
 	ILLEGAL_DEVICE_CODE = 0x02,
 	MASTER_PASSWORD_NOT_SET = 0x03,
-	AUTH_FAILED = 0x04
+	AUTH_FAILED = 0x04,
+	PASSWORD_LENGTH_EXCEED = 0x05,
+	DEVICE_CODE_MISMATCH = 0x06
 };
 // exception codes are used in responses, when operation fails on the device, we have to notify master.
 
@@ -384,10 +386,14 @@ void createResponse()
 				break;
 			}
 		}
+	}else{
+		//device code not matched
+		isExceptionRaised = 0x01;
+		exception_code = DEVICE_CODE_MISMATCH;
+	}
 
 		// send response bytes one by one
 		sendResponse(isExceptionRaised);
-	}
 }
 
 /*
@@ -496,7 +502,9 @@ void writeMasterPasswordToEEPROM()
 
 	if (payload_length > (PASSWORD_ADDR_END - PASSWORD_ADDR_START))
 	{
-		UART_TransmitChar(0xFF);
+		isExceptionRaised = 0x01;
+		exception_code = PASSWORD_LENGTH_EXCEED;		
+
 		// entered password is bigger than locations reserved on eeprom.
 		return;
 	}
@@ -833,6 +841,7 @@ void FormatDrive(){
 	for(index = 0x0000; index <= EEPROM_CAPACITY; index++){
 		UART_TransmitChar((index >> 8) & 0xFF); //HIGH Byte
 		UART_TransmitChar(index & 0xFF); //LOW Byte
+
 		__delay_ms(10);
 		writeByteAT24_EEPROM(index, mask_data);	
 	}		

@@ -45,7 +45,9 @@ const exception = Object.freeze({
     ILLEGAL_ORDER_CODE: '1',
     ILLEGAL_DEVICE_CODE: '2',
     MASTER_PASSWORD_NOT_SET: '3',
-    AUTH_FAILED: '4'
+    AUTH_FAILED: '4',
+    PASSWORD_LENGTH_EXCEED: '5',
+    DEVICE_CODE_MISMATCH: '6'
 });
 
 // Create a parser instance
@@ -54,7 +56,7 @@ const parser = new ByteLengthParser({ length: 1 });
 // Function to display data with ASCII art
 function displayData(data) {
     //below print statements, won't work if data is FF, or operation code selected is read memory or write memory
-    if ((decimalToHex(data[0]) != 'FF') && (operation_code == menu.READ_MEM) && (operation_code == menu.WRITE_MEM)) {
+    if ((decimalToHex(data[0]) != 'FF') && (operation_code === menu.DELETE_MEM)) {
         console.log(chalk.red('║                         ' + decimalToHex(data[0]) + '                           ║'));
         console.log(chalk.white('╚═════════════════════════════════════════════════════╝'));
     }
@@ -83,10 +85,8 @@ parser.on('data', (data) => {
         showMenu();
     }
 
-
-
-    //set flag to read buffer operation
-    if ((decimalToHex(data[0]) == menu.READ_MEM) || (decimalToHex(data[0]) == menu.WRITE_MEM)) {
+    //set flag to read buffer operation, only when it is read or write operation, and specially turn it off when opeartion code is Delete memory.
+    if (((decimalToHex(data[0]) == menu.READ_MEM) || (decimalToHex(data[0]) == menu.WRITE_MEM)) && (operation_code != menu.DELETE_MEM)) {
         processReadOperation = 1;
     }
 
@@ -116,6 +116,12 @@ function checkExceptionCode(code) {
             break;
         case exception.AUTH_FAILED:
             exception_msg = 'Password not matched, try again...';
+            break;
+        case exception.PASSWORD_LENGTH_EXCEED:
+            exception_msg = 'Password length limit exceeded';
+            break;
+        case exception.DEVICE_CODE_MISMATCH:
+            exception_msg = 'Device code match failed';
             break;
         default:
             break;
@@ -412,7 +418,6 @@ function createWriteData() {
 function createPasswordData() {
     // console.log(`User entered: ${chalk.bgYellow(`${user_entered_string}`)}`);
     let hexString = user_entered_string; //random password sample
-    // let hexString = 'Aditya';
     let hexArr = [];
 
     //write a code to prompt user to enter string from command line
