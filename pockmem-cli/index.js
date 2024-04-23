@@ -28,7 +28,7 @@ let end_sequence_flag = 0;
 let processReadOperation = 0;
 let ReadBuffer = [];
 let user_entered_string = '';
-
+let isLogin = 1;
 
 const menu = Object.freeze({
     PING: '11',
@@ -115,6 +115,7 @@ function checkExceptionCode(code) {
             exception_msg = 'Please set master password for your device';
             break;
         case exception.AUTH_FAILED:
+            isLogin = 0; //login failed
             exception_msg = 'Password not matched, try again...';
             break;
         case exception.PASSWORD_LENGTH_EXCEED:
@@ -196,6 +197,8 @@ async function askInput() {
             message = "";
             break;
         case menu.DELETE_MEM:
+            message = "This will delete all contents on eeprom, you sure ?"
+            type = 'confirm';
             break;
         case menu.SET_PASSWORD: //set master password for eeprom
             message = "Enter Master Password: ";
@@ -328,6 +331,8 @@ async function performOperation() {
     let payload_data = {}; //it will contain, an array,and its respective length.
 
     console.log(OPERATION_CODE);
+
+    //Before any operation, we must authenticate first, if user is authenticated then proceed further.
     switch (OPERATION_CODE) {
         case menu.PING:
             payload_data = createPingData();
@@ -343,6 +348,11 @@ async function performOperation() {
         case menu.UPDATE_MEM:
             break;
         case menu.DELETE_MEM:
+            await askInput();
+            if(!user_entered_string)
+                showMenu();
+                return;
+
             payload_data = [];
             break;
         case menu.SET_PASSWORD: //set master password for eeprom

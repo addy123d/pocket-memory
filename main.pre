@@ -10115,6 +10115,7 @@ unsigned char mask_data = 0xFF;
 for(index = 0x0000; index <= 0x7FFF; index++){
 UART_TransmitChar((index >> 8) & 0xFF);
 UART_TransmitChar(index & 0xFF);
+
 _delay((unsigned long)((10)*(64000000/4000.0)));
 writeByteAT24_EEPROM(index, mask_data);
 }
@@ -10130,7 +10131,7 @@ void main()
 OSCCON = 0x70;
 OSCTUNE = 0xC0;
 
-# 872
+# 873
 UART_Init();
 I2C2_Init();
 ReadMasterPasswordFromEEPROM();

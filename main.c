@@ -839,6 +839,8 @@ void FormatDrive(){
 
 	//U sure brother ?
 	for(index = 0x0000; index <= EEPROM_CAPACITY; index++){
+
+		//transmit address which gets erased to notify user
 		UART_TransmitChar((index >> 8) & 0xFF); //HIGH Byte
 		UART_TransmitChar(index & 0xFF); //LOW Byte
 
@@ -846,6 +848,7 @@ void FormatDrive(){
 		writeByteAT24_EEPROM(index, mask_data);	
 	}		
 
+	//create response buffer
 	responseBuffer[0] = request_unit.DEVICE_ADDR;
         responseBuffer[1] = request_unit.ORDER_CODE;
 }

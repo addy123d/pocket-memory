@@ -1861,7 +1861,7 @@ createResponse@CODE:	; 1 bytes @ 0x16
 
 ;; *************** function _main *****************
 ;; Defined at:
-;;		line 853 in file "main.c"
+;;		line 854 in file "main.c"
 ;; Parameters:    Size  Location     Type
 ;;		None
 ;; Auto vars:     Size  Location     Type
@@ -1892,39 +1892,39 @@ createResponse@CODE:	; 1 bytes @ 0x16
 ;;
 psect	text0,class=CODE,space=0,reloc=2,group=0
 	file	"main.c"
-	line	853
+	line	854
 global __ptext0
 __ptext0:
 psect	text0
 	file	"main.c"
-	line	853
+	line	854
 	
 _main:
 ;incstack = 0
 	callstack 25
-	line	856
+	line	857
 	
 l2534:
 	movlw	low(070h)
 	movwf	((c:4051))^0f00h,c	;volatile
-	line	857
+	line	858
 	movlw	low(0C0h)
 	movwf	((c:3995))^0f00h,c	;volatile
-	line	872
+	line	873
 	
 l2536:
 	call	_UART_Init	;wreg free
-	line	873
+	line	874
 	
 l2538:; BSR set to: 0
 
 	call	_I2C2_Init	;wreg free
-	line	874
+	line	875
 	
 l2540:; BSR set to: 15
 
 	call	_ReadMasterPasswordFromEEPROM	;wreg free
-	line	878
+	line	879
 	
 l2542:
 	movf	((c:_interrupt_flag))^00h,c,w
@@ -1934,11 +1934,11 @@ l2542:
 u1391:
 	goto	l2542
 u1390:
-	line	880
+	line	881
 	
 l2544:
 	call	_createResponse	;wreg free
-	line	881
+	line	882
 	
 l2546:
 	movlw	low(0)
@@ -1947,7 +1947,7 @@ l2546:
 	global	start
 	goto	start
 	callstack 0
-	line	884
+	line	885
 GLOBAL	__end_of_main
 	__end_of_main:
 	signat	_main,89
@@ -4036,7 +4036,7 @@ l2302:
 	movf	((c:FormatDrive@index))^00h,c,w
 	
 	call	_UART_TransmitChar
-	line	844
+	line	845
 	
 l2304:
 	asmopt push
@@ -4051,7 +4051,7 @@ decfsz	wreg,f
 	bra	u1627
 asmopt pop
 
-	line	845
+	line	846
 	
 l2306:
 	movff	(c:FormatDrive@index),(c:writeByteAT24_EEPROM@address)
@@ -4074,11 +4074,11 @@ u1171:
 u1170:
 	
 l231:
-	line	848
-	movff	(_request_unit),(c:_responseBuffer)
 	line	849
-	movff	0+(_request_unit+01h),0+((c:_responseBuffer)+01h)
+	movff	(_request_unit),(c:_responseBuffer)
 	line	850
+	movff	0+(_request_unit+01h),0+((c:_responseBuffer)+01h)
+	line	851
 	
 l232:
 	return	;funcret

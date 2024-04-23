@@ -1852,63 +1852,63 @@ Version 3.2 HI-TECH Software Intermediate Code
 [e ( _UART_TransmitChar (1 -> & >> -> _index `ui -> 8 `i -> -> 255 `i `ui `uc ]
 "843
 [e ( _UART_TransmitChar (1 -> & -> _index `ui -> -> 255 `i `ui `uc ]
-"844
-[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "845
-[e ( _writeByteAT24_EEPROM (2 , -> _index `ui _mask_data ]
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "846
+[e ( _writeByteAT24_EEPROM (2 , -> _index `ui _mask_data ]
+"847
 }
 "841
 [e ++ _index -> -> 1 `i `us ]
 [e $ <= -> _index `ui -> -> 32767 `i `ui 925  ]
 [e :U 926 ]
-"846
+"847
 }
-"848
-[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
 "849
-[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
+[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
 "850
+[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
+"851
 [e :UE 924 ]
 }
 [v $root$_main `(v ~T0 @X0 0 e ]
-"853
-[v _main `(v ~T0 @X0 1 ef ]
 "854
+[v _main `(v ~T0 @X0 1 ef ]
+"855
 {
 [e :U _main ]
 [f ]
-"856
-[e = _OSCCON -> -> 112 `i `uc ]
 "857
+[e = _OSCCON -> -> 112 `i `uc ]
+"858
 [e = _OSCTUNE -> -> 192 `i `uc ]
-"872
-[e ( _UART_Init ..  ]
 "873
-[e ( _I2C2_Init ..  ]
+[e ( _UART_Init ..  ]
 "874
+[e ( _I2C2_Init ..  ]
+"875
 [e ( _ReadMasterPasswordFromEEPROM ..  ]
-"876
-[e :U 930 ]
 "877
-{
+[e :U 930 ]
 "878
-[e $ ! != -> _interrupt_flag `i -> -> -> 0 `i `uc `i 932  ]
-"879
 {
+"879
+[e $ ! != -> _interrupt_flag `i -> -> -> 0 `i `uc `i 932  ]
 "880
-[e ( _createResponse ..  ]
+{
 "881
-[e = _interrupt_flag -> -> 0 `i `uc ]
+[e ( _createResponse ..  ]
 "882
-}
-[e :U 932 ]
+[e = _interrupt_flag -> -> 0 `i `uc ]
 "883
 }
+[e :U 932 ]
+"884
+}
 [e :U 929 ]
-"876
+"877
 [e $U 930  ]
 [e :U 931 ]
-"884
+"885
 [e :UE 928 ]
 }
