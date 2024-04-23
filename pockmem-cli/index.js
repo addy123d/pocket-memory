@@ -29,6 +29,7 @@ let processReadOperation = 0;
 let ReadBuffer = [];
 let user_entered_string = '';
 let isLogin = 1;
+let userPassword = '';
 
 const menu = Object.freeze({
     PING: '11',
@@ -82,7 +83,9 @@ parser.on('data', (data) => {
         end_sequence_flag = 0; //clear end sequence flag
 
         checkResponse();
-        showMenu();
+
+        if(isLogin)
+         showMenu();
     }
 
     //set flag to read buffer operation, only when it is read or write operation, and specially turn it off when opeartion code is Delete memory.
@@ -93,13 +96,34 @@ parser.on('data', (data) => {
 });
 
 
-function checkResponse() {
+async function checkResponse() {
     if (RESPONSE_DATA[3] == 'FE') {  //FE represents exception is raised, instead of order code
+        isLogin = 0;
         console.log(chalk.bgRed(`${checkExceptionCode(RESPONSE_DATA[4])}`));
+
+        if(RESPONSE_DATA[4] === exception.AUTH_FAILED){
+            exitMessage();
+        }else if(RESPONSE_DATA[4] === exception.MASTER_PASSWORD_NOT_SET){
+            showMenu();
+        }
+
     }
 
     RESPONSE_DATA = [];
 }
+
+function exitMessage() {
+    figlet(`POCKET MEMORY !\n `, (err, data) => {
+      console.log(gradient.pastel.multiline(data) + '\n');
+  
+      console.log(
+        chalk.green(
+          `Made with ❤️ By Aditya Chaudhary`
+        )
+      );
+      process.exit(0);
+    });
+  }
 
 function checkExceptionCode(code) {
     let exception_msg = '';
@@ -115,7 +139,6 @@ function checkExceptionCode(code) {
             exception_msg = 'Please set master password for your device';
             break;
         case exception.AUTH_FAILED:
-            isLogin = 0; //login failed
             exception_msg = 'Password not matched, try again...';
             break;
         case exception.PASSWORD_LENGTH_EXCEED:
@@ -259,9 +282,18 @@ async function askBAUD() {
         }
     });
 
-    DEVICE_CODE = deviceCode.code;
+    const password = await inquirer.prompt({
+        name: 'string',
+        type: 'password',
+        message: 'Master Password',
+        default() {
+            return '00';
+        }
+    });
 
+    DEVICE_CODE = deviceCode.code;
     selectedBaudRate = baudrate.baud_rate; //assign baud rate to global variable.
+    userPassword = password.string;
 
     //after baud rate selection, save configuration
     saveConfiguration();
@@ -277,7 +309,8 @@ async function saveConfiguration() {
     if (isSerialConnectionEstablished) {
         spinner.success({ text: 'Serial port connected ✅' });
 
-        await showMenu();
+        //authenticate user
+        authenticateUser(userPassword);
     } else {
         spinner.error({ text: 'Connection failed, serial port error' });
     }
@@ -288,13 +321,11 @@ async function showMenu() {
 
     let menuString = `
     Operation Codes
-    ${menu.PING} : PING
     ${menu.WRITE_MEM} : WRITE
     ${menu.READ_MEM} : READ
-    ${menu.UPDATE_MEM} : UPDATE
+    ${menu.PING} : PING
     ${menu.DELETE_MEM} : FORMAT DISK (ADMIN ACCESS)
     ${menu.SET_PASSWORD} : SET MASTER PASSWORD
-    ${menu.AUTH_CHECK} : AUTH TEST
     ${menu.EXIT} : EXIT
     `;
 
@@ -319,18 +350,18 @@ async function selectOperation() {
     operation_code = operationCode.operation_code;
 
     //exit from application
-    if (operation_code == menu.EXIT)
-        process.exit(1);
+    if (operation_code == menu.EXIT){
+        exitMessage();
+    }
 
     await performOperation();
 }
+
 
 async function performOperation() {
     let OPERATION_CODE = operation_code;
     let errorFlag = false;
     let payload_data = {}; //it will contain, an array,and its respective length.
-
-    console.log(OPERATION_CODE);
 
     //Before any operation, we must authenticate first, if user is authenticated then proceed further.
     switch (OPERATION_CODE) {
@@ -349,9 +380,10 @@ async function performOperation() {
             break;
         case menu.DELETE_MEM:
             await askInput();
-            if(!user_entered_string)
-                showMenu();
+            if (!user_entered_string) { //if user enters no, then
+                showMenu();           //display menu again and return
                 return;
+            }
 
             payload_data = [];
             break;
@@ -371,6 +403,8 @@ async function performOperation() {
 
     if (!errorFlag)
         sendRequest(payload_data);
+    else
+        showMenu();
 
     user_entered_string = '';
 }
@@ -465,6 +499,35 @@ function createAUTHData() {
     return payload;
 }
 
+async function authenticateUser(password_string){
+
+        let pass_Bytes = stringtoHex(password_string);
+        let pass_length = pass_Bytes.length;
+
+        //send start sequence first
+        for (let i = 0; i < SEQUENCE_LEN; i++) {
+            send_data_via_uart(Buffer.from([parseInt(PACKET_START_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
+        }
+    
+        //send DEVICE CODE and Operation code
+        send_data_via_uart(Buffer.from([parseInt(DEVICE_CODE, 16)])); //convert hex string to ascii integer value
+        send_data_via_uart(Buffer.from([parseInt(menu.AUTH_CHECK, 16)])); //convert hex string to ascii integer value
+    
+        //send payload
+        for (let i = 0; i < pass_length; i++) {
+            send_data_via_uart(Buffer.from([parseInt(pass_Bytes[i], 16)])); //convert hex string to ascii integer value
+        }
+    
+        //send payload length
+        send_data_via_uart(Buffer.from([parseInt(decimalToHex(pass_length), 16)])); //convert hex string to ascii integer value
+    
+        //send end sequence last
+        for (let i = 0; i < SEQUENCE_LEN; i++) {
+            send_data_via_uart(Buffer.from([parseInt(PACKET_END_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
+        }
+    
+}
+
 async function sendRequest(payload_obj) {
     // console.log("Send Request: ");
     // console.log(operation_code);
@@ -473,8 +536,6 @@ async function sendRequest(payload_obj) {
     for (let i = 0; i < SEQUENCE_LEN; i++) {
         send_data_via_uart(Buffer.from([parseInt(PACKET_START_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
     }
-
-
 
     //send DEVICE CODE and Operation code
     send_data_via_uart(Buffer.from([parseInt(DEVICE_CODE, 16)])); //convert hex string to ascii integer value

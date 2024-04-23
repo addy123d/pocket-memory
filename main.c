@@ -22,6 +22,15 @@
 #define PACKET_START_MARKER_UPPER 0x23
 #define PACKET_END_MARKER_LOWER 0x0D
 #define PACKET_END_MARKER_UPPER 0x0A
+
+/* lookup section, where we will store all the starting address of credentials, for reference */
+#define LOOKUP_SECTION_START 0x7800
+#define LOOKUP_SECTION_END 0x7FFF
+
+/* credential section, where we will store actual credential data */
+#define CREDENTIAL_SECTION_START 0x0000
+#define CREDENTIAL_SECTION_END 0x77FF
+
 #define EEPROM_CAPACITY 0x7FFF // 32,768 locations of 8 bit each (32K x 8).
 
 unsigned int timeout = 1000;		 // timeout variable
@@ -52,7 +61,9 @@ enum PIC_EEPROM_CONFIG
 	PASSWORD_ADDR_START = 0x00,
 	PASSWORD_ADDR_END = 0x08,
 	ADDRESS_POINTER_H = 0x0A,
-	ADDRESS_POINTER_L = 0x0B
+	ADDRESS_POINTER_L = 0x0B,
+	LOOKUP_POINTER_H = 0x0C,
+	LOOKUP_POINTER_L = 0x0D
 };
 // address pointer will store address of next location where data will be stored on at24lc256
 // pointer has both low and high byte, because word address in AT24LC256 is 16bit
@@ -64,7 +75,8 @@ enum EXCEPTION_CODES
 	MASTER_PASSWORD_NOT_SET = 0x03,
 	AUTH_FAILED = 0x04,
 	PASSWORD_LENGTH_EXCEED = 0x05,
-	DEVICE_CODE_MISMATCH = 0x06
+	DEVICE_CODE_MISMATCH = 0x06,
+	INSUFFICIENT_MEMORY = 0x07
 };
 // exception codes are used in responses, when operation fails on the device, we have to notify master.
 
@@ -421,27 +433,53 @@ void writeDataToEEPROM()
 	unsigned char eeprom_data = 0x00;
 	unsigned char at24_eep_addr_H = 0x00;
 	unsigned char at24_eep_addr_L = 0x00;
+
+	unsigned char at24_eep_lookup_addr_H = 0x00;
+	unsigned char at24_eep_lookup_addr_L = 0x00;
+
 	unsigned short at24_eeprom_addr_start = 0x0000;
+	unsigned short at24_eep_lookup_addr = 0x0000;
 
 	// read new location address from PIC-EEPROM
 	// 0x0A and 0x0B, location to store address_counter which has address of location where new data will be stored.
-
 	at24_eep_addr_H = EEPROM_Read(ADDRESS_POINTER_H);
 	__delay_ms(500); // give sufficient time to read data from eeprom
-	at24_eep_addr_L = EEPROM_Read(ADDRESS_POINTER_L);
+	at24_eep_addr_L = EEPROM_Read(ADDRESS_POINTER_L); 
+
+	// read new lookup address from PIC-EEPROM
+	// 0x0C and 0x0D, location to store lookup_address_counter which has address of new lookup table entry where new entry is stored.
+	at24_eep_lookup_addr_H = EEPROM_Read(LOOKUP_POINTER_H);
+	__delay_ms(500);
+	at24_eep_lookup_addr_L = EEPROM_Read(LOOKUP_POINTER_L);
 
 	//(at24_eep_addr_H << 8, will give you 8 bit High byte of a 16bit integer)
 	at24_eeprom_address = (at24_eep_addr_H << 8) | at24_eep_addr_L;
 
-	// if it's a fresh eeprom, assign address reset address from 0x0000.
+	at24_eep_lookup_addr = (at24_eep_lookup_addr_H << 8) | at24_eep_lookup_addr_L;
+
+	// if it's a fresh eeprom, assign address reset address from CREDENTIAL_SECTION_START.
 	if (at24_eeprom_address == 0xFFFF)
-		at24_eeprom_address = 0x0000; // start from the first word address, i.e 0x0000
+		at24_eeprom_address = CREDENTIAL_SECTION_START; // start from the first word address, i.e 0x0000
+
+	// if its a fresh eeprom, at24_eep_lookup_addr will be 0xFFFF, therefore assign it start i.e LOOKUP_SECTION_START
+	if(at24_eep_lookup_addr == 0xFFFF)
+		at24_eep_lookup_addr = LOOKUP_SECTION_START;
+
 
 	// assign start address to a local variable for further use
 	at24_eeprom_addr_start = at24_eeprom_address;
 
 	// length of string to be stored, convert it to 16bit
 	payload_length = (requestBuffer[request_unit.payload_length_index]) & 0xFF;
+
+	//check whether start address cross the limit of credential section which is 0x77FF
+	if((CREDENTIAL_SECTION_END - at24_eeprom_address) <=  payload_length){
+		//there is no enough space in eeprom to store payload
+		isExceptionRaised = 0x01;
+		exception_code = INSUFFICIENT_MEMORY;
+		return;
+	}
+
 
 	// store length of data first.
 	writeByteAT24_EEPROM(at24_eeprom_address, requestBuffer[request_unit.payload_length_index]);
@@ -467,6 +505,20 @@ void writeDataToEEPROM()
 	EEPROM_Write(ADDRESS_POINTER_H, ((at24_eeprom_address >> 8) & 0xFF)); // write word address HIGH Byte
 	__delay_ms(500);													  // give some delay to conduct write operation
 	EEPROM_Write(ADDRESS_POINTER_L, (at24_eeprom_address & 0xFF));		  // write word address LOW Byte
+	__delay_ms(500);
+
+	//store starting addresses of credentials in lookup section
+	writeByteAT24_EEPROM(at24_eep_lookup_addr, ((at24_eeprom_addr_start >> 8) & 0xFF));
+	__delay_ms(10);
+	writeByteAT24_EEPROM((at24_eep_lookup_addr + 1), (at24_eeprom_addr_start & 0xFF));
+
+	at24_eep_lookup_addr += 2; //each entry in lookup table will require 2 locations
+
+	//update this new lookup table addr in PIC_EEPROM
+	__delay_ms(500);
+	EEPROM_Write(LOOKUP_POINTER_H, ((at24_eep_lookup_addr >> 8) & 0xFF)); //store high byte of new lookup table address
+	__delay_ms(500);
+	EEPROM_Write(LOOKUP_POINTER_L, (at24_eep_lookup_addr & 0xFF));	//store low byte of new lookup table address
 	__delay_ms(500);
 
 	// update response buffer
