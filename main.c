@@ -17,11 +17,14 @@
 #define EEPROM_ADDRESS 0x50
 #define DEVICE_CODE 0x21
 #define PACKET_SIZE 50
-#define RESPONSE_PACKET_SIZE 30
+#define RESPONSE_PACKET_SIZE 50
 #define PACKET_START_MARKER_LOWER 0x3A
 #define PACKET_START_MARKER_UPPER 0x23
 #define PACKET_END_MARKER_LOWER 0x0D
 #define PACKET_END_MARKER_UPPER 0x0A
+#define LOOKUP_SECTION_CACHE_SIZE 400     //we can't cache 1000s of bytes, as we don't have that big amount of memory
+				    //as cache buffer is of type char, each data stored is of 1 byte
+				    //Size 200 means we making space of 400*1 = 400 bytes 
 
 /* lookup section, where we will store all the starting address of credentials, for reference */
 #define LOOKUP_SECTION_START 0x7800
@@ -44,13 +47,14 @@ unsigned char checkAck = 0x01;
 unsigned char isPasswordSet = 0x01;
 unsigned char isExceptionRaised = 0x00; // exception flag
 unsigned char exception_code = 0x00;
+unsigned char LOOKUP_SECTION_CACHE[LOOKUP_SECTION_CACHE_SIZE]; //with this size, we can store 200 starting addresses in cache buffer
 
 enum ORDER_CODES
 {
 	PING = 0x11,
 	WRITE_MEM = 0x01,
 	READ_MEM = 0x02,
-	UPDATE_MEM = 0x03,
+	READ_ENTRY = 0x03,
 	DELETE_MEM = 0x10,
 	SET_PASSWORD = 0x12,
 	AUTH_CHECK = 0x13
@@ -124,6 +128,7 @@ void ReadMasterPasswordFromEEPROM();
 void ReadCredentials();
 unsigned char isPasswordMatched();
 void FormatDrive();
+void ReadLookupEntries();
 void EEPROM_Write(unsigned char addr, unsigned char eep_data);
 unsigned char EEPROM_Read(unsigned char addr);
 void sendResponse(unsigned char exception_occurred);
@@ -142,7 +147,7 @@ void UART_Init()
 	ANSELCbits.ANSC7 = 0; // set input as digital
 
 	INTCONbits.GIE = 1;	 // Enable global interrupts
-	INTCONbits.PEIE = 1; // Enable peripheral interrupts
+	INTCONbits.PEIE = 1; 	 // Enable peripheral interrupts
 	PIE1bits.RC1IE = 1;	 // set usart1 receive interrupt enable bit
 
 	TXSTA1 = 0x20; /* Enable Transmit(TX) */
@@ -296,9 +301,9 @@ void __interrupt() isr(void)
 			}
 		}
 
-#ifdef DEBUG
+	#ifdef DEBUG
 		UART_TransmitChar(receivedChar + 1);
-#endif
+	#endif
 
 		PIE1bits.RC1IE = 1; // enable usart receive interrupt
 	}
@@ -379,7 +384,8 @@ void createResponse()
 			case READ_MEM:
 				ReadCredentials();
 				break;
-			case UPDATE_MEM:
+			case READ_ENTRY:
+				ReadLookupEntries();
 				break;
 			case DELETE_MEM:
 				FormatDrive();
@@ -507,6 +513,14 @@ void writeDataToEEPROM()
 	EEPROM_Write(ADDRESS_POINTER_L, (at24_eeprom_address & 0xFF));		  // write word address LOW Byte
 	__delay_ms(500);
 
+	//check if lookup address is within range or not
+	if(at24_eep_lookup_addr > (LOOKUP_SECTION_END - 1)){
+		//Lookup address is pointing at 0x7FFF, which is last address of lookup section
+		isExceptionRaised = 0x01;
+		exception_code = INSUFFICIENT_MEMORY;
+		return;
+        }
+
 	//store starting addresses of credentials in lookup section
 	writeByteAT24_EEPROM(at24_eep_lookup_addr, ((at24_eeprom_addr_start >> 8) & 0xFF));
 	__delay_ms(10);
@@ -526,7 +540,12 @@ void writeDataToEEPROM()
 	responseBuffer[1] = request_unit.ORDER_CODE;
 	responseBuffer[2] = (at24_eeprom_addr_start >> 8) & 0xFF; // START address high byte
 	responseBuffer[3] = at24_eeprom_addr_start & 0xFF;        // START address low byte
-	responseBuffer[4] = 0xFF; 				  // Termination Character '0xFF' for write operations.
+	responseBuffer[4] = 0xFF; 				  // Termination Character '0xFF' for write response
+
+	/* Termination character for write response is 0xFF, as we know
+	 * throughout our device termination character is 0x00, but in this case we are returning start address to our users,
+         * and '0x00' can be part of start address, it will create confusion between termination character.
+         */ 
 }
 
 /*
@@ -599,12 +618,12 @@ void writeMasterPasswordToEEPROM()
  */
 void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
 {
-	I2C2_Start();							   // start condition
+	I2C2_Start();				   // start condition
 	checkAck = I2C2_Send(EEPROM_ADDRESS << 1); // send control code(4 bits), the chip select(3 bits) and the R/W bit (logic low)
-	I2C2_Send((address >> 8) & 0xFF);		   // address high byte (MSB)
-	I2C2_Send(address & 0xFF);				   // address low byte (LSB)
-	I2C2_Send(data);						   // data word to be written into the addressed memory location
-	I2C2_Stop();							   // send stop condition
+	I2C2_Send((address >> 8) & 0xFF);	   // address high byte (MSB)
+	I2C2_Send(address & 0xFF);		   // address low byte (LSB)
+	I2C2_Send(data);			   // data word to be written into the addressed memory location
+	I2C2_Stop();				   // send stop condition
 }
 
 /*
@@ -615,15 +634,15 @@ void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
 unsigned char readByteAT24_EEPROM(unsigned short address){
 	unsigned char eeprom_data = 0x00;
 
-	I2C2_Start(); //send start condition
-	I2C2_Send(EEPROM_ADDRESS << 1); //send slave address with write bit
-	I2C2_Send((address >> 8) & 0xFF); //word address high byte
-	I2C2_Send(address & 0xFF); //word address low byte
+	I2C2_Start(); 			         //send start condition
+	I2C2_Send(EEPROM_ADDRESS << 1);          //send slave address with write bit
+	I2C2_Send((address >> 8) & 0xFF);        //word address high byte
+	I2C2_Send(address & 0xFF);               //word address low byte
 
-	I2C2_Start(); //send start condition again
+	I2C2_Start();                            //send start condition again
 	I2C2_Send((EEPROM_ADDRESS << 1) | 0x01); //send slave address with read bit
-	eeprom_data = I2C2_Read(); //read 8 bit data from the mentioned address
-	I2C2_Stop(); //send stop condition
+	eeprom_data = I2C2_Read();               //read 8 bit data from the mentioned address
+	I2C2_Stop();                             //send stop condition
 
 	return eeprom_data;	
 }
@@ -810,6 +829,9 @@ void ReadCredentials(){
 	for(index = 0; index < payload_length; index++)
 	     ADDR[index] = request_unit.payload_data[index];
 
+	UART_TransmitChar(ADDR[0]);
+	UART_TransmitChar(ADDR[1]);
+
 	//ADDR[0] - HIGH BYTE
 	//ADDR[1] - LOW BYTE
 	//now we got the start address, as we know, we will get length of credential, extract that first
@@ -820,6 +842,8 @@ void ReadCredentials(){
 	credential_length = (readByteAT24_EEPROM(START_ADDR)) & 0xFF;
 	__delay_ms(50);	
 
+	UART_TransmitChar((credential_length >> 8) & 0xFF);
+	UART_TransmitChar(credential_length & 0xFF);
 
 	START_ADDR += 1; //point to next location
 
@@ -838,6 +862,7 @@ void ReadCredentials(){
 	//store credentials in response buffer
 	for(unsigned short i = 0; i < credential_length; i++){
 		responseBuffer[response_index + i] = readByteAT24_EEPROM(START_ADDR + i);
+		UART_TransmitChar(responseBuffer[response_index + i]);
 		last_char_index = response_index + i;
 	}
 
@@ -845,6 +870,17 @@ void ReadCredentials(){
 	responseBuffer[last_char_index + 1] = 0x00; //end with null character
 }
 
+/*
+ *@desc: stores all the address inside cache
+ *@params: none
+ *@return: none
+ */
+void storeLookUpEntries(){
+	unsigned short section_start = LOOKUP_SECTION_START;
+	
+	for(unsigned int i = 0; i < LOOKUP_SECTION_CACHE_SIZE; i++)
+		LOOKUP_SECTION_CACHE[i] = readByteAT24_EEPROM((section_start + i));
+}
 
 /*
  *@desc: matches user entered password with cache stored password
@@ -870,6 +906,10 @@ unsigned char isPasswordMatched()
 	// if length matches, check if password matches bytes.
 	for (index = 0x00; index < master.cache_length; index++)
 	{
+
+		UART_TransmitChar(master.PASSWORD_CACHE[index]);
+		UART_TransmitChar(request_unit.payload_data[index]);
+
 		if (master.PASSWORD_CACHE[index] != request_unit.payload_data[index])
 		{					  // if any one of the bytes mismatches, clear the flag and break the loop
 			matchFlag = 0x00; // reset the flag
@@ -878,6 +918,17 @@ unsigned char isPasswordMatched()
 	}
 
 	return matchFlag;
+}
+
+/*
+ *@desc: reads entries from lookup cache
+ *@params: none
+ *@return: none
+ */
+void ReadLookupEntries(){
+	for(unsigned int index = 0; index < LOOKUP_SECTION_CACHE_SIZE; index++){
+		UART_TransmitChar(LOOKUP_SECTION_CACHE[index]);
+	}
 }
 
 /*
@@ -898,7 +949,14 @@ void FormatDrive(){
 
 		__delay_ms(10);
 		writeByteAT24_EEPROM(index, mask_data);	
-	}		
+	}
+
+	//we have to reset PIC-EEPROM ADDRESS POINTER
+	__delay_ms(500);
+	EEPROM_Write(ADDRESS_POINTER_H, 0xFF);
+	__delay_ms(500);
+	EEPROM_Write(ADDRESS_POINTER_L, 0xFF);		
+	__delay_ms(500);
 
 	//create response buffer
 	responseBuffer[0] = request_unit.DEVICE_ADDR;
@@ -927,7 +985,10 @@ void main()
 
 	UART_Init();			  // initialises uart peripherals
 	I2C2_Init();			  // initialises i2c peripherals
-	ReadMasterPasswordFromEEPROM(); // reads password from pic eeprom and caches it in an array buffer.
+	ReadMasterPasswordFromEEPROM();   // reads password from pic eeprom and caches it in an array buffer.
+	__delay_ms(100);
+	storeLookUpEntries();		  // reads all the entries in the lookup table
+	__delay_ms(100);
 
 	while (1)
 	{

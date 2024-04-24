@@ -32,10 +32,10 @@ let isLogin = 1;
 let userPassword = '';
 
 const menu = Object.freeze({
-    PING: '11',
     WRITE_MEM: '1',
     READ_MEM: '2',
-    UPDATE_MEM: '3',
+    READ_ENTRY: '3',
+    PING: '11',
     DELETE_MEM: '10',
     SET_PASSWORD: '12',
     AUTH_CHECK: '13',
@@ -57,7 +57,7 @@ const parser = new ByteLengthParser({ length: 1 });
 // Function to display data with ASCII art
 function displayData(data) {
     //below print statements, won't work if data is FF, or operation code selected is read memory or write memory
-    if ((decimalToHex(data[0]) != 'FF') && (operation_code === menu.DELETE_MEM)) {
+    if ((decimalToHex(data[0]) != 'FF')) {
         console.log(chalk.red('║                         ' + decimalToHex(data[0]) + '                           ║'));
         console.log(chalk.white('╚═════════════════════════════════════════════════════╝'));
     }
@@ -84,7 +84,7 @@ parser.on('data', (data) => {
 
         checkResponse();
 
-        if(isLogin)
+        if(isLogin) //if logged in successfully, then show operation menu
          showMenu();
     }
 
@@ -99,11 +99,12 @@ parser.on('data', (data) => {
 async function checkResponse() {
     if (RESPONSE_DATA[3] == 'FE') {  //FE represents exception is raised, instead of order code
         isLogin = 0;
+        // console.log("HIT");
         console.log(chalk.bgRed(`${checkExceptionCode(RESPONSE_DATA[4])}`));
 
         if(RESPONSE_DATA[4] === exception.AUTH_FAILED){
             exitMessage();
-        }else if(RESPONSE_DATA[4] === exception.MASTER_PASSWORD_NOT_SET){
+        }else{
             showMenu();
         }
 
@@ -113,7 +114,7 @@ async function checkResponse() {
 }
 
 function exitMessage() {
-    figlet(`POCKET MEMORY !\n `, (err, data) => {
+    figlet(`POCKET MEMORY\n `, (err, data) => {
       console.log(gradient.pastel.multiline(data) + '\n');
   
       console.log(
@@ -121,6 +122,7 @@ function exitMessage() {
           `Made with ❤️ By Aditya Chaudhary`
         )
       );
+
       process.exit(0);
     });
   }
@@ -211,7 +213,7 @@ async function askInput() {
 
     switch (operation_code) {
         case menu.WRITE_MEM:
-            message = "Enter Credential: ";
+            message = "Enter Credential: [key : value]";
             break;
         case menu.READ_MEM:
             message = "Enter START ADDR: (HIGH_BYTE, LOW_BYTE)";
@@ -311,6 +313,8 @@ async function saveConfiguration() {
 
         //authenticate user
         authenticateUser(userPassword);
+
+        // showMenu();
     } else {
         spinner.error({ text: 'Connection failed, serial port error' });
     }
@@ -323,6 +327,7 @@ async function showMenu() {
     Operation Codes
     ${menu.WRITE_MEM} : WRITE
     ${menu.READ_MEM} : READ
+    ${menu.READ_ENTRY} : READ LOOKUP TABLE
     ${menu.PING} : PING
     ${menu.DELETE_MEM} : FORMAT DISK (ADMIN ACCESS)
     ${menu.SET_PASSWORD} : SET MASTER PASSWORD
@@ -352,6 +357,7 @@ async function selectOperation() {
     //exit from application
     if (operation_code == menu.EXIT){
         exitMessage();
+        return;
     }
 
     await performOperation();
@@ -376,7 +382,8 @@ async function performOperation() {
             await askInput();
             payload_data = createReadData();
             break;
-        case menu.UPDATE_MEM:
+        case menu.READ_ENTRY: //read all entries from lookup table
+            payload_data = createPingData();
             break;
         case menu.DELETE_MEM:
             await askInput();
