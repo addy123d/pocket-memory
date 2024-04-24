@@ -387,7 +387,7 @@ void createResponse()
 				ReadCredentials();
 				break;
 			case READ_SPACE:
-				calculateOccupiedSpace();		
+				calculateAvailableSpace();		
 				break;
 			case READ_ENTRY:
 				ReadLookupEntries();
@@ -941,7 +941,7 @@ void ReadLookupEntries(){
  *@params: none
  *@return: none
  */
-void calculateOccupiedSpace(){
+void calculateAvailableSpace(){
 	unsigned short index = 0x0000;
 	unsigned char empty_data = 0xFF;
 	unsigned char eeprom_data = 0x00;
@@ -960,6 +960,7 @@ void calculateOccupiedSpace(){
 		}
 	}
 
+	/* Only for debugging part
 	int digit1 = empty_location_count / 100;
     	int digit2 = (empty_location_count / 10) % 10;
     	int digit3 = empty_location_count % 10;
@@ -967,18 +968,28 @@ void calculateOccupiedSpace(){
 	UART_TransmitChar(digits[digit1]);
 	UART_TransmitChar(digits[digit2]);
 	UART_TransmitChar(digits[digit3]);
+        */
 
 	memory_percentage = ((float)empty_location_count/total_location) * 100;
+
+	if(memory_percentage != 100)
+		memory_percentage *= 10;
 
 	int digit4 = (int)(memory_percentage / 100);
 	int digit5 = ((int)memory_percentage / 10) % 10;
 	int digit6 = (int)memory_percentage % 10;
 
-	
+	/*
 	UART_TransmitChar(digits[digit4]);
 	UART_TransmitChar(digits[digit5]);
 	UART_TransmitChar(digits[digit6]);
-        
+        */
+
+	responseBuffer[0] = request_unit.DEVICE_ADDR;
+	responseBuffer[1] = request_unit.ORDER_CODE;
+	responseBuffer[2] = digits[digit4];
+	responseBuffer[3] = digits[digit5];
+	responseBuffer[4] = digits[digit6];
 }
 
 /*

@@ -74,7 +74,7 @@ parser.on('data', (data) => {
     displayData(data);
 
     //process read operation
-    if (processReadOperation)
+    if ((processReadOperation) && ((operation_code == menu.READ_MEM) || (operation_code == menu.WRITE_MEM)))
         RWOperation(data);
 
     //end sequence processing
@@ -567,7 +567,7 @@ async function sendRequest(payload_obj) {
     }
 
 
-    responseTimeoutId = setTimeout(handleTimeout, 10000);
+    responseTimeoutId = setTimeout(handleTimeout, 20000);
 }
 
 

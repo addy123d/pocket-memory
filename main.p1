@@ -2023,136 +2023,130 @@ Version 3.2 HI-TECH Software Intermediate Code
 [e :U 938 ]
 "961
 }
-"963
-[v _digit1 `i ~T0 @X0 1 a ]
-[e = _digit1 / _empty_location_count -> 100 `i ]
-"964
-[v _digit2 `i ~T0 @X0 1 a ]
-[e = _digit2 % / _empty_location_count -> 10 `i -> 10 `i ]
-"965
-[v _digit3 `i ~T0 @X0 1 a ]
-[e = _digit3 % _empty_location_count -> 10 `i ]
-"967
-[e ( _UART_TransmitChar (1 *U + &U _digits * -> -> _digit1 `ui `ux -> -> # *U &U _digits `ui `ux ]
-"968
-[e ( _UART_TransmitChar (1 *U + &U _digits * -> -> _digit2 `ui `ux -> -> # *U &U _digits `ui `ux ]
-"969
-[e ( _UART_TransmitChar (1 *U + &U _digits * -> -> _digit3 `ui `ux -> -> # *U &U _digits `ui `ux ]
-"971
-[e = _memory_percentage * / -> _empty_location_count `f -> _total_location `f -> -> 100 `i `f ]
 "973
+[e = _memory_percentage * / -> _empty_location_count `f -> _total_location `f -> -> 100 `i `f ]
+"975
+[e $ ! != _memory_percentage -> -> 100 `i `f 941  ]
+"976
+[e =* _memory_percentage -> -> 10 `i `f ]
+[e :U 941 ]
+"978
 [v _digit4 `i ~T0 @X0 1 a ]
 [e = _digit4 -> / _memory_percentage -> -> 100 `i `f `i ]
-"974
+"979
 [v _digit5 `i ~T0 @X0 1 a ]
 [e = _digit5 % / -> _memory_percentage `i -> 10 `i -> 10 `i ]
-"975
+"980
 [v _digit6 `i ~T0 @X0 1 a ]
 [e = _digit6 % -> _memory_percentage `i -> 10 `i ]
-"978
-[e ( _UART_TransmitChar (1 *U + &U _digits * -> -> _digit4 `ui `ux -> -> # *U &U _digits `ui `ux ]
-"979
-[e ( _UART_TransmitChar (1 *U + &U _digits * -> -> _digit5 `ui `ux -> -> # *U &U _digits `ui `ux ]
-"980
-[e ( _UART_TransmitChar (1 *U + &U _digits * -> -> _digit6 `ui `ux -> -> # *U &U _digits `ui `ux ]
-"982
+"988
+[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
+"989
+[e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
+"990
+[e = *U + &U _responseBuffer * -> -> -> 2 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux *U + &U _digits * -> -> _digit4 `ui `ux -> -> # *U &U _digits `ui `ux ]
+"991
+[e = *U + &U _responseBuffer * -> -> -> 3 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux *U + &U _digits * -> -> _digit5 `ui `ux -> -> # *U &U _digits `ui `ux ]
+"992
+[e = *U + &U _responseBuffer * -> -> -> 4 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux *U + &U _digits * -> -> _digit6 `ui `ux -> -> # *U &U _digits `ui `ux ]
+"993
 [e :UE 936 ]
 }
-"989
+"1000
 [v _FormatDrive `(v ~T0 @X0 1 ef ]
 {
 [e :U _FormatDrive ]
 [f ]
-"990
+"1001
 [v _index `us ~T0 @X0 1 a ]
 [e = _index -> -> 0 `i `us ]
-"991
+"1002
 [v _mask_data `uc ~T0 @X0 1 a ]
 [e = _mask_data -> -> 255 `i `uc ]
-"994
+"1005
 {
 [e = _index -> -> 0 `i `us ]
-[e $ <= -> _index `ui -> -> 32767 `i `ui 942  ]
-[e $U 943  ]
-[e :U 942 ]
-{
-"997
-[e ( _UART_TransmitChar (1 -> & >> -> _index `ui -> 8 `i -> -> 255 `i `ui `uc ]
-"998
-[e ( _UART_TransmitChar (1 -> & -> _index `ui -> -> 255 `i `ui `uc ]
-"1000
-[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"1001
-[e ( _writeByteAT24_EEPROM (2 , -> _index `ui _mask_data ]
-"1002
-}
-"994
-[e ++ _index -> -> 1 `i `us ]
-[e $ <= -> _index `ui -> -> 32767 `i `ui 942  ]
+[e $ <= -> _index `ui -> -> 32767 `i `ui 943  ]
+[e $U 944  ]
 [e :U 943 ]
-"1002
+{
+"1008
+[e ( _UART_TransmitChar (1 -> & >> -> _index `ui -> 8 `i -> -> 255 `i `ui `uc ]
+"1009
+[e ( _UART_TransmitChar (1 -> & -> _index `ui -> -> 255 `i `ui `uc ]
+"1011
+[e ( __delay (1 -> * -> -> 10 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"1012
+[e ( _writeByteAT24_EEPROM (2 , -> _index `ui _mask_data ]
+"1013
 }
 "1005
-[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"1006
-[e ( _EEPROM_Write (2 , -> . `E5841 2 `uc -> -> 255 `i `uc ]
-"1007
-[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"1008
-[e ( _EEPROM_Write (2 , -> . `E5841 3 `uc -> -> 255 `i `uc ]
-"1009
-[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"1012
-[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
+[e ++ _index -> -> 1 `i `us ]
+[e $ <= -> _index `ui -> -> 32767 `i `ui 943  ]
+[e :U 944 ]
 "1013
+}
+"1016
+[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"1017
+[e ( _EEPROM_Write (2 , -> . `E5841 2 `uc -> -> 255 `i `uc ]
+"1018
+[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"1019
+[e ( _EEPROM_Write (2 , -> . `E5841 3 `uc -> -> 255 `i `uc ]
+"1020
+[e ( __delay (1 -> * -> -> 500 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"1023
+[e = *U + &U _responseBuffer * -> -> -> 0 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 0 ]
+"1024
 [e = *U + &U _responseBuffer * -> -> -> 1 `i `ui `ux -> -> # *U &U _responseBuffer `ui `ux . _request_unit 1 ]
-"1014
-[e :UE 941 ]
+"1025
+[e :UE 942 ]
 }
 [v $root$_main `(v ~T0 @X0 0 e ]
-"1017
+"1028
 [v _main `(v ~T0 @X0 1 ef ]
-"1018
+"1029
 {
 [e :U _main ]
 [f ]
-"1020
+"1031
 [e = _OSCCON -> -> 112 `i `uc ]
-"1021
+"1032
 [e = _OSCTUNE -> -> 192 `i `uc ]
-"1036
-[e ( _UART_Init ..  ]
-"1037
-[e ( _I2C2_Init ..  ]
-"1038
-[e ( _ReadMasterPasswordFromEEPROM ..  ]
-"1039
-[e ( __delay (1 -> * -> -> 100 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"1040
-[e ( _storeLookUpEntries ..  ]
-"1041
-[e ( __delay (1 -> * -> -> 100 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
-"1043
-[e :U 947 ]
-"1044
-{
-"1045
-[e $ ! != -> _interrupt_flag `i -> -> -> 0 `i `uc `i 949  ]
-"1046
-{
 "1047
-[e ( _createResponse ..  ]
+[e ( _UART_Init ..  ]
 "1048
-[e = _interrupt_flag -> -> 0 `i `uc ]
+[e ( _I2C2_Init ..  ]
 "1049
-}
-[e :U 949 ]
+[e ( _ReadMasterPasswordFromEEPROM ..  ]
 "1050
-}
-[e :U 946 ]
-"1043
-[e $U 947  ]
-[e :U 948 ]
+[e ( __delay (1 -> * -> -> 100 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
 "1051
-[e :UE 945 ]
+[e ( _storeLookUpEntries ..  ]
+"1052
+[e ( __delay (1 -> * -> -> 100 `i `d / -> -> 64000000 `l `d .4000.0 `ul ]
+"1054
+[e :U 948 ]
+"1055
+{
+"1056
+[e $ ! != -> _interrupt_flag `i -> -> -> 0 `i `uc `i 950  ]
+"1057
+{
+"1058
+[e ( _createResponse ..  ]
+"1059
+[e = _interrupt_flag -> -> 0 `i `uc ]
+"1060
+}
+[e :U 950 ]
+"1061
+}
+[e :U 947 ]
+"1054
+[e $U 948  ]
+[e :U 949 ]
+"1062
+[e :UE 946 ]
 }

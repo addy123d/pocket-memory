@@ -111,9 +111,9 @@ INSUFFICIENT_MEMORY 7
 [v _ReadLookupEntries ReadLookupEntries `(v  1 e 1 0 ]
 "944
 [v _calculateOccupiedSpace calculateOccupiedSpace `(v  1 e 1 0 ]
-"989
+"1000
 [v _FormatDrive FormatDrive `(v  1 e 1 0 ]
-"1017
+"1028
 [v _main main `(v  1 e 1 0 ]
 [s S45 . 1 `uc 1 . 1 0 :2:0 
 `uc 1 ANSC2 1 0 :1:2 
@@ -126,7 +126,7 @@ INSUFFICIENT_MEMORY 7
 "163 C:\Program Files\Microchip\xc8\v2.46\pic\include\proc\pic18f25k22.h
 [u S53 . 1 `S45 1 . 1 0 ]
 [v _ANSELCbits ANSELCbits `VES53  1 e 1 @3898 ]
-[s S516 . 1 `uc 1 TRISC0 1 0 :1:0 
+[s S513 . 1 `uc 1 TRISC0 1 0 :1:0 
 `uc 1 TRISC1 1 0 :1:1 
 `uc 1 TRISC2 1 0 :1:2 
 `uc 1 TRISC3 1 0 :1:3 
@@ -136,7 +136,7 @@ INSUFFICIENT_MEMORY 7
 `uc 1 TRISC7 1 0 :1:7 
 ]
 "8056
-[s S525 . 1 `uc 1 RC0 1 0 :1:0 
+[s S522 . 1 `uc 1 RC0 1 0 :1:0 
 `uc 1 RC1 1 0 :1:1 
 `uc 1 RC2 1 0 :1:2 
 `uc 1 RC3 1 0 :1:3 
@@ -145,8 +145,8 @@ INSUFFICIENT_MEMORY 7
 `uc 1 RC6 1 0 :1:6 
 `uc 1 RC7 1 0 :1:7 
 ]
-[u S534 . 1 `S516 1 . 1 0 `S525 1 . 1 0 ]
-[v _TRISCbits TRISCbits `VES534  1 e 1 @3988 ]
+[u S531 . 1 `S513 1 . 1 0 `S522 1 . 1 0 ]
+[v _TRISCbits TRISCbits `VES531  1 e 1 @3988 ]
 "8267
 [v _OSCTUNE OSCTUNE `VEuc  1 e 1 @3995 ]
 [s S113 . 1 `uc 1 TMR1IE 1 0 :1:0 
@@ -231,7 +231,7 @@ INSUFFICIENT_MEMORY 7
 [v _RCREG RCREG `VEuc  1 e 1 @4014 ]
 "10535
 [v _SPBRG1 SPBRG1 `VEuc  1 e 1 @4015 ]
-[s S570 . 1 `uc 1 SEN 1 0 :1:0 
+[s S567 . 1 `uc 1 SEN 1 0 :1:0 
 `uc 1 RSEN 1 0 :1:1 
 `uc 1 PEN 1 0 :1:2 
 `uc 1 RCEN 1 0 :1:3 
@@ -241,7 +241,7 @@ INSUFFICIENT_MEMORY 7
 `uc 1 GCEN 1 0 :1:7 
 ]
 "13000
-[s S579 . 1 `uc 1 SEN1 1 0 :1:0 
+[s S576 . 1 `uc 1 SEN1 1 0 :1:0 
 `uc 1 ADMSK1 1 0 :1:1 
 `uc 1 ADMSK2 1 0 :1:2 
 `uc 1 ADMSK3 1 0 :1:3 
@@ -250,22 +250,22 @@ INSUFFICIENT_MEMORY 7
 `uc 1 ACKSTAT1 1 0 :1:6 
 `uc 1 GCEN1 1 0 :1:7 
 ]
-[s S588 . 1 `uc 1 . 1 0 :1:0 
+[s S585 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 ADMSK11 1 0 :1:1 
 `uc 1 ADMSK21 1 0 :1:2 
 `uc 1 ADMSK31 1 0 :1:3 
 `uc 1 ADMSK4 1 0 :1:4 
 `uc 1 ADMSK5 1 0 :1:5 
 ]
-[s S595 . 1 `uc 1 . 1 0 :1:0 
+[s S592 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 RSEN1 1 0 :1:1 
 `uc 1 PEN1 1 0 :1:2 
 `uc 1 RCEN1 1 0 :1:3 
 `uc 1 ADMSK41 1 0 :1:4 
 `uc 1 ADMSK51 1 0 :1:5 
 ]
-[u S602 . 1 `S570 1 . 1 0 `S579 1 . 1 0 `S588 1 . 1 0 `S595 1 . 1 0 ]
-[v _SSP1CON2bits SSP1CON2bits `VES602  1 e 1 @4037 ]
+[u S599 . 1 `S567 1 . 1 0 `S576 1 . 1 0 `S585 1 . 1 0 `S592 1 . 1 0 ]
+[v _SSP1CON2bits SSP1CON2bits `VES599  1 e 1 @4037 ]
 "13306
 [v _SSP1CON1 SSP1CON1 `VEuc  1 e 1 @4038 ]
 "13544
@@ -338,10 +338,10 @@ INSUFFICIENT_MEMORY 7
 [v _master master `S40  1 e 9 0 ]
 "118
 [v _digits digits `[10]uc  1 e 10 0 ]
-"1017
+"1028
 [v _main main `(v  1 e 1 0 ]
 {
-"1051
+"1062
 } 0
 "883
 [v _storeLookUpEntries storeLookUpEntries `(v  1 e 1 0 ]
@@ -356,7 +356,7 @@ INSUFFICIENT_MEMORY 7
 [v _createResponse createResponse `(v  1 e 1 0 ]
 {
 "362
-[v createResponse@CODE CODE `uc  1 a 1 26 ]
+[v createResponse@CODE CODE `uc  1 a 1 67 ]
 "420
 } 0
 "561
@@ -426,28 +426,22 @@ INSUFFICIENT_MEMORY 7
 [v _calculateOccupiedSpace calculateOccupiedSpace `(v  1 e 1 0 ]
 {
 "950
-[v calculateOccupiedSpace@memory_percentage memory_percentage `f  1 a 3 19 ]
-"948
-[v calculateOccupiedSpace@empty_location_count empty_location_count `i  1 a 2 24 ]
+[v calculateOccupiedSpace@memory_percentage memory_percentage `f  1 a 3 13 ]
 "945
-[v calculateOccupiedSpace@index index `us  1 a 2 22 ]
-"975
-[v calculateOccupiedSpace@digit6 digit6 `i  1 a 2 16 ]
-"974
-[v calculateOccupiedSpace@digit5 digit5 `i  1 a 2 14 ]
-"973
-[v calculateOccupiedSpace@digit4 digit4 `i  1 a 2 12 ]
-"965
-[v calculateOccupiedSpace@digit3 digit3 `i  1 a 2 10 ]
-"964
-[v calculateOccupiedSpace@digit2 digit2 `i  1 a 2 8 ]
-"963
-[v calculateOccupiedSpace@digit1 digit1 `i  1 a 2 6 ]
+[v calculateOccupiedSpace@index index `us  1 a 2 11 ]
+"948
+[v calculateOccupiedSpace@empty_location_count empty_location_count `i  1 a 2 9 ]
+"980
+[v calculateOccupiedSpace@digit6 digit6 `i  1 a 2 6 ]
+"979
+[v calculateOccupiedSpace@digit5 digit5 `i  1 a 2 4 ]
+"978
+[v calculateOccupiedSpace@digit4 digit4 `i  1 a 2 2 ]
 "949
-[v calculateOccupiedSpace@total_location total_location `i  1 a 2 4 ]
+[v calculateOccupiedSpace@total_location total_location `i  1 a 2 0 ]
 "947
-[v calculateOccupiedSpace@eeprom_data eeprom_data `uc  1 a 1 18 ]
-"982
+[v calculateOccupiedSpace@eeprom_data eeprom_data `uc  1 a 1 8 ]
+"993
 } 0
 "62 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\ftmul.c
 [v ___ftmul __ftmul `(f  1 e 3 0 ]
@@ -498,11 +492,11 @@ INSUFFICIENT_MEMORY 7
 [v ___awmod __awmod `(i  1 e 2 0 ]
 {
 "10
-[v ___awmod@sign sign `uc  1 a 1 62 ]
-[v ___awmod@counter counter `uc  1 a 1 61 ]
+[v ___awmod@sign sign `uc  1 a 1 66 ]
+[v ___awmod@counter counter `uc  1 a 1 65 ]
 "7
-[v ___awmod@dividend dividend `i  1 p 2 0 ]
-[v ___awmod@divisor divisor `i  1 p 2 2 ]
+[v ___awmod@dividend dividend `i  1 p 2 61 ]
+[v ___awmod@divisor divisor `i  1 p 2 63 ]
 "34
 } 0
 "7 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\awdiv.c
@@ -560,14 +554,14 @@ INSUFFICIENT_MEMORY 7
 {
 "152
 } 0
-"989 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"1000 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _FormatDrive FormatDrive `(v  1 e 1 0 ]
 {
-"990
+"1001
 [v FormatDrive@index index `us  1 a 2 18 ]
-"991
+"1002
 [v FormatDrive@mask_data mask_data `uc  1 a 1 17 ]
-"1014
+"1025
 } 0
 "624
 [v _writeByteAT24_EEPROM writeByteAT24_EEPROM `(v  1 e 1 0 ]
