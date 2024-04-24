@@ -3,8 +3,8 @@
 [d edition pro ]
 [d chip 18F25K22 ]
 [d frameptr 4065 ]
-"114 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
-[e E5840 PIC_EEPROM_CONFIG `uc
+"115 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+[e E5841 PIC_EEPROM_CONFIG `uc
 PASSWORD_ADDR_START 0
 PASSWORD_ADDR_END 8
 ADDRESS_POINTER_H 10
@@ -12,18 +12,19 @@ ADDRESS_POINTER_L 11
 LOOKUP_POINTER_H 12
 LOOKUP_POINTER_L 13
 ]
-"330
+"332
 [e E5832 ORDER_CODES `uc
 PING 17
 WRITE_MEM 1
 READ_MEM 2
 READ_ENTRY 3
+READ_SPACE 4
 DELETE_MEM 16
 SET_PASSWORD 18
 AUTH_CHECK 19
 ]
-"367
-[e E5847 EXCEPTION_CODES `uc
+"369
+[e E5848 EXCEPTION_CODES `uc
 ILLEGAL_ORDER_CODE 1
 ILLEGAL_DEVICE_CODE 2
 MASTER_PASSWORD_NOT_SET 3
@@ -32,6 +33,12 @@ PASSWORD_LENGTH_EXCEED 5
 DEVICE_CODE_MISMATCH 6
 INSUFFICIENT_MEMORY 7
 ]
+"7 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\awdiv.c
+[v ___awdiv __awdiv `(i  1 e 2 0 ]
+"7 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\awmod.c
+[v ___awmod __awmod `(i  1 e 2 0 ]
+"32 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\awtoft.c
+[v ___awtoft __awtoft `(f  1 e 3 0 ]
 "62 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\float.c
 [v ___ftpack __ftpack `(f  1 e 3 0 ]
 "86 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\ftadd.c
@@ -66,45 +73,47 @@ INSUFFICIENT_MEMORY 7
 [v _I2C2_Send I2C2_Send `(uc  1 e 1 0 ]
 "147
 [v _I2C2_Read I2C2_Read `(uc  1 e 1 0 ]
-"141 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"143 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _UART_Init UART_Init `(v  1 e 1 0 ]
-"208
+"210
 [v _UART_TransmitChar UART_TransmitChar `(v  1 e 1 0 ]
-"219
+"221
 [v _isr isr `IIH(v  1 e 1 0 ]
-"317
+"319
 [v _processRequest processRequest `(v  1 e 1 0 ]
-"358
+"360
 [v _createResponse createResponse `(v  1 e 1 0 ]
-"423
+"428
 [v _createPingResponse createPingResponse `(v  1 e 1 0 ]
-"436
+"441
 [v _writeDataToEEPROM writeDataToEEPROM `(v  1 e 1 0 ]
-"556
+"561
 [v _writeMasterPasswordToEEPROM writeMasterPasswordToEEPROM `(v  1 e 1 0 ]
-"619
+"624
 [v _writeByteAT24_EEPROM writeByteAT24_EEPROM `(v  1 e 1 0 ]
-"634
+"639
 [v _readByteAT24_EEPROM readByteAT24_EEPROM `(uc  1 e 1 0 ]
-"656
+"661
 [v _sendResponse sendResponse `(v  1 e 1 0 ]
-"714
+"719
 [v _EEPROM_Write EEPROM_Write `(v  1 e 1 0 ]
-"746
+"751
 [v _EEPROM_Read EEPROM_Read `(uc  1 e 1 0 ]
-"779
+"784
 [v _ReadMasterPasswordFromEEPROM ReadMasterPasswordFromEEPROM `(v  1 e 1 0 ]
-"817
+"822
 [v _ReadCredentials ReadCredentials `(v  1 e 1 0 ]
-"878
+"883
 [v _storeLookUpEntries storeLookUpEntries `(v  1 e 1 0 ]
-"890
+"895
 [v _isPasswordMatched isPasswordMatched `(uc  1 e 1 0 ]
-"928
+"933
 [v _ReadLookupEntries ReadLookupEntries `(v  1 e 1 0 ]
-"939
+"944
+[v _calculateOccupiedSpace calculateOccupiedSpace `(v  1 e 1 0 ]
+"989
 [v _FormatDrive FormatDrive `(v  1 e 1 0 ]
-"967
+"1017
 [v _main main `(v  1 e 1 0 ]
 [s S45 . 1 `uc 1 . 1 0 :2:0 
 `uc 1 ANSC2 1 0 :1:2 
@@ -117,7 +126,7 @@ INSUFFICIENT_MEMORY 7
 "163 C:\Program Files\Microchip\xc8\v2.46\pic\include\proc\pic18f25k22.h
 [u S53 . 1 `S45 1 . 1 0 ]
 [v _ANSELCbits ANSELCbits `VES53  1 e 1 @3898 ]
-[s S498 . 1 `uc 1 TRISC0 1 0 :1:0 
+[s S516 . 1 `uc 1 TRISC0 1 0 :1:0 
 `uc 1 TRISC1 1 0 :1:1 
 `uc 1 TRISC2 1 0 :1:2 
 `uc 1 TRISC3 1 0 :1:3 
@@ -127,7 +136,7 @@ INSUFFICIENT_MEMORY 7
 `uc 1 TRISC7 1 0 :1:7 
 ]
 "8056
-[s S507 . 1 `uc 1 RC0 1 0 :1:0 
+[s S525 . 1 `uc 1 RC0 1 0 :1:0 
 `uc 1 RC1 1 0 :1:1 
 `uc 1 RC2 1 0 :1:2 
 `uc 1 RC3 1 0 :1:3 
@@ -136,8 +145,8 @@ INSUFFICIENT_MEMORY 7
 `uc 1 RC6 1 0 :1:6 
 `uc 1 RC7 1 0 :1:7 
 ]
-[u S516 . 1 `S498 1 . 1 0 `S507 1 . 1 0 ]
-[v _TRISCbits TRISCbits `VES516  1 e 1 @3988 ]
+[u S534 . 1 `S516 1 . 1 0 `S525 1 . 1 0 ]
+[v _TRISCbits TRISCbits `VES534  1 e 1 @3988 ]
 "8267
 [v _OSCTUNE OSCTUNE `VEuc  1 e 1 @3995 ]
 [s S113 . 1 `uc 1 TMR1IE 1 0 :1:0 
@@ -172,7 +181,7 @@ INSUFFICIENT_MEMORY 7
 ]
 [u S159 . 1 `S146 1 . 1 0 `S154 1 . 1 0 ]
 [v _PIR1bits PIR1bits `VES159  1 e 1 @3998 ]
-[s S302 . 1 `uc 1 CCP2IF 1 0 :1:0 
+[s S307 . 1 `uc 1 CCP2IF 1 0 :1:0 
 `uc 1 TMR3IF 1 0 :1:1 
 `uc 1 HLVDIF 1 0 :1:2 
 `uc 1 BCL1IF 1 0 :1:3 
@@ -182,16 +191,16 @@ INSUFFICIENT_MEMORY 7
 `uc 1 OSCFIF 1 0 :1:7 
 ]
 "8960
-[s S311 . 1 `uc 1 . 1 0 :2:0 
+[s S316 . 1 `uc 1 . 1 0 :2:0 
 `uc 1 LVDIF 1 0 :1:2 
 `uc 1 BCLIF 1 0 :1:3 
 ]
-[s S315 . 1 `uc 1 . 1 0 :6:0 
+[s S320 . 1 `uc 1 . 1 0 :6:0 
 `uc 1 CMIF 1 0 :1:6 
 ]
-[u S318 . 1 `S302 1 . 1 0 `S311 1 . 1 0 `S315 1 . 1 0 ]
-[v _PIR2bits PIR2bits `VES318  1 e 1 @4001 ]
-[s S273 . 1 `uc 1 RD 1 0 :1:0 
+[u S323 . 1 `S307 1 . 1 0 `S316 1 . 1 0 `S320 1 . 1 0 ]
+[v _PIR2bits PIR2bits `VES323  1 e 1 @4001 ]
+[s S278 . 1 `uc 1 RD 1 0 :1:0 
 `uc 1 WR 1 0 :1:1 
 `uc 1 WREN 1 0 :1:2 
 `uc 1 WRERR 1 0 :1:3 
@@ -201,11 +210,11 @@ INSUFFICIENT_MEMORY 7
 `uc 1 EEPGD 1 0 :1:7 
 ]
 "9393
-[s S282 . 1 `uc 1 . 1 0 :6:0 
+[s S287 . 1 `uc 1 . 1 0 :6:0 
 `uc 1 EEFS 1 0 :1:6 
 ]
-[u S285 . 1 `S273 1 . 1 0 `S282 1 . 1 0 ]
-[v _EECON1bits EECON1bits `VES285  1 e 1 @4006 ]
+[u S290 . 1 `S278 1 . 1 0 `S287 1 . 1 0 ]
+[v _EECON1bits EECON1bits `VES290  1 e 1 @4006 ]
 "9438
 [v _EECON2 EECON2 `VEuc  1 e 1 @4007 ]
 "9458
@@ -222,7 +231,7 @@ INSUFFICIENT_MEMORY 7
 [v _RCREG RCREG `VEuc  1 e 1 @4014 ]
 "10535
 [v _SPBRG1 SPBRG1 `VEuc  1 e 1 @4015 ]
-[s S552 . 1 `uc 1 SEN 1 0 :1:0 
+[s S570 . 1 `uc 1 SEN 1 0 :1:0 
 `uc 1 RSEN 1 0 :1:1 
 `uc 1 PEN 1 0 :1:2 
 `uc 1 RCEN 1 0 :1:3 
@@ -232,7 +241,7 @@ INSUFFICIENT_MEMORY 7
 `uc 1 GCEN 1 0 :1:7 
 ]
 "13000
-[s S561 . 1 `uc 1 SEN1 1 0 :1:0 
+[s S579 . 1 `uc 1 SEN1 1 0 :1:0 
 `uc 1 ADMSK1 1 0 :1:1 
 `uc 1 ADMSK2 1 0 :1:2 
 `uc 1 ADMSK3 1 0 :1:3 
@@ -241,22 +250,22 @@ INSUFFICIENT_MEMORY 7
 `uc 1 ACKSTAT1 1 0 :1:6 
 `uc 1 GCEN1 1 0 :1:7 
 ]
-[s S570 . 1 `uc 1 . 1 0 :1:0 
+[s S588 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 ADMSK11 1 0 :1:1 
 `uc 1 ADMSK21 1 0 :1:2 
 `uc 1 ADMSK31 1 0 :1:3 
 `uc 1 ADMSK4 1 0 :1:4 
 `uc 1 ADMSK5 1 0 :1:5 
 ]
-[s S577 . 1 `uc 1 . 1 0 :1:0 
+[s S595 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 RSEN1 1 0 :1:1 
 `uc 1 PEN1 1 0 :1:2 
 `uc 1 RCEN1 1 0 :1:3 
 `uc 1 ADMSK41 1 0 :1:4 
 `uc 1 ADMSK51 1 0 :1:5 
 ]
-[u S584 . 1 `S552 1 . 1 0 `S561 1 . 1 0 `S570 1 . 1 0 `S577 1 . 1 0 ]
-[v _SSP1CON2bits SSP1CON2bits `VES584  1 e 1 @4037 ]
+[u S602 . 1 `S570 1 . 1 0 `S579 1 . 1 0 `S588 1 . 1 0 `S595 1 . 1 0 ]
+[v _SSP1CON2bits SSP1CON2bits `VES602  1 e 1 @4037 ]
 "13306
 [v _SSP1CON1 SSP1CON1 `VEuc  1 e 1 @4038 ]
 "13544
@@ -319,155 +328,253 @@ INSUFFICIENT_MEMORY 7
 "50
 [v _LOOKUP_SECTION_CACHE LOOKUP_SECTION_CACHE `[400]uc  1 e 400 0 ]
 [s S24 . 52 `uc 1 DEVICE_ADDR 1 0 `uc 1 ORDER_CODE 1 1 `ui 1 payload_length_index 2 2 `[48]uc 1 payload_data 48 4 ]
-"112
+"113
 [v _request_unit request_unit `S24  1 e 52 0 ]
 [s S29 . 52 `[50]uc 1 buffer 50 0 `uc 1 index 1 50 `uc 1 receiving 1 51 ]
-"113
+"114
 [v _receiveData receiveData `S29  1 e 52 0 ]
 [s S40 . 9 `[8]uc 1 PASSWORD_CACHE 8 0 `uc 1 cache_length 1 8 ]
-"114
+"115
 [v _master master `S40  1 e 9 0 ]
-"967
+"118
+[v _digits digits `[10]uc  1 e 10 0 ]
+"1017
 [v _main main `(v  1 e 1 0 ]
 {
-"1001
+"1051
 } 0
-"878
+"883
 [v _storeLookUpEntries storeLookUpEntries `(v  1 e 1 0 ]
 {
-"881
+"886
 [v storeLookUpEntries@i i `ui  1 a 2 17 ]
-"879
+"884
 [v storeLookUpEntries@section_start section_start `us  1 a 2 15 ]
-"883
+"888
 } 0
-"358
+"360
 [v _createResponse createResponse `(v  1 e 1 0 ]
 {
-"360
-[v createResponse@CODE CODE `uc  1 a 1 29 ]
-"415
+"362
+[v createResponse@CODE CODE `uc  1 a 1 26 ]
+"420
 } 0
-"556
+"561
 [v _writeMasterPasswordToEEPROM writeMasterPasswordToEEPROM `(v  1 e 1 0 ]
 {
-"559
+"564
 [v writeMasterPasswordToEEPROM@index index `uc  1 a 1 21 ]
-"560
+"565
 [v writeMasterPasswordToEEPROM@pic_eeprom_addr pic_eeprom_addr `uc  1 a 1 20 ]
-"558
+"563
 [v writeMasterPasswordToEEPROM@payload_length payload_length `uc  1 a 1 19 ]
-"562
+"567
 [v writeMasterPasswordToEEPROM@last_byte_data last_byte_data `uc  1 a 1 18 ]
-"561
+"566
 [v writeMasterPasswordToEEPROM@last_byte_addr last_byte_addr `uc  1 a 1 17 ]
-"612
+"617
 } 0
-"436
+"441
 [v _writeDataToEEPROM writeDataToEEPROM `(v  1 e 1 0 ]
 {
-"497
+"502
 [v writeDataToEEPROM@i i `us  1 a 2 23 ]
-"447
+"452
 [v writeDataToEEPROM@at24_eep_lookup_addr at24_eep_lookup_addr `us  1 a 2 27 ]
-"446
+"451
 [v writeDataToEEPROM@at24_eeprom_addr_start at24_eeprom_addr_start `us  1 a 2 25 ]
-"438
-[v writeDataToEEPROM@payload_length payload_length `us  1 a 2 21 ]
-"444
-[v writeDataToEEPROM@at24_eep_lookup_addr_L at24_eep_lookup_addr_L `uc  1 a 1 20 ]
 "443
+[v writeDataToEEPROM@payload_length payload_length `us  1 a 2 21 ]
+"449
+[v writeDataToEEPROM@at24_eep_lookup_addr_L at24_eep_lookup_addr_L `uc  1 a 1 20 ]
+"448
 [v writeDataToEEPROM@at24_eep_lookup_addr_H at24_eep_lookup_addr_H `uc  1 a 1 19 ]
-"441
+"446
 [v writeDataToEEPROM@at24_eep_addr_L at24_eep_addr_L `uc  1 a 1 18 ]
-"440
+"445
 [v writeDataToEEPROM@at24_eep_addr_H at24_eep_addr_H `uc  1 a 1 17 ]
-"549
+"554
 } 0
-"656
+"661
 [v _sendResponse sendResponse `(v  1 e 1 0 ]
 {
 [v sendResponse@isExceptionOccurred isExceptionOccurred `uc  1 a 1 wreg ]
-"658
+"663
 [v sendResponse@index index `ui  1 a 2 14 ]
-"656
+"661
 [v sendResponse@isExceptionOccurred isExceptionOccurred `uc  1 a 1 wreg ]
 [v sendResponse@isExceptionOccurred isExceptionOccurred `uc  1 a 1 13 ]
-"707
+"712
 } 0
-"890
+"895
 [v _isPasswordMatched isPasswordMatched `(uc  1 e 1 0 ]
 {
-"893
+"898
 [v isPasswordMatched@index index `uc  1 a 1 16 ]
-"894
+"899
 [v isPasswordMatched@matchFlag matchFlag `uc  1 a 1 15 ]
-"892
+"897
 [v isPasswordMatched@payload_length payload_length `uc  1 a 1 14 ]
-"921
+"926
 } 0
-"423
+"428
 [v _createPingResponse createPingResponse `(v  1 e 1 0 ]
 {
-"429
+"434
 } 0
-"928
+"944
+[v _calculateOccupiedSpace calculateOccupiedSpace `(v  1 e 1 0 ]
+{
+"950
+[v calculateOccupiedSpace@memory_percentage memory_percentage `f  1 a 3 19 ]
+"948
+[v calculateOccupiedSpace@empty_location_count empty_location_count `i  1 a 2 24 ]
+"945
+[v calculateOccupiedSpace@index index `us  1 a 2 22 ]
+"975
+[v calculateOccupiedSpace@digit6 digit6 `i  1 a 2 16 ]
+"974
+[v calculateOccupiedSpace@digit5 digit5 `i  1 a 2 14 ]
+"973
+[v calculateOccupiedSpace@digit4 digit4 `i  1 a 2 12 ]
+"965
+[v calculateOccupiedSpace@digit3 digit3 `i  1 a 2 10 ]
+"964
+[v calculateOccupiedSpace@digit2 digit2 `i  1 a 2 8 ]
+"963
+[v calculateOccupiedSpace@digit1 digit1 `i  1 a 2 6 ]
+"949
+[v calculateOccupiedSpace@total_location total_location `i  1 a 2 4 ]
+"947
+[v calculateOccupiedSpace@eeprom_data eeprom_data `uc  1 a 1 18 ]
+"982
+} 0
+"62 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\ftmul.c
+[v ___ftmul __ftmul `(f  1 e 3 0 ]
+{
+"65
+[v ___ftmul@f3_as_product f3_as_product `um  1 a 3 48 ]
+"64
+[v ___ftmul@sign sign `uc  1 a 1 52 ]
+[v ___ftmul@cntr cntr `uc  1 a 1 51 ]
+[v ___ftmul@exp exp `uc  1 a 1 47 ]
+"62
+[v ___ftmul@f1 f1 `f  1 p 3 38 ]
+[v ___ftmul@f2 f2 `f  1 p 3 41 ]
+"157
+} 0
+"54 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\ftdiv.c
+[v ___ftdiv __ftdiv `(f  1 e 3 0 ]
+{
+"60
+[v ___ftdiv@f3 f3 `f  1 a 3 33 ]
+"59
+[v ___ftdiv@sign sign `uc  1 a 1 37 ]
+[v ___ftdiv@exp exp `uc  1 a 1 36 ]
+[v ___ftdiv@cntr cntr `uc  1 a 1 32 ]
+"54
+[v ___ftdiv@f1 f1 `f  1 p 3 23 ]
+[v ___ftdiv@f2 f2 `f  1 p 3 26 ]
+"86
+} 0
+"32 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\awtoft.c
+[v ___awtoft __awtoft `(f  1 e 3 0 ]
+{
+"34
+[v ___awtoft@sign sign `uc  1 a 1 22 ]
+"32
+[v ___awtoft@c c `i  1 p 2 19 ]
+"42
+} 0
+"62 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\float.c
+[v ___ftpack __ftpack `(f  1 e 3 0 ]
+{
+[v ___ftpack@arg arg `um  1 p 3 11 ]
+[v ___ftpack@exp exp `uc  1 p 1 14 ]
+[v ___ftpack@sign sign `uc  1 p 1 15 ]
+"86
+} 0
+"7 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\awmod.c
+[v ___awmod __awmod `(i  1 e 2 0 ]
+{
+"10
+[v ___awmod@sign sign `uc  1 a 1 62 ]
+[v ___awmod@counter counter `uc  1 a 1 61 ]
+"7
+[v ___awmod@dividend dividend `i  1 p 2 0 ]
+[v ___awmod@divisor divisor `i  1 p 2 2 ]
+"34
+} 0
+"7 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\awdiv.c
+[v ___awdiv __awdiv `(i  1 e 2 0 ]
+{
+"10
+[v ___awdiv@quotient quotient `i  1 a 2 59 ]
+"11
+[v ___awdiv@sign sign `uc  1 a 1 58 ]
+[v ___awdiv@counter counter `uc  1 a 1 57 ]
+"7
+[v ___awdiv@dividend dividend `i  1 p 2 53 ]
+[v ___awdiv@divisor divisor `i  1 p 2 55 ]
+"41
+} 0
+"933 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _ReadLookupEntries ReadLookupEntries `(v  1 e 1 0 ]
 {
-"929
+"934
 [v ReadLookupEntries@index index `ui  1 a 2 12 ]
-"932
+"937
 } 0
-"817
+"822
 [v _ReadCredentials ReadCredentials `(v  1 e 1 0 ]
 {
-"863
+"868
 [v ReadCredentials@i i `us  1 a 2 27 ]
-"826
+"831
 [v ReadCredentials@ADDR ADDR `[2]uc  1 a 2 21 ]
-"825
+"830
 [v ReadCredentials@credential_length credential_length `us  1 a 2 25 ]
-"827
+"832
 [v ReadCredentials@START_ADDR START_ADDR `us  1 a 2 19 ]
-"821
+"826
 [v ReadCredentials@index index `uc  1 a 1 24 ]
-"823
+"828
 [v ReadCredentials@response_index response_index `uc  1 a 1 23 ]
-"822
+"827
 [v ReadCredentials@last_char_index last_char_index `uc  1 a 1 18 ]
-"824
+"829
 [v ReadCredentials@payload_length payload_length `uc  1 a 1 17 ]
-"871
+"876
 } 0
-"634
+"639
 [v _readByteAT24_EEPROM readByteAT24_EEPROM `(uc  1 e 1 0 ]
 {
-"635
+"640
 [v readByteAT24_EEPROM@eeprom_data eeprom_data `uc  1 a 1 14 ]
-"634
+"639
 [v readByteAT24_EEPROM@address address `us  1 p 2 12 ]
-"648
+"653
 } 0
 "147 C:\Users\Helion-Electrical\Desktop\pocket-memory\i2c.c
 [v _I2C2_Read I2C2_Read `(uc  1 e 1 0 ]
 {
 "152
 } 0
-"939 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"989 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _FormatDrive FormatDrive `(v  1 e 1 0 ]
 {
-"940
+"990
 [v FormatDrive@index index `us  1 a 2 18 ]
-"941
+"991
 [v FormatDrive@mask_data mask_data `uc  1 a 1 17 ]
-"964
+"1014
 } 0
-"619
+"624
 [v _writeByteAT24_EEPROM writeByteAT24_EEPROM `(v  1 e 1 0 ]
 {
 [v writeByteAT24_EEPROM@address address `ui  1 p 2 12 ]
 [v writeByteAT24_EEPROM@data data `uc  1 p 1 14 ]
-"627
+"632
 } 0
 "82 C:\Users\Helion-Electrical\Desktop\pocket-memory\i2c.c
 [v _I2C2_Stop I2C2_Stop `(v  1 e 1 0 ]
@@ -487,83 +594,83 @@ INSUFFICIENT_MEMORY 7
 [v I2C2_Send@BYTE BYTE `uc  1 a 1 11 ]
 "136
 } 0
-"208 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"210 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _UART_TransmitChar UART_TransmitChar `(v  1 e 1 0 ]
 {
 [v UART_TransmitChar@data data `uc  1 a 1 wreg ]
 [v UART_TransmitChar@data data `uc  1 a 1 wreg ]
 [v UART_TransmitChar@data data `uc  1 a 1 11 ]
-"212
+"214
 } 0
-"714
+"719
 [v _EEPROM_Write EEPROM_Write `(v  1 e 1 0 ]
 {
 [v EEPROM_Write@addr addr `uc  1 a 1 wreg ]
 [v EEPROM_Write@addr addr `uc  1 a 1 wreg ]
 [v EEPROM_Write@eep_data eep_data `uc  1 p 1 11 ]
-"716
+"721
 [v EEPROM_Write@addr addr `uc  1 a 1 14 ]
-"739
+"744
 } 0
-"141
+"143
 [v _UART_Init UART_Init `(v  1 e 1 0 ]
 {
-"143
-[v UART_Init@temp temp `f  1 a 3 26 ]
-"201
+"145
+[v UART_Init@temp temp `f  1 a 3 53 ]
+"203
 } 0
 "44 C:\Program Files\Microchip\xc8\v2.46\pic\sources\c90\common\fttol.c
 [v ___fttol __fttol `(l  1 e 4 0 ]
 {
 "47
-[v ___fttol@lval lval `ul  1 a 4 21 ]
+[v ___fttol@lval lval `ul  1 a 4 48 ]
 "46
-[v ___fttol@exp1 exp1 `uc  1 a 1 25 ]
-[v ___fttol@sign1 sign1 `uc  1 a 1 20 ]
+[v ___fttol@exp1 exp1 `uc  1 a 1 52 ]
+[v ___fttol@sign1 sign1 `uc  1 a 1 47 ]
 "44
-[v ___fttol@f1 f1 `f  1 p 3 11 ]
+[v ___fttol@f1 f1 `f  1 p 3 38 ]
 "73
 } 0
-"779 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"784 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _ReadMasterPasswordFromEEPROM ReadMasterPasswordFromEEPROM `(v  1 e 1 0 ]
 {
-"793
+"798
 [v ReadMasterPasswordFromEEPROM@index index `uc  1 a 1 16 ]
-"781
+"786
 [v ReadMasterPasswordFromEEPROM@password_length password_length `uc  1 a 1 15 ]
-"782
+"787
 [v ReadMasterPasswordFromEEPROM@password_addr password_addr `uc  1 a 1 14 ]
-"810
+"815
 } 0
-"746
+"751
 [v _EEPROM_Read EEPROM_Read `(uc  1 e 1 0 ]
 {
 [v EEPROM_Read@addr addr `uc  1 a 1 wreg ]
 [v EEPROM_Read@addr addr `uc  1 a 1 wreg ]
-"748
-[v EEPROM_Read@addr addr `uc  1 a 1 11 ]
 "753
+[v EEPROM_Read@addr addr `uc  1 a 1 11 ]
+"758
 } 0
 "20 C:\Users\Helion-Electrical\Desktop\pocket-memory\i2c.c
 [v _I2C2_Init I2C2_Init `(v  1 e 1 0 ]
 {
 "39
 } 0
-"219 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
+"221 C:\Users\Helion-Electrical\Desktop\pocket-memory\main.c
 [v _isr isr `IIH(v  1 e 1 0 ]
 {
-"224
+"226
 [v isr@receivedChar receivedChar `uc  1 a 1 10 ]
-"310
+"312
 } 0
-"317
+"319
 [v _processRequest processRequest `(v  1 e 1 0 ]
 {
-"319
-[v processRequest@buffer_index buffer_index `ui  1 a 2 4 ]
-"320
-[v processRequest@length_index length_index `ui  1 a 2 2 ]
 "321
+[v processRequest@buffer_index buffer_index `ui  1 a 2 4 ]
+"322
+[v processRequest@length_index length_index `ui  1 a 2 2 ]
+"323
 [v processRequest@i i `ui  1 a 2 0 ]
-"351
+"353
 } 0

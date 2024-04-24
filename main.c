@@ -55,6 +55,7 @@ enum ORDER_CODES
 	WRITE_MEM = 0x01,
 	READ_MEM = 0x02,
 	READ_ENTRY = 0x03,
+	READ_SPACE = 0x04,
 	DELETE_MEM = 0x10,
 	SET_PASSWORD = 0x12,
 	AUTH_CHECK = 0x13
@@ -128,6 +129,7 @@ void ReadMasterPasswordFromEEPROM();
 void ReadCredentials();
 unsigned char isPasswordMatched();
 void FormatDrive();
+void calculateOccupiedSpace();
 void ReadLookupEntries();
 void EEPROM_Write(unsigned char addr, unsigned char eep_data);
 unsigned char EEPROM_Read(unsigned char addr);
@@ -383,6 +385,9 @@ void createResponse()
 				break;
 			case READ_MEM:
 				ReadCredentials();
+				break;
+			case READ_SPACE:
+				calculateOccupiedSpace();		
 				break;
 			case READ_ENTRY:
 				ReadLookupEntries();
@@ -929,6 +934,51 @@ void ReadLookupEntries(){
 	for(unsigned int index = 0; index < LOOKUP_SECTION_CACHE_SIZE; index++){
 		UART_TransmitChar(LOOKUP_SECTION_CACHE[index]);
 	}
+}
+
+/*
+ *@desc: calculates available memory space and return available memory in response
+ *@params: none
+ *@return: none
+ */
+void calculateOccupiedSpace(){
+	unsigned short index = 0x0000;
+	unsigned char empty_data = 0xFF;
+	unsigned char eeprom_data = 0x00;
+	int empty_location_count = 0;
+	int total_location = 30720; //In decimal, we have 30,720 locations to store credentials	
+	float memory_percentage = 0;
+
+	//CREDENTIAL_SECTION_START - 0x0000
+	//CREDENTIAL_SECTION_END   - 0x77FF
+	for(index = CREDENTIAL_SECTION_START; index <= CREDENTIAL_SECTION_END; index++){
+		eeprom_data = readByteAT24_EEPROM(index);
+
+		if(eeprom_data == 0xFF){
+			//we will increment a counter
+			empty_location_count = empty_location_count + 1;
+		}
+	}
+
+	int digit1 = empty_location_count / 100;
+    	int digit2 = (empty_location_count / 10) % 10;
+    	int digit3 = empty_location_count % 10;
+
+	UART_TransmitChar(digits[digit1]);
+	UART_TransmitChar(digits[digit2]);
+	UART_TransmitChar(digits[digit3]);
+
+	memory_percentage = ((float)empty_location_count/total_location) * 100;
+
+	int digit4 = (int)(memory_percentage / 100);
+	int digit5 = ((int)memory_percentage / 10) % 10;
+	int digit6 = (int)memory_percentage % 10;
+
+	
+	UART_TransmitChar(digits[digit4]);
+	UART_TransmitChar(digits[digit5]);
+	UART_TransmitChar(digits[digit6]);
+        
 }
 
 /*

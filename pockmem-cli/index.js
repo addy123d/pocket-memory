@@ -35,6 +35,7 @@ const menu = Object.freeze({
     WRITE_MEM: '1',
     READ_MEM: '2',
     READ_ENTRY: '3',
+    READ_SPACE: '4',
     PING: '11',
     DELETE_MEM: '10',
     SET_PASSWORD: '12',
@@ -57,7 +58,7 @@ const parser = new ByteLengthParser({ length: 1 });
 // Function to display data with ASCII art
 function displayData(data) {
     //below print statements, won't work if data is FF, or operation code selected is read memory or write memory
-    if ((decimalToHex(data[0]) != 'FF')) {
+    if ((decimalToHex(data[0]) != 'FF') && ((operation_code == menu.DELETE_MEM) || (operation_code == menu.READ_ENTRY) || (operation_code == menu.READ_SPACE))) {
         console.log(chalk.red('║                         ' + decimalToHex(data[0]) + '                           ║'));
         console.log(chalk.white('╚═════════════════════════════════════════════════════╝'));
     }
@@ -328,6 +329,7 @@ async function showMenu() {
     ${menu.WRITE_MEM} : WRITE
     ${menu.READ_MEM} : READ
     ${menu.READ_ENTRY} : READ LOOKUP TABLE
+    ${menu.READ_SPACE} : AVAILABLE MEMORY (in %)
     ${menu.PING} : PING
     ${menu.DELETE_MEM} : FORMAT DISK (ADMIN ACCESS)
     ${menu.SET_PASSWORD} : SET MASTER PASSWORD
@@ -381,6 +383,9 @@ async function performOperation() {
         case menu.READ_MEM:
             await askInput();
             payload_data = createReadData();
+            break;
+        case menu.READ_SPACE:
+            payload_data = createPingData();
             break;
         case menu.READ_ENTRY: //read all entries from lookup table
             payload_data = createPingData();
