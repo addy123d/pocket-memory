@@ -8,6 +8,7 @@ import figlet from "figlet";
 import { createSpinner } from "nanospinner";
 import { SerialPort, ByteLengthParser } from "serialport";
 import fs, { read } from 'fs';
+import crypto from 'crypto'
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -22,7 +23,7 @@ let responseDataEndId;
 let payload = {};
 let SEQUENCE_LEN = 2;
 let PACKET_START_SEQUENCE = ['3A', '23'];
-let PACKET_END_SEQUENCE = ['0D', '0A'];
+let PACKET_END_SEQUENCE = ['0A', '0D'];
 let RESPONSE_DATA = [];
 let end_sequence_flag = 0;
 let processReadOperation = 0;
@@ -30,6 +31,12 @@ let ReadBuffer = [];
 let user_entered_string = '';
 let isLogin = 1;
 let userPassword = '';
+
+//encryption parameters
+const algorithm = 'aes-256-cbc';
+const password = 'AN236';
+const key = crypto.scryptSync(password, 'salt', 32);
+const iv = Buffer.alloc(16, 0);
 
 const menu = Object.freeze({
     WRITE_MEM: '1',
@@ -52,13 +59,15 @@ const exception = Object.freeze({
     DEVICE_CODE_MISMATCH: '6'
 });
 
+
+
 // Create a parser instance
 const parser = new ByteLengthParser({ length: 1 });
 
 // Function to display data with ASCII art
 function displayData(data) {
     //below print statements, won't work if data is FF, or operation code selected is read memory or write memory
-    if ((decimalToHex(data[0]) != 'FF') && ((operation_code == menu.DELETE_MEM) || (operation_code == menu.READ_ENTRY) || (operation_code == menu.READ_SPACE))) {
+    if ((decimalToHex(data[0]) != 'FF')) {
         console.log(chalk.red('║                         ' + decimalToHex(data[0]) + '                           ║'));
         console.log(chalk.white('╚═════════════════════════════════════════════════════╝'));
     }
@@ -73,24 +82,28 @@ parser.on('data', (data) => {
     //display data
     displayData(data);
 
-    //process read operation
+    //process read-write operation
     if ((processReadOperation) && ((operation_code == menu.READ_MEM) || (operation_code == menu.WRITE_MEM)))
         RWOperation(data);
 
+    //process memory calculation
+    if ((processReadOperation) && (operation_code == menu.READ_SPACE))
+        calculateMemory(data);
+
     //end sequence processing
-    if ((decimalToHex(data[0]) == 'D') && (end_sequence_flag === 0)) {
+    if ((decimalToHex(data[0]) == 'A') && (end_sequence_flag === 0)) { //UPPER Byte of end sequence
         end_sequence_flag = 1;
-    } else if ((decimalToHex(data[0]) == 'A') && (end_sequence_flag === 1)) {
+    } else if ((decimalToHex(data[0]) == 'D') && (end_sequence_flag === 1)) { //LOWER Byte of end sequence
         end_sequence_flag = 0; //clear end sequence flag
 
         checkResponse();
 
-        if(isLogin) //if logged in successfully, then show operation menu
-         showMenu();
+        if (isLogin) //if logged in successfully, then show operation menu
+            showMenu();
     }
 
     //set flag to read buffer operation, only when it is read or write operation, and specially turn it off when opeartion code is Delete memory.
-    if (((decimalToHex(data[0]) == menu.READ_MEM) || (decimalToHex(data[0]) == menu.WRITE_MEM)) && (operation_code != menu.DELETE_MEM)) {
+    if (((decimalToHex(data[0]) == menu.READ_MEM) || (decimalToHex(data[0]) == menu.WRITE_MEM) || (decimalToHex(data[0] == menu.READ_SPACE))) && (operation_code != menu.DELETE_MEM)) {
         processReadOperation = 1;
     }
 
@@ -100,12 +113,11 @@ parser.on('data', (data) => {
 async function checkResponse() {
     if (RESPONSE_DATA[3] == 'FE') {  //FE represents exception is raised, instead of order code
         isLogin = 0;
-        // console.log("HIT");
         console.log(chalk.bgRed(`${checkExceptionCode(RESPONSE_DATA[4])}`));
 
-        if(RESPONSE_DATA[4] === exception.AUTH_FAILED){
+        if (RESPONSE_DATA[4] === exception.AUTH_FAILED) {
             exitMessage();
-        }else{
+        } else {
             showMenu();
         }
 
@@ -116,17 +128,40 @@ async function checkResponse() {
 
 function exitMessage() {
     figlet(`POCKET MEMORY\n `, (err, data) => {
-      console.log(gradient.pastel.multiline(data) + '\n');
-  
-      console.log(
-        chalk.green(
-          `Made with ❤️ By Aditya Chaudhary`
-        )
-      );
+        console.log(gradient.pastel.multiline(data) + '\n');
 
-      process.exit(0);
+        console.log(
+            chalk.green(
+                `Made with ❤️ By Aditya Chaudhary`
+            )
+        );
+
+        process.exit(0);
     });
-  }
+}
+
+
+function calculateMemory(data) {
+    let str = '';
+
+    if (decimalToHex(data[0]) != 'FF') {
+        ReadBuffer.push(decimalToHex(data[0]));
+    } else {
+        ReadBuffer.forEach(ele => {
+            str = str + ele;
+        });
+
+        str = parseFloat(str);
+        if (str != 100)
+            str /= 10;
+
+        console.log(chalk.bgGreen(`Memory Available : ${str} %`));
+
+        ReadBuffer = [];
+        processReadOperation = 0;
+    }
+}
+
 
 function checkExceptionCode(code) {
     let exception_msg = '';
@@ -142,7 +177,7 @@ function checkExceptionCode(code) {
             exception_msg = 'Please set master password for your device';
             break;
         case exception.AUTH_FAILED:
-            exception_msg = 'Password not matched, try again...';
+            exception_msg = 'Password not matched, try again !';
             break;
         case exception.PASSWORD_LENGTH_EXCEED:
             exception_msg = 'Password length limit exceeded';
@@ -189,13 +224,23 @@ function hexBytesToString(hexBytes) {
 
 function RWOperation(data) {
     let string = '';
+    let mem_Str = '';
+    let decrypted = '';
     let termination_character = (operation_code == menu.READ_MEM) ? '0' : 'FF';
 
 
     if (decimalToHex(data[0]) != termination_character) { //till it reaches null character 0x00
         ReadBuffer.push(decimalToHex(data[0]));
     } else {
-        string = (operation_code == menu.READ_MEM) ? (`Stored Credential : ${chalk.bgGreen(`${hexBytesToString(ReadBuffer)}`)}`) : (`START address HIGH : ${chalk.bgGreen(`0x${ReadBuffer[0]}`)}, START address LOW : ${chalk.bgGreen(`0x${ReadBuffer[1]}`)}`);
+        if (operation_code == menu.READ_MEM) {
+            //Decrypt data from eeprom
+            const decipher = crypto.createDecipheriv(algorithm, key, iv);
+            mem_Str = hexBytesToString(ReadBuffer);
+            decrypted = decipher.update(mem_Str, 'hex', 'utf8');
+            decrypted += decipher.final('utf8');
+        }
+
+        string = (operation_code == menu.READ_MEM) ? (`Stored Credential : ${chalk.bgGreen(`${decrypted}`)}`) : (`START address HIGH : ${chalk.bgGreen(`0x${ReadBuffer[0]}`)}, START address LOW : ${chalk.bgGreen(`0x${ReadBuffer[1]}`)}`);
         console.log(string);
 
         string = ''; //reset string content
@@ -248,6 +293,7 @@ async function askInput() {
     });
 
     user_entered_string = user.string;
+    console.log(user_entered_string);
 }
 
 
@@ -294,12 +340,32 @@ async function askBAUD() {
         }
     });
 
+
+    // await askPassword();
+
     DEVICE_CODE = deviceCode.code;
     selectedBaudRate = baudrate.baud_rate; //assign baud rate to global variable.
     userPassword = password.string;
 
+    console.log(userPassword);
+
     //after baud rate selection, save configuration
     saveConfiguration();
+}
+
+async function askPassword(){
+    console.log(chalk.bgRed(`Total 5 chances, after that device will go in auto-destroy mode`));
+
+    const password = await inquirer.prompt({
+        name: 'string',
+        type: 'password',
+        message: 'Master Password',
+        default() {
+            return '00';
+        }
+    });
+
+    userPassword = password.string;
 }
 
 async function saveConfiguration() {
@@ -315,7 +381,6 @@ async function saveConfiguration() {
         //authenticate user
         authenticateUser(userPassword);
 
-        // showMenu();
     } else {
         spinner.error({ text: 'Connection failed, serial port error' });
     }
@@ -357,7 +422,7 @@ async function selectOperation() {
     operation_code = operationCode.operation_code;
 
     //exit from application
-    if (operation_code == menu.EXIT){
+    if (operation_code == menu.EXIT) {
         exitMessage();
         return;
     }
@@ -451,16 +516,16 @@ function createReadData() {
 
 function createWriteData() {
     let hexString = user_entered_string; //random password sample
-    // let hexString = 'Sneha'; //random password sample
-    // console.log(hexString);
-
     let hexArr = [];
+    let hashedString = '';
 
-    //write a code to prompt user to enter string from command line
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
+    hashedString = cipher.update(hexString, 'utf8', 'hex');
+    hashedString += cipher.final('hex');
 
     //stringtoHex will return an array of hex bytes
     //for example : "Hello, World!" - ['48', '65', '6C', '6C', '6F', '2C', '20', '57', '6F', '72', '6C', '64', '21']
-    hexArr = stringtoHex(hexString);
+    hexArr = stringtoHex(hashedString);
 
     //generate payload
     payload = {
@@ -472,7 +537,6 @@ function createWriteData() {
 }
 
 function createPasswordData() {
-    // console.log(`User entered: ${chalk.bgYellow(`${user_entered_string}`)}`);
     let hexString = user_entered_string; //random password sample
     let hexArr = [];
 
@@ -493,7 +557,6 @@ function createPasswordData() {
 
 function createAUTHData() {
     let hexString = user_entered_string; //random password sample
-    // let hexString = "Aditya"; //random password sample
     let hexArr = [];
 
     //write a code to prompt user to enter string from command line
@@ -511,33 +574,33 @@ function createAUTHData() {
     return payload;
 }
 
-async function authenticateUser(password_string){
+async function authenticateUser(password_string) {
 
-        let pass_Bytes = stringtoHex(password_string);
-        let pass_length = pass_Bytes.length;
+    let pass_Bytes = stringtoHex(password_string);
+    let pass_length = pass_Bytes.length;
 
-        //send start sequence first
-        for (let i = 0; i < SEQUENCE_LEN; i++) {
-            send_data_via_uart(Buffer.from([parseInt(PACKET_START_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
-        }
-    
-        //send DEVICE CODE and Operation code
-        send_data_via_uart(Buffer.from([parseInt(DEVICE_CODE, 16)])); //convert hex string to ascii integer value
-        send_data_via_uart(Buffer.from([parseInt(menu.AUTH_CHECK, 16)])); //convert hex string to ascii integer value
-    
-        //send payload
-        for (let i = 0; i < pass_length; i++) {
-            send_data_via_uart(Buffer.from([parseInt(pass_Bytes[i], 16)])); //convert hex string to ascii integer value
-        }
-    
-        //send payload length
-        send_data_via_uart(Buffer.from([parseInt(decimalToHex(pass_length), 16)])); //convert hex string to ascii integer value
-    
-        //send end sequence last
-        for (let i = 0; i < SEQUENCE_LEN; i++) {
-            send_data_via_uart(Buffer.from([parseInt(PACKET_END_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
-        }
-    
+    //send start sequence first
+    for (let i = 0; i < SEQUENCE_LEN; i++) {
+        send_data_via_uart(Buffer.from([parseInt(PACKET_START_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
+    }
+
+    //send DEVICE CODE and Operation code
+    send_data_via_uart(Buffer.from([parseInt(DEVICE_CODE, 16)])); //convert hex string to ascii integer value
+    send_data_via_uart(Buffer.from([parseInt(menu.AUTH_CHECK, 16)])); //convert hex string to ascii integer value
+
+    //send payload
+    for (let i = 0; i < pass_length; i++) {
+        send_data_via_uart(Buffer.from([parseInt(pass_Bytes[i], 16)])); //convert hex string to ascii integer value
+    }
+
+    //send payload length
+    send_data_via_uart(Buffer.from([parseInt(decimalToHex(pass_length), 16)])); //convert hex string to ascii integer value
+
+    //send end sequence last
+    for (let i = 0; i < SEQUENCE_LEN; i++) {
+        send_data_via_uart(Buffer.from([parseInt(PACKET_END_SEQUENCE[i], 16)])); //convert hex string to ascii integer value
+    }
+
 }
 
 async function sendRequest(payload_obj) {

@@ -16,15 +16,15 @@
 #define BAUD_RATE 9600
 #define EEPROM_ADDRESS 0x50
 #define DEVICE_CODE 0x21
-#define PACKET_SIZE 50
-#define RESPONSE_PACKET_SIZE 50
-#define PACKET_START_MARKER_LOWER 0x3A
-#define PACKET_START_MARKER_UPPER 0x23
-#define PACKET_END_MARKER_LOWER 0x0D
+#define PACKET_SIZE 100
+#define RESPONSE_PACKET_SIZE 100
+#define PACKET_START_MARKER_UPPER 0x3A
+#define PACKET_START_MARKER_LOWER 0x23
 #define PACKET_END_MARKER_UPPER 0x0A
-#define LOOKUP_SECTION_CACHE_SIZE 400     //we can't cache 1000s of bytes, as we don't have that big amount of memory
-				    //as cache buffer is of type char, each data stored is of 1 byte
-				    //Size 200 means we making space of 400*1 = 400 bytes 
+#define PACKET_END_MARKER_LOWER 0x0D
+#define LOOKUP_SECTION_CACHE_SIZE 400 //we can't cache 1000s of bytes, as we don't have that big amount of memory
+				      //as cache buffer is of type char, each data stored is of 1 byte
+				      //Size 200 means we making space of 400*1 = 400 bytes 
 
 /* lookup section, where we will store all the starting address of credentials, for reference */
 #define LOOKUP_SECTION_START 0x7800
@@ -68,7 +68,8 @@ enum PIC_EEPROM_CONFIG
 	ADDRESS_POINTER_H = 0x0A,
 	ADDRESS_POINTER_L = 0x0B,
 	LOOKUP_POINTER_H = 0x0C,
-	LOOKUP_POINTER_L = 0x0D
+	LOOKUP_POINTER_L = 0x0D,
+	AUTH_FAIL_COUNTER = 0x00
 };
 // address pointer will store address of next location where data will be stored on at24lc256
 // pointer has both low and high byte, because word address in AT24LC256 is 16bit
@@ -129,7 +130,7 @@ void ReadMasterPasswordFromEEPROM();
 void ReadCredentials();
 unsigned char isPasswordMatched();
 void FormatDrive();
-void calculateOccupiedSpace();
+void calculateAvailableSpace();
 void ReadLookupEntries();
 void EEPROM_Write(unsigned char addr, unsigned char eep_data);
 unsigned char EEPROM_Read(unsigned char addr);
@@ -233,12 +234,12 @@ void __interrupt() isr(void)
 		{
 			// first packet will be LOW byte of START sequence, followed by HIGH byte of START sequence
 			//  check if the received character is lower byte of start sequence
-			if ((receivedChar == PACKET_START_MARKER_LOWER) && (start_sequence_flag == 0x00))
+			if ((receivedChar == PACKET_START_MARKER_UPPER) && (start_sequence_flag == 0x00))
 			{
 				// set start_sequence_flag and wait for lower byte
 				start_sequence_flag = 0x01;
 			}
-			else if ((receivedChar == PACKET_START_MARKER_UPPER) && (start_sequence_flag == 0x01)) // check whether received char is start sequence upper byte.
+			else if ((receivedChar == PACKET_START_MARKER_LOWER) && (start_sequence_flag == 0x01)) // check whether received char is start sequence upper byte.
 			{
 				// we got a start sequence
 				receiveData.receiving = 0x01;
@@ -256,11 +257,11 @@ void __interrupt() isr(void)
 		{
 
 			// check if the received character is lower byte of end sequence
-			if ((receivedChar == PACKET_END_MARKER_LOWER) && (end_sequence_flag == 0x00))
+			if ((receivedChar == PACKET_END_MARKER_UPPER) && (end_sequence_flag == 0x00))
 			{
 				end_sequence_flag = 0x01; // set end sequence flag.
 			}
-			else if ((receivedChar == PACKET_END_MARKER_UPPER) && (end_sequence_flag == 0x01))
+			else if ((receivedChar == PACKET_END_MARKER_LOWER) && (end_sequence_flag == 0x01))
 			{
 
 				// store null character at the end of buffer, '\0', hex - 0x00
@@ -286,11 +287,11 @@ void __interrupt() isr(void)
 				{
 					if (end_sequence_flag == 0x01)
 					{
-						// we got end sequence lower byte, but it is not a sequence byte, but it is part of payload
+						// we got end sequence upper byte, but it is not a sequence byte, but it is part of payload
 						end_sequence_flag = 0x00;
 
 						// we have to store lower byte of end sequence because it is part of payload
-						requestBuffer[receiveData.index++] = PACKET_END_MARKER_LOWER;
+						requestBuffer[receiveData.index++] = PACKET_END_MARKER_UPPER;
 					}
 
 					requestBuffer[receiveData.index++] = receivedChar;
@@ -663,9 +664,9 @@ void sendResponse(unsigned char isExceptionOccurred)
 	unsigned int index = 0;
 
 	// send start sequence
-	UART_TransmitChar(0x3A); // send HIGH Byte of start sequence
+	UART_TransmitChar(PACKET_START_MARKER_UPPER); // send HIGH Byte of start sequence
 	__delay_ms(10);
-	UART_TransmitChar(0x23); // send LOW Byte of start sequence
+	UART_TransmitChar(PACKET_START_MARKER_LOWER); // send LOW Byte of start sequence
 	__delay_ms(10);
 
 	if (!isExceptionOccurred)
@@ -691,9 +692,9 @@ void sendResponse(unsigned char isExceptionOccurred)
 	}
 
 	// send end sequence
-	UART_TransmitChar(0x0D);
+	UART_TransmitChar(PACKET_END_MARKER_UPPER);  // send HIGH Byte of end sequence
 	__delay_ms(10);
-	UART_TransmitChar(0x0A);
+	UART_TransmitChar(PACKET_END_MARKER_LOWER);  // send LOW Byte of end sequence
 
 	// reset request buffer
 	index = PACKET_SIZE;
@@ -912,8 +913,8 @@ unsigned char isPasswordMatched()
 	for (index = 0x00; index < master.cache_length; index++)
 	{
 
-		UART_TransmitChar(master.PASSWORD_CACHE[index]);
-		UART_TransmitChar(request_unit.payload_data[index]);
+		//UART_TransmitChar(master.PASSWORD_CACHE[index]);
+		//UART_TransmitChar(request_unit.payload_data[index]);
 
 		if (master.PASSWORD_CACHE[index] != request_unit.payload_data[index])
 		{					  // if any one of the bytes mismatches, clear the flag and break the loop
