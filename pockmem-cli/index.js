@@ -24,6 +24,7 @@ let payload = {};
 let SEQUENCE_LEN = 2;
 let PACKET_START_SEQUENCE = ['3A', '23'];
 let PACKET_END_SEQUENCE = ['0A', '0D'];
+let CHOPPED_END_SEQUENCE = ['A', 'D'];
 let RESPONSE_DATA = [];
 let end_sequence_flag = 0;
 let processReadOperation = 0;
@@ -56,7 +57,9 @@ const exception = Object.freeze({
     MASTER_PASSWORD_NOT_SET: '3',
     AUTH_FAILED: '4',
     PASSWORD_LENGTH_EXCEED: '5',
-    DEVICE_CODE_MISMATCH: '6'
+    DEVICE_CODE_MISMATCH: '6',
+    INSUFFICIENT_MEMORY: '7',
+    AUTO_DESTROY: '8'
 });
 
 
@@ -66,8 +69,9 @@ const parser = new ByteLengthParser({ length: 1 });
 
 // Function to display data with ASCII art
 function displayData(data) {
+
     //below print statements, won't work if data is FF, or operation code selected is read memory or write memory
-    if ((decimalToHex(data[0]) != 'FF')) {
+    if ((decimalToHex(data[0]) != 'FF') && ((!PACKET_START_SEQUENCE.includes(decimalToHex(data[0]))) && (!CHOPPED_END_SEQUENCE.includes(decimalToHex(data[0])))) && ((operation_code != menu.READ_MEM) && (operation_code != menu.AUTH_CHECK) && (operation_code != menu.WRITE_MEM) && (operation_code != menu.SET_PASSWORD))) {
         console.log(chalk.red('║                         ' + decimalToHex(data[0]) + '                           ║'));
         console.log(chalk.white('╚═════════════════════════════════════════════════════╝'));
     }
@@ -111,17 +115,49 @@ parser.on('data', (data) => {
 
 
 async function checkResponse() {
-    if (RESPONSE_DATA[3] == 'FE') {  //FE represents exception is raised, instead of order code
+    const exception_code_index = RESPONSE_DATA.findIndex(e => e === 'FE');
+
+    if (exception_code_index >= 0) {
         isLogin = 0;
-        console.log(chalk.bgRed(`${checkExceptionCode(RESPONSE_DATA[4])}`));
+        console.log(chalk.bgRed(`${checkExceptionCode(RESPONSE_DATA[exception_code_index + 1])}`));
 
-        if (RESPONSE_DATA[4] === exception.AUTH_FAILED) {
-            exitMessage();
-        } else {
-            showMenu();
+        switch(RESPONSE_DATA[exception_code_index + 1]){
+            case exception.AUTH_FAILED:
+                exitMessage();
+                break;
+            case exception.AUTO_DESTROY:
+                exitMessage();
+                break;
+            default:
+                showMenu();
+                break;
         }
+    
+    }else{
+        if(RESPONSE_DATA[3] == menu.SET_PASSWORD){
+            isLogin = 0;
 
+            console.log(chalk.bgGreen("PASSWORD SET, PLEASE RESTART YOUR DEVICE"));
+            exitMessage();
+        }
     }
+
+        // if (RESPONSE_DATA[3] == 'FE') {  //FE represents exception is raised, instead of order code
+        //     isLogin = 0;
+        //     console.log(chalk.bgRed(`${checkExceptionCode(RESPONSE_DATA[4])}`));
+
+        //     if (RESPONSE_DATA[4] === exception.AUTH_FAILED) {
+        //         exitMessage();
+        //     } else if(RESPONSE_DATA[4] === exception.AUTO_DESTROY) {
+        //         console.log(chalk.bgRed("AUTO DESTROY MODE ON"));
+        //         // isLogin = 0;
+        //         // exitMessage();
+        //         //just end the application
+        //         process.exit(1);
+        //     }else{
+        //         showMenu();
+        //     }
+        
 
     RESPONSE_DATA = [];
 }
@@ -175,6 +211,9 @@ function checkExceptionCode(code) {
             break;
         case exception.MASTER_PASSWORD_NOT_SET:
             exception_msg = 'Please set master password for your device';
+            break;
+        case exception.AUTO_DESTROY:
+            exception_msg = 'AUTO DESTROY MODE ON';
             break;
         case exception.AUTH_FAILED:
             exception_msg = 'Password not matched, try again !';
@@ -293,7 +332,6 @@ async function askInput() {
     });
 
     user_entered_string = user.string;
-    console.log(user_entered_string);
 }
 
 
@@ -347,13 +385,13 @@ async function askBAUD() {
     selectedBaudRate = baudrate.baud_rate; //assign baud rate to global variable.
     userPassword = password.string;
 
-    console.log(userPassword);
+    // console.log(userPassword);
 
     //after baud rate selection, save configuration
     saveConfiguration();
 }
 
-async function askPassword(){
+async function askPassword() {
     console.log(chalk.bgRed(`Total 5 chances, after that device will go in auto-destroy mode`));
 
     const password = await inquirer.prompt({
@@ -575,6 +613,9 @@ function createAUTHData() {
 }
 
 async function authenticateUser(password_string) {
+
+    //set operation code to AUTH_CHECK
+    operation_code = menu.AUTH_CHECK;
 
     let pass_Bytes = stringtoHex(password_string);
     let pass_length = pass_Bytes.length;

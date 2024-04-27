@@ -9440,7 +9440,7 @@ void I2C2_Send_NACK(void);
 unsigned char I2C2_Send(unsigned char BYTE);
 unsigned char I2C2_Read(void);
 
-# 39 "main.c"
+# 41 "main.c"
 unsigned int timeout = 1000;
 unsigned char interrupt_flag = 0x00;
 unsigned char requestBuffer[100];
@@ -9453,6 +9453,7 @@ unsigned char isPasswordSet = 0x01;
 unsigned char isExceptionRaised = 0x00;
 unsigned char exception_code = 0x00;
 unsigned char LOOKUP_SECTION_CACHE[400];
+
 
 enum ORDER_CODES
 {
@@ -9474,7 +9475,7 @@ ADDRESS_POINTER_H = 0x0A,
 ADDRESS_POINTER_L = 0x0B,
 LOOKUP_POINTER_H = 0x0C,
 LOOKUP_POINTER_L = 0x0D,
-AUTH_FAIL_COUNTER = 0x00
+AUTH_FAIL_COUNT = 0x0E
 };
 
 
@@ -9487,7 +9488,8 @@ MASTER_PASSWORD_NOT_SET = 0x03,
 AUTH_FAILED = 0x04,
 PASSWORD_LENGTH_EXCEED = 0x05,
 DEVICE_CODE_MISMATCH = 0x06,
-INSUFFICIENT_MEMORY = 0x07
+INSUFFICIENT_MEMORY = 0x07,
+AUTO_DESTROY = 0x08
 };
 
 
@@ -9541,7 +9543,7 @@ void EEPROM_Write(unsigned char addr, unsigned char eep_data);
 unsigned char EEPROM_Read(unsigned char addr);
 void sendResponse(unsigned char exception_occurred);
 
-# 144
+# 148
 void UART_Init()
 {
 float temp;
@@ -9561,17 +9563,17 @@ RCSTA1 = 0x90;
 temp = (((float)(64000000 / 64) / (float)9600) - 1);
 SPBRG1 = (int)temp;
 
-# 204
+# 208
 }
 
-# 211
+# 215
 void UART_TransmitChar(uint8_t data)
 {
 while (!PIR1bits.TX1IF);
 TXREG = data;
 }
 
-# 222
+# 226
 void __interrupt() isr(void)
 {
 
@@ -9657,12 +9659,12 @@ receiveData.index = 0;
 }
 }
 
-# 311
+# 315
 PIE1bits.RC1IE = 1;
 }
 }
 
-# 320
+# 324
 void processRequest()
 {
 unsigned int buffer_index = 0;
@@ -9672,7 +9674,7 @@ unsigned int i = 0;
 request_unit.DEVICE_ADDR = requestBuffer[0];
 request_unit.ORDER_CODE = requestBuffer[1];
 
-# 333
+# 337
 if(request_unit.ORDER_CODE != READ_MEM){
 
 for (buffer_index = 0; requestBuffer[buffer_index + 2] != 0x00; buffer_index++)
@@ -9691,13 +9693,15 @@ request_unit.payload_data[0] = requestBuffer[2];
 request_unit.payload_data[1] = requestBuffer[3];
 }
 
-# 354
+# 358
 }
 
-# 361
+# 365
 void createResponse()
 {
 unsigned char CODE = request_unit.ORDER_CODE;
+unsigned char auth_fail_data = 0x00;
+unsigned char auto_destroy_flag = 0x00;
 
 
 
@@ -9739,8 +9743,38 @@ break;
 case AUTH_CHECK:
 if (!isPasswordMatched())
 {
+auth_fail_data = EEPROM_Read(AUTH_FAIL_COUNT);
+
+switch(auth_fail_data){
+case 0xFF:
+auth_fail_data = 0x00;
+break;
+case 0x03:
+auto_destroy_flag = 0x01;
+break;
+}
+
+
+auth_fail_data += 1;
+
 isExceptionRaised = 0x01;
-exception_code = AUTH_FAILED;
+exception_code = (auto_destroy_flag == 0x01) ? AUTO_DESTROY : AUTH_FAILED;
+
+if(auto_destroy_flag){
+auth_fail_data = 0x00;
+auto_destroy_flag = 0x00;
+
+FormatDrive();
+}
+
+
+_delay((unsigned long)((200)*(64000000/4000.0)));
+EEPROM_Write(AUTH_FAIL_COUNT, auth_fail_data);
+_delay((unsigned long)((200)*(64000000/4000.0)));
+}else{
+
+
+EEPROM_Write(AUTH_FAIL_COUNT, 0x00);
 }
 break;
 default:
@@ -9757,7 +9791,7 @@ exception_code = DEVICE_CODE_MISMATCH;
 sendResponse(isExceptionRaised);
 }
 
-# 429
+# 465
 void createPingResponse()
 {
 responseBuffer[0] = request_unit.DEVICE_ADDR;
@@ -9766,7 +9800,7 @@ responseBuffer[2] = 0x00;
 responseBuffer[3] = 0x00;
 }
 
-# 442
+# 478
 void writeDataToEEPROM()
 {
 unsigned short payload_length;
@@ -9830,6 +9864,9 @@ _delay((unsigned long)((10)*(64000000/4000.0)));
 
 for (unsigned short i = 0; i < payload_length; i++)
 {
+if((i % 10) == 0)
+LATAbits.LA7 ^= 1;
+
 writeByteAT24_EEPROM((at24_eeprom_address + i), request_unit.payload_data[i]);
 _delay((unsigned long)((10)*(64000000/4000.0)));
 }
@@ -9876,10 +9913,10 @@ responseBuffer[2] = (at24_eeprom_addr_start >> 8) & 0xFF;
 responseBuffer[3] = at24_eeprom_addr_start & 0xFF;
 responseBuffer[4] = 0xFF;
 
-# 555
+# 594
 }
 
-# 562
+# 601
 void writeMasterPasswordToEEPROM()
 {
 unsigned char payload_length = 0x00;
@@ -9892,7 +9929,7 @@ pic_eeprom_addr = PASSWORD_ADDR_START;
 
 payload_length = requestBuffer[request_unit.payload_length_index];
 
-# 580
+# 619
 if (payload_length > (PASSWORD_ADDR_END - PASSWORD_ADDR_START))
 {
 isExceptionRaised = 0x01;
@@ -9933,7 +9970,7 @@ responseBuffer[1] = request_unit.ORDER_CODE;
 responseBuffer[2] = last_byte_data;
 }
 
-# 625
+# 664
 void writeByteAT24_EEPROM(unsigned int address, unsigned char data)
 {
 I2C2_Start();
@@ -9944,7 +9981,7 @@ I2C2_Send(data);
 I2C2_Stop();
 }
 
-# 640
+# 679
 unsigned char readByteAT24_EEPROM(unsigned short address){
 unsigned char eeprom_data = 0x00;
 
@@ -9961,7 +9998,7 @@ I2C2_Stop();
 return eeprom_data;
 }
 
-# 662
+# 701
 void sendResponse(unsigned char isExceptionOccurred)
 {
 unsigned int index = 0;
@@ -10015,7 +10052,7 @@ index++;
 }
 }
 
-# 720
+# 759
 void EEPROM_Write(unsigned char addr, unsigned char eep_data)
 {
 _delay((unsigned long)((500)*(64000000/4000.0)));
@@ -10043,7 +10080,7 @@ while (PIR2bits.EEIF == 0)
 PIR2bits.EEIF = 0;
 }
 
-# 752
+# 791
 unsigned char EEPROM_Read(unsigned char addr)
 {
 EEADR = addr;
@@ -10053,7 +10090,7 @@ EECON1bits.RD = 1;
 return EEDATA;
 }
 
-# 785
+# 824
 void ReadMasterPasswordFromEEPROM()
 {
 unsigned char password_length = 0x00;
@@ -10087,7 +10124,7 @@ isPasswordSet = 0x00;
 master.cache_length = password_length;
 }
 
-# 823
+# 862
 void ReadCredentials(){
 
 
@@ -10103,12 +10140,7 @@ unsigned short START_ADDR = 0x0000;
 for(index = 0; index < payload_length; index++)
 ADDR[index] = request_unit.payload_data[index];
 
-UART_TransmitChar(ADDR[0]);
-UART_TransmitChar(ADDR[1]);
-
-
-
-
+# 883
 START_ADDR = (ADDR[0] << 8) | ADDR[1];
 
 _delay((unsigned long)((50)*(64000000/4000.0)));
@@ -10135,8 +10167,11 @@ response_index += 2;
 
 
 for(unsigned short i = 0; i < credential_length; i++){
+if((i % 10) == 0)
+LATAbits.LA7 ^= 1;
+
 responseBuffer[response_index + i] = readByteAT24_EEPROM(START_ADDR + i);
-UART_TransmitChar(responseBuffer[response_index + i]);
+
 last_char_index = response_index + i;
 }
 
@@ -10144,7 +10179,7 @@ last_char_index = response_index + i;
 responseBuffer[last_char_index + 1] = 0x00;
 }
 
-# 884
+# 926
 void storeLookUpEntries(){
 unsigned short section_start = 0x7800;
 
@@ -10152,7 +10187,7 @@ for(unsigned int i = 0; i < 400; i++)
 LOOKUP_SECTION_CACHE[i] = readByteAT24_EEPROM((section_start + i));
 }
 
-# 896
+# 938
 unsigned char isPasswordMatched()
 {
 unsigned char payload_length = 0x00;
@@ -10183,17 +10218,23 @@ break;
 }
 }
 
+responseBuffer[0] = request_unit.DEVICE_ADDR;
+responseBuffer[1] = request_unit.ORDER_CODE;
+
 return matchFlag;
 }
 
-# 934
+# 979
 void ReadLookupEntries(){
 for(unsigned int index = 0; index < 400; index++){
+if((index % 10) == 0)
+LATAbits.LA7 ^= 1;
+
 UART_TransmitChar(LOOKUP_SECTION_CACHE[index]);
 }
 }
 
-# 945
+# 993
 void calculateAvailableSpace(){
 unsigned short index = 0x0000;
 unsigned char empty_data = 0xFF;
@@ -10205,6 +10246,9 @@ float memory_percentage = 0;
 
 
 for(index = 0x0000; index <= 0x77FF; index++){
+if((index % 10) == 0)
+LATAbits.LA7 ^= 1;
+
 eeprom_data = readByteAT24_EEPROM(index);
 
 if(eeprom_data == 0xFF){
@@ -10213,7 +10257,7 @@ empty_location_count = empty_location_count + 1;
 }
 }
 
-# 974
+# 1025
 memory_percentage = ((float)empty_location_count/total_location) * 100;
 
 if(memory_percentage != 100)
@@ -10223,7 +10267,7 @@ int digit4 = (int)(memory_percentage / 100);
 int digit5 = ((int)memory_percentage / 10) % 10;
 int digit6 = (int)memory_percentage % 10;
 
-# 989
+# 1040
 responseBuffer[0] = request_unit.DEVICE_ADDR;
 responseBuffer[1] = request_unit.ORDER_CODE;
 responseBuffer[2] = digits[digit4];
@@ -10231,7 +10275,7 @@ responseBuffer[3] = digits[digit5];
 responseBuffer[4] = digits[digit6];
 }
 
-# 1001
+# 1052
 void FormatDrive(){
 unsigned short index = 0x0000;
 unsigned char mask_data = 0xFF;
@@ -10239,9 +10283,9 @@ unsigned char mask_data = 0xFF;
 
 for(index = 0x0000; index <= 0x7FFF; index++){
 
-
-UART_TransmitChar((index >> 8) & 0xFF);
-UART_TransmitChar(index & 0xFF);
+# 1063
+if((index % 10) == 0)
+LATAbits.LA7 ^= 1;
 
 _delay((unsigned long)((10)*(64000000/4000.0)));
 writeByteAT24_EEPROM(index, mask_data);
@@ -10266,13 +10310,22 @@ void main()
 OSCCON = 0x70;
 OSCTUNE = 0xC0;
 
-# 1048
+# 1102
 UART_Init();
 I2C2_Init();
+
 ReadMasterPasswordFromEEPROM();
 _delay((unsigned long)((100)*(64000000/4000.0)));
 storeLookUpEntries();
 _delay((unsigned long)((100)*(64000000/4000.0)));
+
+TRISAbits.RA7 = 0;
+
+LATAbits.LA7 = 0;
+_delay((unsigned long)((50)*(64000000/4000.0)));
+LATAbits.LA7 = 1;
+_delay((unsigned long)((50)*(64000000/4000.0)));
+LATAbits.LA7 = 0;
 
 while (1)
 {

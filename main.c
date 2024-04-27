@@ -14,6 +14,8 @@
 // #define DEBUG   //uncomment this line, if you want to enable debug mode
 #define F_CPU 64000000 / 64
 #define BAUD_RATE 9600
+#define POWER_INDICATOR_DIR TRISAbits.RA7
+#define POWER_INDICATOR LATAbits.LA7
 #define EEPROM_ADDRESS 0x50
 #define DEVICE_CODE 0x21
 #define PACKET_SIZE 100
@@ -49,6 +51,7 @@ unsigned char isExceptionRaised = 0x00; // exception flag
 unsigned char exception_code = 0x00;
 unsigned char LOOKUP_SECTION_CACHE[LOOKUP_SECTION_CACHE_SIZE]; //with this size, we can store 200 starting addresses in cache buffer
 
+
 enum ORDER_CODES
 {
 	PING = 0x11,
@@ -69,7 +72,7 @@ enum PIC_EEPROM_CONFIG
 	ADDRESS_POINTER_L = 0x0B,
 	LOOKUP_POINTER_H = 0x0C,
 	LOOKUP_POINTER_L = 0x0D,
-	AUTH_FAIL_COUNTER = 0x00
+	AUTH_FAIL_COUNT = 0x0E
 };
 // address pointer will store address of next location where data will be stored on at24lc256
 // pointer has both low and high byte, because word address in AT24LC256 is 16bit
@@ -82,7 +85,8 @@ enum EXCEPTION_CODES
 	AUTH_FAILED = 0x04,
 	PASSWORD_LENGTH_EXCEED = 0x05,
 	DEVICE_CODE_MISMATCH = 0x06,
-	INSUFFICIENT_MEMORY = 0x07
+	INSUFFICIENT_MEMORY = 0x07,
+	AUTO_DESTROY = 0x08
 };
 // exception codes are used in responses, when operation fails on the device, we have to notify master.
 
@@ -361,6 +365,8 @@ void processRequest()
 void createResponse()
 {
 	unsigned char CODE = request_unit.ORDER_CODE;
+	unsigned char auth_fail_data = 0x00;
+	unsigned char auto_destroy_flag = 0x00;
 
 	// we have to start raising exception responses
 	// check for if password is set or not
@@ -402,8 +408,38 @@ void createResponse()
 			case AUTH_CHECK:
 				if (!isPasswordMatched()) // if authentication fails
 				{
+					auth_fail_data = EEPROM_Read(AUTH_FAIL_COUNT);
+					
+					switch(auth_fail_data){
+						case 0xFF:
+							auth_fail_data = 0x00; //Initialise count
+							break;
+						case 0x03:
+							auto_destroy_flag = 0x01; //set auto destroy flag
+							break;
+					}
+
+					//increment by 1.
+					auth_fail_data += 1;
+
 					isExceptionRaised = 0x01;	  // set exception raise flag, as exception occurred.
-					exception_code = AUTH_FAILED; // 0x04 represents failed authentication
+					exception_code = (auto_destroy_flag == 0x01) ? AUTO_DESTROY : AUTH_FAILED; // 0x04 represents failed authentication
+					
+					if(auto_destroy_flag){
+						auth_fail_data = 0x00; //reset count
+						auto_destroy_flag = 0x00; //reset auto destroy flag
+
+						FormatDrive(); //format whole disk
+					}
+
+					//store auth fail count in EEPROM back
+					__delay_ms(200);
+					EEPROM_Write(AUTH_FAIL_COUNT, auth_fail_data);
+					__delay_ms(200);
+				}else{
+					//authentication successful
+					//reset counter
+					EEPROM_Write(AUTH_FAIL_COUNT, 0x00);
 				}
 				break;
 			default: // invalid function code
@@ -502,6 +538,9 @@ void writeDataToEEPROM()
 	// store data
 	for (unsigned short i = 0; i < payload_length; i++)
 	{
+		if((i % 10) == 0)
+			POWER_INDICATOR ^= 1;
+
 		writeByteAT24_EEPROM((at24_eeprom_address + i), request_unit.payload_data[i]);
 		__delay_ms(10);
 	}
@@ -835,8 +874,8 @@ void ReadCredentials(){
 	for(index = 0; index < payload_length; index++)
 	     ADDR[index] = request_unit.payload_data[index];
 
-	UART_TransmitChar(ADDR[0]);
-	UART_TransmitChar(ADDR[1]);
+	//UART_TransmitChar(ADDR[0]);
+	//UART_TransmitChar(ADDR[1]);
 
 	//ADDR[0] - HIGH BYTE
 	//ADDR[1] - LOW BYTE
@@ -867,8 +906,11 @@ void ReadCredentials(){
 
 	//store credentials in response buffer
 	for(unsigned short i = 0; i < credential_length; i++){
+		if((i % 10) == 0)
+			POWER_INDICATOR ^= 1;
+
 		responseBuffer[response_index + i] = readByteAT24_EEPROM(START_ADDR + i);
-		UART_TransmitChar(responseBuffer[response_index + i]);
+		//UART_TransmitChar(responseBuffer[response_index + i]);
 		last_char_index = response_index + i;
 	}
 
@@ -923,6 +965,9 @@ unsigned char isPasswordMatched()
 		}
 	}
 
+	responseBuffer[0] = request_unit.DEVICE_ADDR;
+	responseBuffer[1] = request_unit.ORDER_CODE;
+	
 	return matchFlag;
 }
 
@@ -933,6 +978,9 @@ unsigned char isPasswordMatched()
  */
 void ReadLookupEntries(){
 	for(unsigned int index = 0; index < LOOKUP_SECTION_CACHE_SIZE; index++){
+		if((index % 10) == 0)
+			POWER_INDICATOR ^= 1;
+
 		UART_TransmitChar(LOOKUP_SECTION_CACHE[index]);
 	}
 }
@@ -953,6 +1001,9 @@ void calculateAvailableSpace(){
 	//CREDENTIAL_SECTION_START - 0x0000
 	//CREDENTIAL_SECTION_END   - 0x77FF
 	for(index = CREDENTIAL_SECTION_START; index <= CREDENTIAL_SECTION_END; index++){
+		if((index % 10) == 0)
+			POWER_INDICATOR ^= 1;
+
 		eeprom_data = readByteAT24_EEPROM(index);
 
 		if(eeprom_data == 0xFF){
@@ -1006,9 +1057,12 @@ void FormatDrive(){
 	for(index = 0x0000; index <= EEPROM_CAPACITY; index++){
 
 		//transmit address which gets erased to notify user
-		UART_TransmitChar((index >> 8) & 0xFF); //HIGH Byte
-		UART_TransmitChar(index & 0xFF); //LOW Byte
+		//UART_TransmitChar((index >> 8) & 0xFF); //HIGH Byte
+		//UART_TransmitChar(index & 0xFF); //LOW Byte
 
+		if((index % 10) == 0)
+			POWER_INDICATOR ^= 1; //toggle led
+		
 		__delay_ms(10);
 		writeByteAT24_EEPROM(index, mask_data);	
 	}
@@ -1047,10 +1101,19 @@ void main()
 
 	UART_Init();			  // initialises uart peripherals
 	I2C2_Init();			  // initialises i2c peripherals
+    
 	ReadMasterPasswordFromEEPROM();   // reads password from pic eeprom and caches it in an array buffer.
 	__delay_ms(100);
 	storeLookUpEntries();		  // reads all the entries in the lookup table
 	__delay_ms(100);
+    
+    	POWER_INDICATOR_DIR = 0; //set direction of indicator as output
+    
+    	POWER_INDICATOR = 0;
+    	__delay_ms(50);
+    	POWER_INDICATOR = 1;
+    	__delay_ms(50);
+    	POWER_INDICATOR = 0;
 
 	while (1)
 	{
