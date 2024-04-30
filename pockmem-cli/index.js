@@ -9,6 +9,7 @@ import { createSpinner } from "nanospinner";
 import { SerialPort, ByteLengthParser } from "serialport";
 import fs, { read } from 'fs';
 import crypto from 'crypto'
+import { error } from "console";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -44,6 +45,7 @@ const menu = Object.freeze({
     READ_MEM: '2',
     READ_ENTRY: '3',
     READ_SPACE: '4',
+    UPLOAD_IMG: '5',
     PING: '11',
     DELETE_MEM: '10',
     SET_PASSWORD: '12',
@@ -121,7 +123,7 @@ async function checkResponse() {
         isLogin = 0;
         console.log(chalk.bgRed(`${checkExceptionCode(RESPONSE_DATA[exception_code_index + 1])}`));
 
-        switch(RESPONSE_DATA[exception_code_index + 1]){
+        switch (RESPONSE_DATA[exception_code_index + 1]) {
             case exception.AUTH_FAILED:
                 exitMessage();
                 break;
@@ -132,9 +134,9 @@ async function checkResponse() {
                 showMenu();
                 break;
         }
-    
-    }else{
-        if(RESPONSE_DATA[3] == menu.SET_PASSWORD){
+
+    } else {
+        if (RESPONSE_DATA[3] == menu.SET_PASSWORD) {
             isLogin = 0;
 
             console.log(chalk.bgGreen("PASSWORD SET, PLEASE RESTART YOUR DEVICE"));
@@ -142,22 +144,22 @@ async function checkResponse() {
         }
     }
 
-        // if (RESPONSE_DATA[3] == 'FE') {  //FE represents exception is raised, instead of order code
-        //     isLogin = 0;
-        //     console.log(chalk.bgRed(`${checkExceptionCode(RESPONSE_DATA[4])}`));
+    // if (RESPONSE_DATA[3] == 'FE') {  //FE represents exception is raised, instead of order code
+    //     isLogin = 0;
+    //     console.log(chalk.bgRed(`${checkExceptionCode(RESPONSE_DATA[4])}`));
 
-        //     if (RESPONSE_DATA[4] === exception.AUTH_FAILED) {
-        //         exitMessage();
-        //     } else if(RESPONSE_DATA[4] === exception.AUTO_DESTROY) {
-        //         console.log(chalk.bgRed("AUTO DESTROY MODE ON"));
-        //         // isLogin = 0;
-        //         // exitMessage();
-        //         //just end the application
-        //         process.exit(1);
-        //     }else{
-        //         showMenu();
-        //     }
-        
+    //     if (RESPONSE_DATA[4] === exception.AUTH_FAILED) {
+    //         exitMessage();
+    //     } else if(RESPONSE_DATA[4] === exception.AUTO_DESTROY) {
+    //         console.log(chalk.bgRed("AUTO DESTROY MODE ON"));
+    //         // isLogin = 0;
+    //         // exitMessage();
+    //         //just end the application
+    //         process.exit(1);
+    //     }else{
+    //         showMenu();
+    //     }
+
 
     RESPONSE_DATA = [];
 }
@@ -433,6 +435,7 @@ async function showMenu() {
     ${menu.READ_MEM} : READ
     ${menu.READ_ENTRY} : READ LOOKUP TABLE
     ${menu.READ_SPACE} : AVAILABLE MEMORY (in %)
+    ${menu.UPLOAD_IMG} : UPLOAD IMAGE
     ${menu.PING} : PING
     ${menu.DELETE_MEM} : FORMAT DISK (ADMIN ACCESS)
     ${menu.SET_PASSWORD} : SET MASTER PASSWORD
@@ -492,6 +495,10 @@ async function performOperation() {
             break;
         case menu.READ_ENTRY: //read all entries from lookup table
             payload_data = createPingData();
+            break;
+        case menu.UPLOAD_IMAGE:
+            createImageData();
+            errorFlag = true;
             break;
         case menu.DELETE_MEM:
             await askInput();
@@ -610,6 +617,15 @@ function createAUTHData() {
     }
 
     return payload;
+}
+
+function createImageData() {
+    const imagePath = 'C:/Users/Helion-Electrical/Downloads/images.png';
+    const byteArray = imageToByteArray(imagePath);
+
+    if (byteArray) {
+        console.log('Byte array:', byteArray);
+    }
 }
 
 async function authenticateUser(password_string) {
@@ -774,7 +790,7 @@ async function intro() {
     })
 }
 
-// const imagePath = './image.png';
+// const imagePath = 'C:\Users\Helion-Electrical\Downloads\images.png';
 // const byteArray = imageToByteArray(imagePath);
 
 // if (byteArray) {

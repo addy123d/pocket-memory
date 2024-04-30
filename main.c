@@ -52,7 +52,7 @@ unsigned char exception_code = 0x00;
 unsigned char LOOKUP_SECTION_CACHE[LOOKUP_SECTION_CACHE_SIZE]; //with this size, we can store 200 starting addresses in cache buffer
 
 
-enum ORDER_CODES
+enum FUNCTION_CODES
 {
 	PING = 0x11,
 	WRITE_MEM = 0x01,
@@ -236,8 +236,8 @@ void __interrupt() isr(void)
 		// check if we are currently receiving a packet
 		if (!receiveData.receiving)
 		{
-			// first packet will be LOW byte of START sequence, followed by HIGH byte of START sequence
-			//  check if the received character is lower byte of start sequence
+			// first packet will be HIGH byte of START sequence, followed by LOW byte of START sequence
+			//  check if the received character is upper byte of start sequence
 			if ((receivedChar == PACKET_START_MARKER_UPPER) && (start_sequence_flag == 0x00))
 			{
 				// set start_sequence_flag and wait for lower byte
@@ -910,7 +910,6 @@ void ReadCredentials(){
 			POWER_INDICATOR ^= 1;
 
 		responseBuffer[response_index + i] = readByteAT24_EEPROM(START_ADDR + i);
-		//UART_TransmitChar(responseBuffer[response_index + i]);
 		last_char_index = response_index + i;
 	}
 
