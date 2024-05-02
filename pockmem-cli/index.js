@@ -165,7 +165,7 @@ async function checkResponse() {
 }
 
 function exitMessage() {
-    figlet(`POCKET MEMORY\n `, (err, data) => {
+    figlet(`POCKET VAULT\n `, (err, data) => {
         console.log(gradient.pastel.multiline(data) + '\n');
 
         console.log(
